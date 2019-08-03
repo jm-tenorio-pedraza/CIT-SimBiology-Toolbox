@@ -4,7 +4,7 @@ addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbioKosinsky.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kosinsky.sbproj');
 
 % Extract model
 kosinsky=out.m1;
@@ -31,7 +31,7 @@ control.RateUnits = 'micromole/second';
 
 % Create simFunction object
 sim=createSimFunction(kosinsky,parameters,observables, [control],...
-    'UseParallel', false);
+    'UseParallel', true);
 
 % Create cell of doses
 antiPDL1_table=table([7 12 17]', [0.0013 0.0013 0.0013]', [0 0 0]',...
@@ -76,7 +76,7 @@ options_anneal.InitTemp=2;
 
 %% Optimizing
 % Nelder-Mead
-p_hat=fminsearch(obj_fun,finalValues,options_fminsearch);
+p_hat=fminsearch(obj_fun,log(p0),options_fminsearch);
 % Simulated annealing
 finalValues=anneal(obj_fun,p_hat,options_anneal);
 
