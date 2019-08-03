@@ -105,7 +105,7 @@ prior_fun=createPriorDistribution(PI,H,'type','normal');
 
 % MCMC sampler
 tic
-[models,logP]=gwmcmc(w0',{prior_fun likelihood_fun},2e3, 'StepSize', 1.2,...
+[models,logP]=gwmcmc(w0',{prior_fun likelihood_fun},2e6, 'StepSize', 1.2,...
 'ThinChain',1,'BurnIn',0);
 toc
 %% Save results
