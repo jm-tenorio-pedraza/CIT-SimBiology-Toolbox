@@ -4,7 +4,7 @@ addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbioKosinsky.sbproj');
 
 % Extract model
 kosinsky=out.m1;
