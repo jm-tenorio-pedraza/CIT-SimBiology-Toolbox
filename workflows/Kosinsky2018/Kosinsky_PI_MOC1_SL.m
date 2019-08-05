@@ -2,7 +2,7 @@
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/workflows/Kosinsky2018')
-
+warning off
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kosinsky.sbproj');
 
@@ -76,7 +76,7 @@ options_anneal.InitTemp=2;
 
 %% Optimizing
 % Nelder-Mead
-p_hat=fminsearch(obj_fun,log(p0),options_fminsearch);
+p_hat=fminsearch(obj_fun,finalValues,options_fminsearch);
 % Simulated annealing
 finalValues=anneal(obj_fun,p_hat,options_anneal);
 
@@ -105,14 +105,17 @@ prior_fun=createPriorDistribution(PI,H,'type','normal');
 
 % MCMC sampler
 tic
-[models,logP]=gwmcmc(w0',{prior_fun likelihood_fun},2e6, 'StepSize', 1.2,...
+[models,logP]=gwmcmc(w0',{prior_fun likelihood_fun},1e6, 'StepSize', 1.2,...
 'ThinChain',1,'BurnIn',0);
 toc
+models_array=models(:,:)';
+logL=sum(logP(:,:)',2);
+plotTrace(logL,PI)
+plotTrace(models_array,PI)
+plotTrace(models_array(5e5:100:end,:),PI)
+
 %% Save results
 
 save('PI.mat', 'PI')
-save('models.mat','models')
-save('logP.mat','logP')
-
-%% Save PI
-save('PI.mat', 'PI')
+save('Kosinsky_MOC1_SL_models.mat','models')
+save('Kosinsky_MOC1_SL_logP.mat','logP')
