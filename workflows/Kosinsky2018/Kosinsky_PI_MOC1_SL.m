@@ -1,7 +1,7 @@
 %% Search paths
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 
-cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky')
+cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/workflows/Kosinsky2018')
 
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kosinsky.sbproj');
