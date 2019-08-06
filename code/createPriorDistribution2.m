@@ -29,10 +29,10 @@ ind_indx=[H.IndividualParams(:).Index];
 sigma_indx=H.SigmaParams; % first indx is error variance of tumor volume , second is error variance of immune cell fractions, the rest are individual params variance
 
 % Extracting prior info from PI
-lower=log([PI.par(:).minValue]');  
-upper=log([PI.par(:).maxValue]');
-mu=log([PI.par(:).startValue]');
-sigma=std([lower,upper,mu],0,2);
+lower=log([PI.par(:).minValue]);  
+upper=log([PI.par(:).maxValue]);
+mu=log([PI.par(:).startValue]);
+sigma=std([lower;upper;mu],0,1);
 
 % Defining prior functions of the parameters and indexes
 norm_prior=@(x,m,s)sum(log(exp(-(x-m).^2./(2*s.^2))./sqrt(2*s.^2*pi)));
@@ -44,7 +44,7 @@ if strcmp(param.type, 'uniform')
      % Uniform priors for fixed params and normal priors for individual
      % params
         prior_handle=@(x)(unif_prior(x(pop_indx), pop_indx)+jeff_prior(x(sigma_indx))...
-        +norm_prior(x(ind_indx)', mu(ind_indx), sigma(ind_indx)));
+        +norm_prior(x(ind_indx), mu(ind_indx), sigma(ind_indx)));
     
 elseif strcmp(param.type,'normal')
         % Normal priors for fixed params and normal priors for individual
