@@ -112,8 +112,12 @@ models_array=models(:,:)';
 logL=sum(logP(:,:)',2);
 plotTrace(logL,PI)
 plotTrace(models_array,PI)
-plotTrace(models_array(5e5:100:end,:),PI)
-
+plotTrace(exp(models_array(7e5:100:end,:)),PI)
+tightfig
+colIndx=num2cell(repelem(1,12));
+colIndx(13)={2:6};
+[PI.data(1:end).colIndx]=colIndx{:,:};
+[data]=getMCMCOutput(PI.data,@(p)sim(p,100,u,1:1:100),exp(models_array(9e5:1000:end,:)),@(p)getPhi(p,H,length(u)));
 %% Save results
 
 save('PI.mat', 'PI')

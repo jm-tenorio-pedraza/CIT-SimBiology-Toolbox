@@ -1,7 +1,7 @@
-function [data]=getOutput(data,simFun,p,getPhi)
-
+function [data]=getMCMCOutput(data,simFun,p,getPhi)
+for i=1:size(p,1)
     % Generate parameter structure
-    phi=getPhi(p);
+    phi=getPhi(p(i,:));
     
     % Simulate model with parameter structure
     simdata=simFun(phi);
@@ -21,6 +21,10 @@ function [data]=getOutput(data,simFun,p,getPhi)
     % Input into data array
     [data(1:length(simOutput)).('simOutput')]=simOutput{:,:};
     
-   
-en
-rereturn
+    % Extract output relevant to each row
+    out=arrayfun(@(x)x.simOutput(:,x.colIndx)',data,'UniformOutput',false);
+    for j=1:size(data,1)
+        data(j).MCMCoutput(i,:)=out{j,:};
+    end
+end
+return
