@@ -1,6 +1,7 @@
-function residuals=getResiduals(p,simFun,PI,getPhi,getCovariance)
+function residuals=getResiduals(p,simFun,PI,getPhi,getCovariance,normIndx)
 % Calculates normalized residuals with the paramaters (double) input mapping inputFun (handle)
 % simFun (handle), function and the data (table) provided
+nVar=size(PI.data(1).dataValue,2);
 if size(p,1)>size(p,2)
     p=p';
 end
@@ -37,8 +38,7 @@ catch
     return
 end
 % Normalizing to final value for DCm, ISC and PDL1
-simOutput=cellfun(@(x)x./repmat([ones(1,3) x(end,4:6)],...
-    length(x(:,1)),1),simOutput,'UniformOutput',false);
+simOutput=cellfun(@(x)x./repmat([ones(1,nVar-length(normIndx)) x(end,normIndx)],size(x(:,1),1),1),simOutput,'UniformOutput',false);
 
 % Input into data array
 [PI.data(1:length(simOutput)).('simOutput')]=simOutput{:,:};

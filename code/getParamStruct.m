@@ -1,8 +1,8 @@
-function par_struct = getParamStruct(simFun,Pop_indx, Ind_indx,n_sim, p)
+function par_struct = getParamStruct(simFun,Pop_indx, Ind_indx,n_sim, p,sigmaNames)
 
 
-paramNames=[simFun.Parameters.Name(Pop_indx); repelem(simFun.Parameters.Name(Ind_indx),n_sim);...
-    {'b_TV'; 'b_CD8'; 'b_CD107a'; 'b_DC'; 'b_MDSC'; 'b_PDL1'}];
+paramNames=[simFun.Parameters.Name(Pop_indx); repelem(simFun.Parameters.Name(Ind_indx),n_sim)';...
+    sigmaNames];
 
 par_struct=struct('Name', paramNames,'minValue',num2cell(p(:,1)), 'maxValue',...
     num2cell(p(:,3)),'startValue', num2cell(p(:,2)),'mu_prior',  num2cell(p(:,4)),'sigma_prior',  num2cell(p(:,5)));

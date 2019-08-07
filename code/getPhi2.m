@@ -17,9 +17,9 @@ end
 if size(p,1)>size(p,2)
     p=p';
 end
-% p_indiv=structfun(@(x)p(x),H.IndividualParams,'UniformOutput',false);
+p_indiv=p([H.IndividualParams(1:end).Index]);
 try
-    phi=[repmat(p(H.PopulationParams),n_sim,1),p(H.IndividualParams)'];
+    phi=[repmat(p(H.PopulationParams),n_sim,1),p_indiv'];
 catch 
-    phi=[repmat(p(H.FixedParams),n_sim,1),p(H.IndividualParams)'];
+    phi=[repmat(p(H.FixedParams),n_sim,1),p_indiv'];
 end
