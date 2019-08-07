@@ -31,8 +31,8 @@ sigma_indx=H.SigmaParams; % first indx is error variance of tumor volume , secon
 % Extracting prior info from PI
 lower=log([PI.par(:).minValue]);  
 upper=log([PI.par(:).maxValue]);
-mu=log([PI.par(:).startValue]);
-sigma=std([lower;upper;mu],0,1);
+mu=log([PI.par(:).mu_prior]);
+sigma=log([PI.par(:).sigma_prior]);
 
 % Defining prior functions of the parameters and indexes
 norm_prior=@(x,m,s)sum(log(exp(-(x-m).^2./(2*s.^2))./sqrt(2*s.^2*pi)));

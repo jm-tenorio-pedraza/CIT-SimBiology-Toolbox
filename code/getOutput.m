@@ -15,12 +15,10 @@ simdata=resample(simdata,0:1:100);
 [data(1:length(T)).('simValue')]=Y{:,:};
 
 % Interpolate simulations to match observed time points
-simOutput=arrayfun(@(x)interp1(x.simTime,x.simValue,x.dataTime),data,...
+simOutput=arrayfun(@(x)x.simValue./repmat([ones(1,3) x.simValue(x.simTime==40,4:6)],...
+    size(x.simValue(:,1),1),1),data,...
     'UniformOutput',false);
 
-% Normalizing to final value for DCm, ISC and PDL1
-simOutput=cellfun(@(x)x./repmat([ones(1,3) x(end,4:6)],...
-    length(x(:,1)),1),simOutput,'UniformOutput',false);
 
 % Input into data array
 [data(1:length(simOutput)).('simOutput')]=simOutput{:,:};
