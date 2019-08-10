@@ -49,9 +49,9 @@ if strcmp(param.type, 'uniform')
 elseif strcmp(param.type,'normal')
         % Normal priors for fixed params and normal priors for individual
         % params
-        prior_handle=@(x)(norm_prior(x(pop_indx), mu(pop_indx),sigma(pop_indx))...
+        prior_handle=@(x)(norm_prior(x(pop_indx)', mu(pop_indx),sigma(pop_indx))...
             + jeff_prior(x(sigma_indx))...
-            + norm_prior(x(ind_indx), mu(ind_indx),sigma(ind_indx)));
+            + norm_prior(x(ind_indx)', mu(ind_indx),sigma(ind_indx)));
    
 end
     

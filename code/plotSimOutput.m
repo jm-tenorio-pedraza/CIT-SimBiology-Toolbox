@@ -18,4 +18,9 @@ for i=1:n_sim
     dat.LineStyle='none';
     dat.MarkerFaceColor=col_i;
     dat.Marker='d';
+    
+    % Change axis if there is large variability in output
+    if std(log(data(i).simOutput(:,colIndx)))>2
+        set(gca,'YScale','log')
+    end
 end
