@@ -17,7 +17,8 @@ end
 if size(p,1)>size(p,2)
     p=p';
 end
-p_indiv=p([H.IndividualParams(1:end).Index]);
+p_indiv=arrayfun(@(x)p(x.Index),H.IndividualParams,'UniformOutput',false);
+p_indiv=cell2mat(p_indiv);
 try
     phi=[repmat(p(H.PopulationParams),n_sim,1),p_indiv'];
 catch 

@@ -2,11 +2,9 @@
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 
-cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky')
-%% Load previous results
-load('models_Kosinsky_MOC1_SL.mat')
-load('logP_Kosinsky_MOC1_SL.mat')
-load('PI_SL.mat')
+cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky/output/PI_kpro')
+
+
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kosinsky.sbproj');
 
@@ -18,11 +16,13 @@ set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 
 %% load data and previous results
 load('Kosinsky_data.mat')
+load('models_Kosinsky_MOC1_kpro.mat')
+load('logP_Kosinsky_MOC1_kpro.mat')
 data_subset=Kosinsky_data([1:2:23 24],:);
 PI.data=data_subset;
 %% Create function handle for simulations
 % Define parameters to estimate
-parameters={'r' 'TV_max' 'e_Td' 'k_LN' 'K_TCD' 'K_pdl' 'S_R' 'k_pro' 'S_L'};
+parameters={'r' 'TV_max' 'e_Td' 'k_LN' 'K_TCD' 'K_pdl' 'S_R' 'S_L' 'k_pro'};
 
 % Define outputs
 observables={'TV' 'CD8' 'CD107a' 'DCm' 'ISC' 'PDL1'};
@@ -50,15 +50,15 @@ u=[repelem({control_table},6)'; repelem({antiPDL1_table},6)'; repelem({control_t
 
 %% Optimization setup
 % mu_prior
-%       r      TV_max   e_Td    k_LN    K_TCD   K_pdl    S_R    k_pro   S_L                 b_0
-mu=     [0.4   10       10      1e-2    0.2    .1       0.03    1       repelem(.0089,13)   repelem(0.1,6)];
+%       r      TV_max   e_Td    k_LN    K_TCD   K_pdl    S_R    S_L     k_pro                 b_0
+mu=     [0.4   10       10      1e-2    0.2    .1       0.03    .0089   repelem(1,13)       repelem(0.1,6)];
 % sigma_prior
 sigma=  [2     3e0      3e0     3e0     3e0     3       3       3       repelem(3,13)       repelem(1.1,6)];
 % Initial value
-p0=     [0.1   10       3.5     0.01    0.2     0.02    0.03    1       repelem(.0089,13)   repelem(0.1,6)];
+p0=     [0.1   10       3.5     0.01    0.2     0.02    0.03    .0089   repelem(1,13)       repelem(0.1,6)];
 % Parameter boundaries
-p_lb=   [0.01  1e0      1e-3    1e-4    1e-4    1e-4    1e-4    1e-3    repelem(1e-4,1,13)  repelem(1e-3,1,6)];
-p_ub=   [10    1e4      1e3     1e0     1e1     1e1     1e1     4       repelem(1e1,1,13)   repelem(10,1,6)];
+p_lb=   [0.01  1e0      1e-3    1e-4    1e-4    1e-4    1e-4    1e-4    repelem(10,1,13)    repelem(1e-3,1,6)];
+p_ub=   [10    1e4      1e3     1e0     1e1     1e1     1e1     10      repelem(1e1,1,13)   repelem(10,1,6)];
 
 % Generating PI
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},'UniformOutput',true));
@@ -67,7 +67,7 @@ PI.par=getParamStruct(sim,1:8,9,13,[p_lb' p0' p_ub' mu' sigma'],sigmaNames);
 
 % Hierarchical structure
 H.PopulationParams=1:8;
-H.IndividualParams=struct('name', {'S_L'}, 'Index', {9:21});
+H.IndividualParams=struct('name', {'k_pro'}, 'Index', {9:21});
 H.SigmaParams=22:27;
 
 % Residuals function
@@ -79,7 +79,7 @@ likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
 prior_fun=createPriorDistribution2(PI,H,'type','normal');
 
 % Obj function
-obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
+obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x')*(-1));
 
 % Optimizer options
 options_fminsearch=optimset('Display','iter','MaxFunEvals', 1e4, 'MaxIter',1e4);
@@ -126,27 +126,25 @@ tic
 [models2,logP2]=gwmcmc(models(:,:,end),{prior_fun likelihood_fun},1e6,...
     'StepSize', 1.1,'ThinChain',1,'BurnIn',0);
 toc
-             
-models_array=cat(3,models,models2);
+models_array=cat(3,models, models2);
 logL=cat(3,logP,logP2);
-% Plot entire chain
-plotMCMCDiagnostics(exp(models_array),logL,PI)
-
-% Plot thinned out samples
-plotMCMCDiagnostics((models_array(:,:,1e4:100:end)),logL(:,:,1e4:100:end),PI)
-
-postSample=models_array(:,:,1.8e4:200:end);
-postSample=postSample(:,:)';
-plotMCMCDiagnostics(postSample,logL(:,:,1.8e4:200:end),PI)
+% Plotting entire chain
+plotMCMCDiagnostics(models_array,logL,PI)
+% Plotting thinned out samples
+plotMCMCDiagnostics(models_array(:,:,2e4:100:end),logL(:,:,2e4:100:end),PI)
+% Bivariate posterior thinned out samples
+plotBivariateMarginals_2(models_array(6e5:100:end,:),PI)
 %% Posterior predictions
 simFun=@(x)getOutput(PI,@(p)sim(p,100,u,1:1:100),x,...
     @(p)getPhi2(p,H,length(u)), 4:6);
 tic
-PI=getPosteriorPredictions(exp(postSample),PI,simFun,observables);
+models_array=models(:,:)';
+PI=getPosteriorPredictions(exp(models_array(6e5:400:end,:)),PI,simFun,observables);
 toc
-PI=getCredibleIntervals(PI,observables, exp(postSample),H);
+PI=getCredibleIntervals(PI,observables, exp(models_array(6e5:400:end,:)),H);
 plotPosteriorPredictions(PI,observables)
+
 %% Save results
-save('PI_SL.mat', 'PI')
-save('models_Kosinsky_MOC1_SL.mat','models_array')
-save('logP_Kosinsky_MOC1_SL.mat','logL')
+save('PI_kpro.mat', 'PI')
+save('models_Kosinksy_MOC1_kpro.mat','models_array')
+save('logP_Kosinksy_MOC1_kpro.mat','logL')
