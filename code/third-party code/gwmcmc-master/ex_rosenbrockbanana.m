@@ -41,7 +41,7 @@ M=2; %number of model parameters
 Nwalkers=40; %number of walkers/chains.
 minit=randn(M,Nwalkers);
 tic
-models=gwmcmc(minit, logPfun,100000,'StepSize',30,'burnin',.2);
+models=gwmcmc(minit, logPfun,1000000,'StepSize',2.5,'burnin',.2);
 toc
 
 

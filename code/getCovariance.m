@@ -8,6 +8,6 @@ function sigma=getCovariance(p,H)
 %               SigmaParams: Indexes of parameters that quantify variable
 %               measurement error standard deviation
 % Output:   Matrix (1xn_var) of sigmas
-sigma=p(H.SigmaParams);
+sigma=p(setdiff(H.SigmaParams, [H.IndividualParams.OmegaIndex]));
 
 end
