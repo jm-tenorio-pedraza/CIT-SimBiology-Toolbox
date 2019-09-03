@@ -1,4 +1,4 @@
-function par_struct = getParamStruct(simFun,H,n_sim,sigmaParams,sigmaNames,varargin)
+function par_struct = getParamStruct2(simFun,H,n_sim,sigmaParams,sigmaNames,varargin)
 if nargin<5
     error('getParamStruct:toofewinputs','getParamStruct requires atleast 5 inputs.')
 end
@@ -8,14 +8,17 @@ inputs.parse(varargin{:});
 inputs=inputs.Results;
 
 
-% Population params
-param=simFun.Parameters.Value(H.PopulationParams);
 
 % Individual params
-indiv_indx=arrayfun(@(x)(x.name),H.IndividualParams,'UniformOutput',false);
-param_indiv=cellfun(@(x)simFun.Parameters.Value(ismember(simFun.Parameters.Name,x)),indiv_indx,'UniformOutput',false);
+indiv_indx=arrayfun(@(x)(x.name),H.IndividualParams,'UniformOutput',false); % Extract field names of individually-varying parameters
+param_indiv=cellfun(@(x)simFun.Parameters.Value(ismember(simFun.Parameters.Name,x)),...
+    indiv_indx,'UniformOutput',false);                                      % Compare names of parameters and extract the corresponding value
 
-param_indiv=reshape(repmat(cell2mat(param_indiv),1,n_sim),[],1);
+% Population params
+param=[simFun.Parameters.Value(H.PopulationParams); [param_indiv{:,:}]'];       % 
+
+param_indiv=reshape(repelem(cell2mat(param_indiv),1,n_sim)',[],1);
+
 % concatenating all params
 
     % Min            Max                Start           % Mu             % Sigma
@@ -33,7 +36,8 @@ end
 
 % Parameter names
 paramNames=[simFun.Parameters.Name(H.PopulationParams);...
-    repelem({(H.IndividualParams(1:end).name)},n_sim,1);...
+    arrayfun(@(x) strjoin({'eta' x.name},'_'),H.IndividualParams,'UniformOutput', false);
+    repelem({(H.IndividualParams(1:end).name)}',n_sim,1);...
     sigmaNames];
 
 % Parameter structure

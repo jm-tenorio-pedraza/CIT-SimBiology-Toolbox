@@ -31,8 +31,10 @@ simdata=resample(simdata,0:1:100);
 
 % Interpolate simulations to match observed time points
 try
-simOutput=arrayfun(@(x)interp1(x.simTime,x.simValue,x.dataTime),PI.data,...
+    simOutput=arrayfun(@(x)x.simValue(ismember(x.simTime,x.dataTime),:),PI.data,...
     'UniformOutput',false);
+% simOutput=arrayfun(@(x)interp1(x.simTime,x.simValue,x.dataTime),PI.data,...
+%     'UniformOutput',false);
 catch
     residuals=1e7;
     return

@@ -1,53 +1,34 @@
 %% Search paths
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
+cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky/output/PI_SL_kpro')
 
-cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky')
-%% Load previous results
-load('models_SL_kpro.mat')
-load('logL_SL_kpro.mat')
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kosinsky.sbproj');
 
 % Extract model
 kosinsky=out.m1;
 cs=kosinsky.getconfigset;
-set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-14);
-set(cs.SolverOptions, 'RelativeTolerance', 1.0e-13);
+set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
+set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
+set(cs, 'MaximumWallClock', 0.2)
 
-% Extract predifined parameter contents
-variants=getvariant(kosinsky);
 %% load data and previous results
 load('Kosinsky_data.mat')
+load('models_SL_kpro.mat')
+
 data_subset=Kosinsky_data([1:2:23 24],:);
 PI.data=data_subset;
+PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]' 'Relative units []'...
+    'Relative units []' 'Relative units []'};
+
 %% Create function handle for simulations
 % Define parameters to estimate
 parameters={'r' 'TV_max' 'e_Td' 'k_LN' 'K_TCD' 'K_pdl' 'S_R' 'S_L' 'k_pro'};
 
 % Define outputs
 observables={'TV' 'CD8' 'CD107a' 'DCm' 'ISC' 'PDL1'};
-
-% Define dose
-control = sbiodose('rd');
-control.TargetName = 'Dose_antiPDL1';
-control.TimeUnits = 'day';
-control.AmountUnits = 'micromole';
-control.RateUnits = 'micromole/second';
-
-% Create simFunction object
-sim=createSimFunction(kosinsky,parameters,observables, [control],...
-    'UseParallel', false);
-
-% Create cell of doses
-antiPDL1_table=table([7 12 17]', [0.0013 0.0013 0.0013]', [0 0 0]',...
-    'VariableNames',{'Time' 'Amount' 'Rate'});
-antiPDL1_table.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
-control_table=table([7 12 17]', [0 0 0]', [0 0 0]',...
-    'VariableNames',{'Time' 'Amount' 'Rate'});
-control_table.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
-
-u=[repelem({control_table},6)'; repelem({antiPDL1_table},6)'; repelem({control_table},1)'];
+[sim,u]=initializePI(kosinsky,parameters,observables,PI);
 
 %% Optimization setup
 % mu_prior

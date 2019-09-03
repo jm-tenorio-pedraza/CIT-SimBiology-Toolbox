@@ -44,6 +44,7 @@ set(gca, 'YScale', 'log')
 figure
 [C,lags,ESS]=eacorr(params);
 plot(lags,C)
+ylim([-1 1])
 title('Autocorrelation of posterior samples of')
 
 % Param traceplot

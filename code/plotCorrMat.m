@@ -25,12 +25,12 @@ set(gca, 'YTickLabel', Names, 'TickLabelInterpreter', 'none'); % set y-axis labe
 title(strjoin({'Correlation matrix for', p.model},' ' ), 'FontSize', 20); % set title
 
 % Defining two-color gradient color map
-red = [1, 0, 0];
+blue1 = [0, 0, 1];
 white=[1, 1, 1];
-blue = [0, 0, 1];
+red = [1, 0, 0];
 length=50;
-colors_p1 = [linspace(red(1),white(1),length)', linspace(red(2),white(2),length)', linspace(red(3),white(3),length)'];
-colors_p2 = [linspace(white(1),blue(1),length)', linspace(white(2),blue(2),length)', linspace(white(3),blue(3),length)'];
+colors_p1 = [linspace(blue1(1),white(1),length)', linspace(blue1(2),white(2),length)', linspace(blue1(3),white(3),length)'];
+colors_p2 = [linspace(white(1),red(1),length)', linspace(white(2),red(2),length)', linspace(white(3),red(3),length)'];
 
 colormap([colors_p1; colors_p2]);
 colorbar;

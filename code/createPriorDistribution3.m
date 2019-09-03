@@ -1,4 +1,4 @@
-function logPrior = createPriorDistribution2(p,PI,H,varargin)
+function logPrior = createPriorDistribution3(p,PI,H,varargin)
 % Function to create a prior handle using information available in PI.par
 % Inputs:
 %           - PI: structure with a 'par' field with 'startValue',
@@ -25,9 +25,6 @@ param=param.Results;
 % Parameter indexes to parameters that vary at the population level
 pop_indx=H.PopulationParams;
 
-% Param indexes of individual params
-ind_indx=[H.IndividualParams(:).Index];
-
 % Param indexes of variance params
 sigma_indx=H.SigmaParams; % first indx is error variance of tumor volume , second is error variance of immune cell fractions, the rest are individual params variance
 
@@ -47,19 +44,19 @@ lognorm_prior=@(x,m,s)sum(log(exp(-(log(x)-m).^2./(2*s.^2))./sqrt(x.^2*2.*s.^2*p
 if strcmp(param.type, 'uniform')
      % Uniform priors for fixed params and normal priors for individual
      % params
-        logPrior=(unif_prior(p(pop_indx), pop_indx)+jeff_prior(p(sigma_indx))...
-        +norm_prior(p(ind_indx), mu(ind_indx), sigma(ind_indx)));
+        logPrior = unif_prior(p(pop_indx), pop_indx)+jeff_prior(p(sigma_indx))...
+        + sum(arrayfun(@(x) lognorm_prior(p(x.Index), p(x.EtaIndex),p(x.OmegaIndex)), H.IndividualParams));
     
 elseif strcmp(param.type,'normal')
         % Normal priors for fixed params and normal priors for individual
         % params
-        logPrior=(norm_prior((p(pop_indx)), mu(pop_indx),sigma(pop_indx))...
+        logPrior=norm_prior((p(pop_indx)), mu(pop_indx),sigma(pop_indx))...
             + norm_prior((p(sigma_indx)),mu(sigma_indx),sigma(sigma_indx))...
-            + norm_prior((p(ind_indx)), mu(ind_indx),sigma(ind_indx)));
+            + sum(arrayfun(@(x) lognorm_prior(p(x.Index), p(x.EtaIndex),p(x.OmegaIndex)), H.IndividualParams));
 else
-    logPrior=(lognorm_prior((p(pop_indx)), mu(pop_indx),sigma(pop_indx))...
+    logPrior= lognorm_prior((p(pop_indx)), mu(pop_indx),sigma(pop_indx))...
             + lognorm_prior((p(sigma_indx)),mu(sigma_indx),sigma(sigma_indx))...
-            + lognorm_prior((p(ind_indx)), mu(ind_indx),sigma(ind_indx)));
+            + sum(arrayfun(@(x) lognorm_prior(p(x.Index), p(x.EtaIndex),p(x.OmegaIndex)), H.IndividualParams));
 end
     
 return
