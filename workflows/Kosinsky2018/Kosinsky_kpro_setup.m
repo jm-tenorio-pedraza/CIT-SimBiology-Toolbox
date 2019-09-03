@@ -40,7 +40,7 @@ H.SigmaParams=23:29;
 % Generating PI
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},'UniformOutput',true));
 sigmaNames={'omega_kpro'; 'b_TV'; 'b_CD8'; 'b_CD107a'; 'b_DC'; 'b_MDSC'; 'b_PDL1'};
-sigma_prior=[1 2 2 2 1 2 2 2 2 repelem(2,26) 1 1 1 1 1 1 1]';
+sigma_prior=[1 2 2 2 1 2 2 2 2 repelem(2,13) 1 1 1 1 1 1 1]';
 PI.par = getParamStruct2(sim,H,13,repelem(0.5,7,1),sigmaNames,'Sigma', sigma_prior);
 
 % Residuals function
@@ -58,8 +58,8 @@ obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x')*(-1));
 postSample=models_array(:,:,1.8e4:1000:end);
 postSample=postSample(:,:)';
 
-w0 = [postSample(:, H.PopulationParams), mean(postSample(:, 8:20),2),...
-    postSample(:,8:20), std(postSample(:,8:20),0,2), postSample(:,34:39)];
+w0 = [postSample(:, H.PopulationParams), mean(postSample(:, 9:21),2),...
+    postSample(:,9:21), std(postSample(:,9:21),0,2), postSample(:,22:27)];
 
 
 %% Save results
