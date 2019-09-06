@@ -15,7 +15,7 @@ param_indiv=cellfun(@(x)simFun.Parameters.Value(ismember(simFun.Parameters.Name,
     indiv_indx,'UniformOutput',false);                                      % Compare names of parameters and extract the corresponding value
 
 % Population params
-param=[simFun.Parameters.Value(H.PopulationParams); [param_indiv{:,:}]'];       % 
+param=[simFun.Parameters.Value(H.PopulationParams)];       % 
 
 param_indiv=reshape(repelem(cell2mat(param_indiv),1,n_sim)',[],1);
 
@@ -35,7 +35,7 @@ else
 end
 
 % Parameter names
-paramNames=[simFun.Parameters.Name(H.PopulationParams);...
+paramNames=[simFun.Parameters.Name(setdiff(H.PopulationParams, [H.IndividualParams.EtaIndex]));...
     arrayfun(@(x) strjoin({'eta' x.name},'_'),H.IndividualParams,'UniformOutput', false);
     repelem({(H.IndividualParams(1:end).name)}',n_sim,1);...
     sigmaNames];

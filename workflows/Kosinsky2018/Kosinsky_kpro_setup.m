@@ -1,6 +1,7 @@
 %% General setup for Kosinsky et al with k_pro as the parameter to vary for each individual
 %% Search paths
 warning off
+clear all
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky/output/PI_kpro')
 
@@ -33,7 +34,7 @@ observables={'TV' 'CD8' 'CD107a' 'DCm' 'ISC' 'PDL1'};
 
 %% Optimization setup
 % Hierarchical structure
-H.PopulationParams=1:8;
+H.PopulationParams=1:9;
 H.IndividualParams=struct('name', {'k_pro'}, 'Index', { 10:22}, 'EtaIndex', 9, 'OmegaIndex', 23);
 H.SigmaParams=23:29;
 

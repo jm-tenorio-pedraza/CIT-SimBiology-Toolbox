@@ -31,14 +31,14 @@ sigma_indx=H.SigmaParams; % first indx is error variance of tumor volume , secon
 % Extracting prior info from PI
 lower=log([PI.par(:).minValue]);  
 upper=log([PI.par(:).maxValue]);
-mu=log([PI.par(:).mu_prior]);
+mu=([PI.par(:).mu_prior]);
 sigma=([PI.par(:).sigma_prior]);
 
 % Defining prior functions of the parameters and indexes
 norm_prior=@(x,m,s)sum(log(exp(-(x-m).^2./(2*s.^2))./sqrt(2*s.^2*pi)));
 unif_prior=@(x,indx)log((prod(and(x>=lower(indx),x<=upper(indx)))));
 jeff_prior = @(x)sum(log(1./(exp(x).^2)));
-lognorm_prior=@(x,m,s)sum(log(exp(-(log(x)-m).^2./(2*s.^2))./sqrt(x.^2*2.*s.^2*pi)));
+lognorm_prior=@(x,m,s)sum(-(log(x)-log(m)).^2./(2*s.^2)-log(x.*s*sqrt(2*pi)));
 
 % Evaluating handle at indexes:
 if strcmp(param.type, 'uniform')
@@ -56,7 +56,7 @@ elseif strcmp(param.type,'normal')
 else
     logPrior= lognorm_prior((p(pop_indx)), mu(pop_indx),sigma(pop_indx))...
             + lognorm_prior((p(sigma_indx)),mu(sigma_indx),sigma(sigma_indx))...
-            + sum(arrayfun(@(x) lognorm_prior(p(x.Index), p(x.EtaIndex),p(x.OmegaIndex)), H.IndividualParams));
+            + sum(arrayfun(@(x) lognorm_prior(p(x.Index), (p(x.EtaIndex)),p(x.OmegaIndex)), H.IndividualParams));
 end
     
 return

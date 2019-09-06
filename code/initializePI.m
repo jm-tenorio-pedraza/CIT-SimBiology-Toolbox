@@ -1,7 +1,8 @@
 function [sim,u]=initializePI(sim_model,parameters,observables,PI)
 
 variants=getvariant(sim_model);
-MOC1=variants(2);
+
+MOC1=variants(strcmp(get(variants,'Name'), 'MOC1'));
 % Define dose
 control = sbiodose('rd');
 control.TargetName = 'Dose_antiPDL1';

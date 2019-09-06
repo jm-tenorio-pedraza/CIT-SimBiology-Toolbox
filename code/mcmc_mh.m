@@ -3,7 +3,7 @@ if nargin<3
     error('GWMCMC:toofewinputs','AMCMC requires atleast 3 inputs.')
 end
 p=inputParser;
-p.addParameter('StepSize',1,@isnumeric);
+p.addParameter('StepSize',2.38^2/(length(p0)),@isnumeric);
 p.addParameter('Thinning',1,@isnumeric);
 p.addParameter('BurnIn',0,@isnumeric);
 p.addParameter('ProposalSigma',diag(ones(size(p0))),@isnumeric);
