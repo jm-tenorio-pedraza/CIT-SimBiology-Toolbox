@@ -14,11 +14,11 @@ set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.2)
 
 %% load data and previous results
+load('Kosinsky_data.mat')
 data_subset=Kosinsky_data([1:2:23 24],:);
 PI.data=data_subset;
 PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]' 'Relative units []'...
     'Relative units []' 'Relative units []'};
-load('Kosinsky_data.mat')
 load('models_SL_kpro.mat')
 
 %% Create function handle for simulations

@@ -21,9 +21,9 @@ tic
 toc
 
 x = cat(3, models, models2);
-logL = cat(3, logP, logP2);
+logL = 
 % Plotting entire chain
-plotMCMCDiagnostics(x,logL,PI,'model','Kosinsky (k_{pro})')
+plotMCMCDiagnostics(models,logP,PI,'model','Kosinsky (k_{pro})')
 
 % Plotting thinned out samples
 postSample=models_array(:,:,1.8e4:1000:end);
