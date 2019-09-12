@@ -14,11 +14,11 @@ set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.2)
 
 %% load data and previous results
+load('Kosinsky_data.mat')
 data_subset=Kosinsky_data([1:2:23 24],:);
 PI.data=data_subset;
 PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]' 'Relative units []'...
     'Relative units []' 'Relative units []'};
-load('Kosinsky_data.mat')
 load('models_SL_kpro.mat')
 
 %% Create function handle for simulations
@@ -31,7 +31,7 @@ observables={'TV' 'CD8' 'CD107a' 'DCm' 'ISC' 'PDL1'};
 
 %% Optimization setup
 % Hierarchical structure
-H.PopulationParams=1:7;
+H.PopulationParams=1:9;
 H.IndividualParams=struct('name', {'S_L'; 'k_pro'}, 'Index', {10:22; 23:35},...
     'EtaIndex', {8;9}, 'OmegaIndex', {36;37});
 H.SigmaParams=38:43;
@@ -49,7 +49,7 @@ residuals_fun=@(p)getResiduals(p,@(x)sim(x,100,u,1:1:100),PI,...
 
 % Log-ikelihood function
 likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
-prior_fun=@(p)createPriorDistribution3(exp(p),PI,H,'type','normal');
+prior_fun=@(p)createPriorDistribution3(exp(p),PI,H,'type','lognormal');
 
 % Obj function
 obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
