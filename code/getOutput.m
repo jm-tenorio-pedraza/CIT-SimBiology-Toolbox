@@ -1,4 +1,4 @@
-function PI=getOutput(PI,simFun,p,getPhi,normIndx)
+function PI=getOutput(PI,simFun,p,getPhi,normIndx,time)
 nVar=size(PI.data(1).dataValue,2);
 
 % Generate parameter structure
@@ -8,7 +8,7 @@ phi=getPhi(p);
 simdata=simFun(phi);
 
 % Obtain simulation output at pre-designated time points
-simdata=resample(simdata,0:1:100);
+simdata=resample(simdata,time);
 [T,Y,~]=getdata(simdata);
 
 % Incorporate simulations into data structure array

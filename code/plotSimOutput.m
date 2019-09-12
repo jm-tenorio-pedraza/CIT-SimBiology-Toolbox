@@ -3,7 +3,7 @@ function plotSimOutput(data,colIndx)
 n_sim=size(data,1);
 n_col=ceil(sqrt(n_sim));
 n_row=ceil(n_sim/n_col);
-treatments=unique({data.Group});
+treatments=unique([data.Group]);
 treatment_colors=linspecer(length(treatments));
 figure
 for i=1:n_sim
