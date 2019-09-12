@@ -1,33 +1,48 @@
-function [sim,u]=initializePI(sim_model,parameters,observables,PI)
+function [sim,u]=initializePI(sim_model,parameters,observables,PI,doses,variant)
 
 variants=getvariant(sim_model);
 
-MOC1=variants(strcmp(get(variants,'Name'), 'MOC1'));
-% Define dose
-control = sbiodose('rd');
-control.TargetName = 'Dose_antiPDL1';
-control.TimeUnits = 'day';
-control.AmountUnits = 'micromole';
-control.RateUnits = 'micromole/second';
+MOC1=variants(strcmp(get(variants,'Name'), variant));
 
 % Create simFunction object
-sim=createSimFunction(sim_model,parameters,observables, control,MOC1,...
+sim=createSimFunction(sim_model,parameters,observables, doses,MOC1,...
     'UseParallel', false);
 
 % Create cell of doses
-antiPDL1_table=table([7 12 17]', [0.0013 0.0013 0.0013]', [0 0 0]',...
+antiPDL1=table([7 12 17]', [0.0013 0.0013 0.0013]', [0 0 0]',...
     'VariableNames',{'Time' 'Amount' 'Rate'});
-antiPDL1_table.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+antiPDL1.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
 
-control_table=table([7 12 17]', [0 0 0]', [0 0 0]',...
+antiCTLA4=table([7 12 17]', [0.00065 0.00065 0.00065]', [0 0 0]',...
     'VariableNames',{'Time' 'Amount' 'Rate'});
-control_table.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
-u=repelem({NaN},size(PI.data,1),1);
-for i=1:size(PI.data,1)
-    if strcmp(PI.data(i).Group, 'MOC1_Control')
-        u(i,:)={control_table};
-    elseif strcmp(PI.data(i).Group, 'MOC1_antiPDL1')
-        u(i,:)={antiPDL1_table};
+antiCTLA4.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+
+control=table([7 12 17]', [0 0 0]', [0 0 0]',...
+    'VariableNames',{'Time' 'Amount' 'Rate'});
+control.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+u=repelem({NaN},size(PI.data,1),length(doses));
+doses = cellfun(@(x) regexp(x,'_','split'),doses,'UniformOutput',false); 
+doses = doses{:};
+doses = doses(:,2);
+group = cellfun(@(x) regexp(x,'_', 'split'),[PI.data(:).Group]', 'UniformOutput',false);
+
+for j = 1:length(doses)
+    for i=1:length(group)
+        group_i = group{i}(1,2:end);
+        for k = length(group_i)
+            if strcmp(group_i(k), 'Control')
+                u(i,j)={control};
+            elseif strcmp(group_i(k), 'antiPDL1')
+                u(i,j)={antiPDL1};
+            else
+                if strcmp(group_i(k), 'antiCTLA4')
+                    u(i,j)={antiCTLA4};
+                    
+                end
+                
+            end
+        end
     end
 end
+u=u(:,1:length(doses));
 

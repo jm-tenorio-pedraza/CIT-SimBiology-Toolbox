@@ -23,5 +23,5 @@ p_indiv=cell2mat([p_indiv]);
 try
     phi=[repmat(p(setdiff(H.PopulationParams, [H.IndividualParams.EtaIndex])),n_sim,1),p_indiv'];
 catch 
-%     phi=[repmat(p(H.FixedParams),n_sim,1),p_indiv'];
+     phi=[repmat(p(H.PopulationParams),n_sim,1)];
 end
