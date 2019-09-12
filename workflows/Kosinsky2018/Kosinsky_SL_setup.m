@@ -33,7 +33,7 @@ observables={'TV' 'CD8' 'CD107a' 'DCm' 'ISC' 'PDL1'};
 [sim,u]=initializePI(kosinsky,parameters,observables,PI);
 %% Optimization setup
 % Hierarchical structure
-H.PopulationParams=1:8;
+H.PopulationParams=1:9;
 H.IndividualParams=struct('name', {'S_L'}, 'Index', {10:22}, 'EtaIndex', 9, 'OmegaIndex', 23);
 H.SigmaParams=23:29;
 

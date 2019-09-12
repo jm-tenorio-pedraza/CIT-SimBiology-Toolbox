@@ -31,7 +31,7 @@ observables={'TV' 'CD8' 'CD107a' 'DCm' 'ISC' 'PDL1'};
 
 %% Optimization setup
 % Hierarchical structure
-H.PopulationParams=1:7;
+H.PopulationParams=1:9;
 H.IndividualParams=struct('name', {'S_L'; 'k_pro'}, 'Index', {10:22; 23:35},...
     'EtaIndex', {8;9}, 'OmegaIndex', {36;37});
 H.SigmaParams=38:43;
@@ -49,7 +49,7 @@ residuals_fun=@(p)getResiduals(p,@(x)sim(x,100,u,1:1:100),PI,...
 
 % Log-ikelihood function
 likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
-prior_fun=@(p)createPriorDistribution3(exp(p),PI,H,'type','normal');
+prior_fun=@(p)createPriorDistribution3(exp(p),PI,H,'type','lognormal');
 
 % Obj function
 obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));

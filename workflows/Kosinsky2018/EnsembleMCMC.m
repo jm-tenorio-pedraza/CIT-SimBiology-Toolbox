@@ -20,6 +20,12 @@ tic
     'StepSize', 1.1,'ThinChain',1,'BurnIn',0);
 toc
 
+% MCMC sampler
+tic
+[models3,logP3]=gwmcmc(models2(:,:,end),{prior_fun likelihood_fun},2e6, ...
+    'StepSize', 1.1,'ThinChain',1,'BurnIn',0);
+toc
+
 x = cat(3, models, models2);
 logL = cat(3, logP, logP2);
 % Plotting entire chain
@@ -40,8 +46,8 @@ plotBivariateMarginals_2(exp(postSample(:,H.IndividualParams(1).Index)),PI,'name
     {PI.par(H.IndividualParams(1).Index).name})
 plotBivariateMarginals_2(exp(postSample(:,H.SigmaParams)),PI,'names', {PI.par(H.SigmaParams).name})
 
-save('models_Kosinksy_MOC1_kpro.mat','models_array')
-save('postlogP_Kosinksy_MOC1_kpro.mat','logP')
+save('params_Kosinksy_MOC1_kpro.mat','x')
+save('logL_Kosinksy_MOC1_kpro.mat','logL')
 
 %% Posterior predictions
 simFun=@(x)getOutput(PI,@(p)sim(p,100,u,1:1:100),x,...
