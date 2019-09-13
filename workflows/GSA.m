@@ -34,7 +34,6 @@ plot(s.XData,-1,'.-k')
 ylabel('Log10(\sigma_i/max(\sigma_i))');xlabel('Index i')
 title('Singular values of sensitivity matrix')
 %% SHM
-D = U(:,1:size(V,1))*V'*S(1:size(V,1),:);
 F = abs(U(:,1:size(V,1))).*diag(S)'.*(max(abs(V'),[],2)');
 group = [PI.data(:).Group];
 
