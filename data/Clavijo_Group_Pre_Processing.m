@@ -43,3 +43,14 @@ PI.data = data';
 
 PI.data = PI.data(ismember([PI.data(:).Group], groups_subset));
 PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).Group = 'MOC1_Control';
+
+%% Control for data with non-admissible values (0)
+
+zero_indx = arrayfun(@(x) sum(x.dataValue==0,2),PI.data,'UniformOutput', false);
+
+[PI.data(1:end).zero_indx] = zero_indx{:,:};
+dataValue = arrayfun(@(x) x.dataValue(~x.zero_indx,:), PI.data, 'UniformOutput', false);
+dataTime = arrayfun(@(x) x.dataTime(~x.zero_indx,:), PI.data, 'UniformOutput', false);
+
+[PI.data(1:end).dataValue] = dataValue{:,:};
+[PI.data(1:end).dataTime] = dataTime{:,:};

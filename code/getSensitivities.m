@@ -1,5 +1,8 @@
-function [sensmatrix] = getSensitivities(inputs, PI,sim,parameters, observables,time)
-
+function [sensmatrix] = getSensitivities(inputs, PI,sim,parameters, observables,time,varargin)
+p = inputParser;
+p.addParameter('allVariables', true);
+p.parse(varargin{:})
+p=p.Results;
 inputs(2,:) =inputs(1,:)*1.1;
 phi_i = NaN(1,length(parameters));
 sensmatrix = NaN(length(observables)*length(time)*size(PI.data,1), length(parameters));
@@ -9,9 +12,20 @@ for i=1:length(parameters)
     simdata = sim(phi_i);
     simdata = resample(simdata, time);
     [~,y_i,~] = getdata(simdata);
+    try
     [PI.data(1:end).y_i] = y_i{:,:};
+    catch
+        y_i={y_i};
+         [PI.data(1:end).y_i] = y_i{:,:};
+    end
+    if p.allVariables
     y_i = arrayfun(@(x) ((log(x.y_i) - log(x.simValue)))./...
         (log(phi_i(1,i))-log(inputs(1,i))), PI.data,'UniformOutput',false);
+    else
+          y_i = arrayfun(@(x) ((log(x.y_i) - log(x.simValue)))./...
+        (log(phi_i(1,i))-log(inputs(1,i))), PI.data,'UniformOutput',false);
+   
+    end
     delta = reshape([y_i{:,:}],[],1);
     sensmatrix(:,i) = delta;
 end

@@ -34,6 +34,7 @@ plot(s.XData,-1,'.-k')
 ylabel('Log10(\sigma_i/max(\sigma_i))');xlabel('Index i')
 title('Singular values of sensitivity matrix')
 %% SHM
+D = U(:,1:size(V,1))*V'*S(1:size(V,1),:);
 F = abs(U(:,1:size(V,1))).*diag(S)'.*(max(abs(V'),[],2)');
 group = [PI.data(:).Group];
 
@@ -45,7 +46,6 @@ par_hat = plotPSS(pcs,3,parameters,'threshold', -1);
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/phat_Control.mat','par_hat')
 phat_TV = load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/phat_TV.mat');
 p_hat = {par_hat(:).p_hat}';
-p_hat = cat(1,p_hat{:,:});
+p_hat = [[p_hat{:,:}]];
 phat_TV = phat_TV.p_hat;
-parameters_hat=unique([p_hat; phat_TV]);
-save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/parameters_hat.mat', 'parameters_hat')
+parameters_hat=unique([par_hat(1).p_hat; phat_TV])
