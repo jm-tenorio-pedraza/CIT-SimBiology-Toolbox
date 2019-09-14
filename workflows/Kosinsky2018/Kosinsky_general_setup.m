@@ -65,7 +65,7 @@ postSample=postSample(:,:)';
 
 w0 = [postSample(:, H.PopulationParams), mean(postSample(:, 9:21),2),...
     postSample(:,9:21), std(postSample(:,9:21),0,2), postSample(:,22:27)];
-
+load('PI_Kosinsky.mat')
 
 %% Save results
 save('PI_kpro.mat', 'PI')
