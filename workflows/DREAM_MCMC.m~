@@ -38,7 +38,7 @@ plotTrace(x,PI)
 [c,lags,ess]=eacorr(x);
 
 plotMCMCDiagnostics(x,p_x,PI,'model', 'Kosinsky et al. (2018)');
-plotBivariateMarginals_2(exp(x_mat(1:1:end,H.PopulationParams)),PI)
+plotBivariateMarginals_2(exp(x_mat(1:2e3:end,H.PopulationParams)),PI)
 plotBivariateMarginals_2(exp(x_mat(7e5:1e3:end,[H.IndividualParams.EtaIndex H.IndividualParams.OmegaIndex])),PI)
 plotBivariateMarginals_2(exp(x_mat(7e5:1e3:end,[H.IndividualParams.EtaIndex...
     H.IndividualParams.Index])),PI,'names', {PI.par([H.IndividualParams.EtaIndex...
