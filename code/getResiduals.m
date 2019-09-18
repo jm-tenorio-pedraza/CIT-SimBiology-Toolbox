@@ -43,16 +43,11 @@ end
 simOutput=cellfun(@(x)x./repmat([ones(1,nVar-length(normIndx)) x(end,normIndx)],size(x(:,1),1),1),simOutput,'UniformOutput',false);
 
 % Input into data array
-[PI.data(1:length(simOutput)).('simOutput')]=simOutput{:,:};
+[PI.data(1:length(simOutput)).('y_hat')]=simOutput{:,:};
 
 % Errors of log-transformed data
-error=arrayfun(@(x)reshape((log(x.simOutput)-log(x.dataValue)).^2./...% squared residuals
-    (2*(sigma.^2))+...% normalized by their variance
-    (log(sigma*sqrt(pi*2))),1,[]),...% adding their estimated variance
-    PI.data,'UniformOutput',false);
+residuals=getErrors(PI,sigma);
 
-error=cellfun(@(x)x(~isnan(x)),error,'UniformOutput',false);
-residuals=[error{:,:}];
 if (length(residuals)~= PI.n_data)
     residuals=1e7;
 elseif any([isinf(residuals), ~isreal(residuals)])

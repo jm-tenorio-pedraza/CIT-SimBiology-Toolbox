@@ -7,13 +7,13 @@ p=p.Results;
 
 figure;
 colors=linspecer(pc_indx);
-[pcs_abs_sorted,I_col] = sort(log10(abs(pcs(:,1:pc_indx))),1,'descend');
-[~, I_row] = sort(pcs_abs_sorted,2,'descend');
-parIndx=NaN(length(parameters),1);
-for i = 1:length(parameters)
-    parIndx(i)=I_col(i,I_row(i,:)==1);
-end
-    
+[~,I_col] = sort(log10(abs(pcs(:,1:pc_indx))),1,'descend');
+% [~, I_row] = sort(log10(abs(pcs(:,1:pc_indx))),2,'descend');
+% parIndx=NaN(length(parameters),1);
+% for i = 1:length(parameters)
+%     parIndx(i)=I_col(i,I_row(i,:)==1);
+% end
+ parIndx = I_col(:,1);
 pcs_sorted = log10(abs(pcs(parIndx,1:pc_indx)));
 hbar = bar(pcs_sorted,'FaceColor','flat');
 hbar(1).BaseValue = -7;

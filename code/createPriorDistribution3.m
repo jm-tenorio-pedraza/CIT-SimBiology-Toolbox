@@ -29,22 +29,23 @@ pop_indx=H.PopulationParams;
 sigma_indx=H.SigmaParams; % first indx is error variance of tumor volume , second is error variance of immune cell fractions, the rest are individual params variance
 
 % Extracting prior info from PI
-lower=log([PI.par(:).minValue]);  
-upper=log([PI.par(:).maxValue]);
+lower=([PI.par(:).minValue]);  
+upper=([PI.par(:).maxValue]);
 mu=([PI.par(:).mu_prior]);
 sigma=([PI.par(:).sigma_prior]);
 
 % Defining prior functions of the parameters and indexes
-norm_prior=@(x,m,s)sum(log(exp(-(x-m).^2./(2*s.^2))./sqrt(2*s.^2*pi)));
+%norm_prior=@(x,m,s)sum(log(exp(-(x-m).^2./(2*s.^2))./sqrt(2*s.^2*pi)));
 unif_prior=@(x,indx)log((prod(and(x>=lower(indx),x<=upper(indx)))));
-jeff_prior = @(x)sum(log(1./(exp(x).^2)));
+%%jeff_prior = @(x)sum(log(1./(exp(x).^2)));
 lognorm_prior=@(x,m,s)sum(-(log(x)-log(m)).^2./(2*s.^2)-log(x.*s*sqrt(2*pi)));
 
 % Evaluating handle at indexes:
 if strcmp(param.type, 'uniform')
      % Uniform priors for fixed params and normal priors for individual
      % params
-        logPrior = unif_prior(p(pop_indx), pop_indx)+jeff_prior(p(sigma_indx))...
+        logPrior = unif_prior(p(pop_indx), pop_indx)+...
+            lognorm_prior((p(sigma_indx)),mu(sigma_indx),sigma(sigma_indx))+...
         + sum(arrayfun(@(x) lognorm_prior(p(x.Index), p(x.EtaIndex),p(x.OmegaIndex)), H.IndividualParams));
     
 elseif strcmp(param.type,'normal')
