@@ -15,14 +15,14 @@ set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.2)
 
 %% load data and previous results
-stateVar={'Tumor' 'CD8' 'CD107a' 'DC_Rel' 'GMDSC_Rel'...
+stateVar={'Tumor' 'CD8_logit' 'CD107a_logit' 'DC_Rel' 'GMDSC_Rel'...
     'Tumor_PDL1_Rel'};
 
 % Create function handle for simulations
 % Define parameters to estimate
 parameters={'k_LN'  'S_L' 'K_pdl' 'S_R' 'e_Td'  'TV_max' 'd_0'  'k_apo' 'k_pro' 'r'};
 % Define outputs
-observables={'TV' 'CD8' 'CD107a' 'DCm' 'ISC' 'PDL1'};
+observables={'TV' 'CD8_logit' 'CD107a_logit' 'DCm' 'ISC' 'PDL1'};
 
 % Create PI with data
 groups_subset = {'MOC1_Control', 'MOC1_Control_Mean', 'MOC1_antiPDL1'};
