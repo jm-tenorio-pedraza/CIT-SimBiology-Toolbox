@@ -19,21 +19,15 @@ end
 tic
 finalValues=simulannealbnd(obj_fun,p_hat,[],[],options);
 toc
-% Stochastic EM
-[params, logL] = saem(finalValues, likelihood_fun, prior_fun,H,'m', 1e3,...
-    'StepSize',0.00005,'MinFunc', 'fminsearch','OutputFn', @(x)getOutput(PI,@(p)sim(p,100,u,1:100),exp(x),...
+% Stochastcic EM
+[params, logL] = saem(params, likelihood_fun, prior_fun,H,'m', 5e3,...
+    'StepSize',0.0005,'MinFunc', 'fminunc','OutputFn', @(x)getOutput(PI,@(p)sim(p,100,u,1:100),exp(x),...
     @(p)getPhi2(p,H,length(u)),7:8,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(finalValues),...
+PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(params),...
     @(p)getPhi2(p,H,length(u)), length(observables)-1:length(observables),1:100);
-PI = getOutput(PI,@(p)sim(p,100,u,1:100),exp(finalValues),...
-    @(p)getPhi2(p,H,length(u)),7:8,1:100);
  
-E_likelihood = (@(x)sum(getErrors(PI,exp(x)))*(-1));
-E_prior = @(x) prior_fun([finalValues([H.PopulationParams]) finalValues(H.IndividualParams.Index) x]);
-
-[sigma, logP_sigma, ~] = mcmc_mh(finalValues(setdiff(H.SigmaParams, H.IndividualParams.OmegaIndex)),E_likelihood, E_prior, 1000);
       
 % Plotting tumor volume
 for i=1:length(observables)
@@ -44,7 +38,7 @@ end
 finalValue=num2cell(exp(params'));
 [PI.par(1:end).finalValue]=finalValue{:,:};
 %% Save results
-save('PI.mat', 'PI')
+save('PI_CIM.mat', 'PI')
 
 load('PI_CIM.mat','PI')
 %% Create variant object

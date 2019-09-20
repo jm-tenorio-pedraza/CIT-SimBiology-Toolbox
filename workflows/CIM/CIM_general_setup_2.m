@@ -10,7 +10,7 @@ out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Tool
 % Extract model
 model=out.model;
 variants=getvariant(model);
-MOC1=variants(1);
+MOC1=variants(3);
 cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);

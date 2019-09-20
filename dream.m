@@ -38,7 +38,7 @@ p_g = p.p_g;
 stepSize=p.StepSize;
 posterior = @(x)likelihood(x) + prior(x);
 x=nan(d,N,T); p_x = nan(T,N);                               % Preallocate chains and density
-Xp = nan(N,d); p_Xp = nan(N,1); 
+Xp = nan(N,d); 
 R = nan(N,N-1); p_X = nan(N,1);
 
 [J,n_id] = deal(zeros(1,n_CR));                             % Variables selection prob. crossover
@@ -66,7 +66,6 @@ for t = 2:T
     D = randsample(1:delta, N, true);                       % Select delta (equal selection probability)
     id = randsample(1:n_CR, N, true, pCR);                  % Select index of crossover value
     z = rand(N,d);                                          % Draw d values from U[0,1]
-    U_ind = log(rand(N,1));                                        % Draw N values from U(0,1)
     U_pop = log(rand(N,1));                                        % Draw N values from U(0,1)
 
     for i = 1:N                                             % Create proposals and accept/reject
@@ -80,24 +79,10 @@ for t = 2:T
         g=randsample([gamma_d 1], 1, true, [1-p_g p_g]);    % Select gamma: 80/20 mix [default 1]
         dX(i,A) = c_star*randn(1, d_star) + ...             
             (1+lambda(i))*g*sum(X(a,A)-X(b,A),1);           % Compute ith jump diff. evol.
-        Xp(i,:) = X(i,:);
-        if ~isempty(H.IndividualParams)
-            X_i([H.IndividualParams(:).Index]) = Xp(i,[H.IndividualParams(:).Index])...
-                + dX(i,[H.IndividualParams(:).Index]);      % Compute ith proposal for the individual parameters
-            [Xp(i,:), p_Xp(i,1), accept_i]= mcmcstep(X(i,:),...
-                X_i, p_X(i,1), likelihood, prior,...
-                U_ind(i), accept_ind);                      % Calculate pdf for ith proposal from individual parameters
-            if accept_i > accept_ind                        % MH criterion
-                accept_ind = accept_ind + 1;
-            else
-                dX(i,[H.IndividualParams(:).Index]) = 0;    % Set jump back to 0 for pCR for the individual parameters
-            end
-        else
-        end
-        X_i(param_index) = Xp(i,param_index) +...
+        Xp(i,param_index) = X(i,param_index) +...
             dX(i,param_index);                              % Compute ith proposal for the population parameters
         [X(i,1:d), p_X(i,1), accept_i]= mcmcstep(X(i,:),...
-            X_i, p_Xp(i,1), likelihood, prior,...
+            Xp(i,:), p_X(i,1), likelihood, prior,...
             U_pop(i), accept_pop);
         if accept_i > accept_pop                           % MH criterion for the population parameters
             accept_pop = accept_pop + 1;

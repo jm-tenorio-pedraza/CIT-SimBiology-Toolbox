@@ -1,4 +1,4 @@
-function plotIndividualPosteriorPredictions(PI,outputs,varargin)
+function plotPosteriorPredictions(PI,outputs,varargin)
 if nargin<2
     error('GWMCMC:toofewinputs','AMCMC requires atleast 2 inputs.')
 end
@@ -7,16 +7,16 @@ p.addParameter('simTime',0:1:100);
 p.parse(varargin{:});
 p=p.Results;
 
-treatments=unique({PI.CI.Group});
+treatments=unique([PI.CI(:).Group]);
 treatment_colors=linspecer(length(treatments));
 
 for i=1:length(outputs)
     output_i=char(outputs(i));
-    figure
+    figure('Renderer', 'painters', 'Position', [10 10 1000 800])
     ncol=ceil(sqrt(length(PI.CI)));
     nrow=ceil(length(PI.CI)/ncol);
     
-    for j=1:length(PI.CI)
+    for j=1:size(PI.CI,2)
         subplot(nrow,ncol,j)
         hold on
         ci_data=[PI.CI(j).(output_i){'UB',:}, PI.CI(j).(output_i){'LB',:}(end:-1:1)];
@@ -64,9 +64,12 @@ for i=1:length(outputs)
         xlabel('Time [days]')
         grid on
         hold on
-        if max(m_data)/min(m_data)>100
+        if max(m_data)/min(m_data)>1e3
             set(gca,'YScale','log')
         else
         end
     end
+    legend(output_i)
+
+end
 end

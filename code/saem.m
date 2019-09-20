@@ -50,7 +50,7 @@ while errTol>p.delta
         sigma_indx = size(H.IndividualParams.OmegaIndex,1)+1:length(H.SigmaParams);
         E_likelihood = (@(x)sum(getErrors(PI,exp(x(sigma_indx))))*(-1));
         [sigma, logP_sigma, ~] = mcmc_mh(curr_p(H.SigmaParams),...
-            E_likelihood, E_prior, m);
+            E_likelihood, E_prior, m,'StepSize', p.StepSize*10);
         E_sigma = mean(sigma(p.BurnIn:end,:));
         q_sigma = mean(logP_sigma(p.BurnIn:end));
          
