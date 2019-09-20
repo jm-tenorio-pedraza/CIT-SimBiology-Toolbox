@@ -13,7 +13,7 @@ for i=1:length(parameters)
     simdata = resample(simdata, time);
     [~,y_i,~] = getdata(simdata);
     try
-    [PI.data(1:end).y_i] = y_i{:,:};
+        [PI.data(1:end).y_i] = y_i{:,:};
     catch
         y_i={y_i};
          [PI.data(1:end).y_i] = y_i{:,:};

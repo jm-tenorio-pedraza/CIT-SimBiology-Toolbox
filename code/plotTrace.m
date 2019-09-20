@@ -1,11 +1,11 @@
-function plotTrace(p_hat,PI,varargin)
+function plotTrace(p_hat,varargin)
 if nargin<2
     error('GWMCMC:toofewinputs','AMCMC requires atleast 2 inputs.')
 end
 p=inputParser;
 p.addParameter('type','individual');
 p.addParameter('steps',1:1:size(p_hat,1));
-p.addParameter('names',{PI.par(:).name});
+p.addParameter('names',{});
 p.addParameter('ESS',[]);
 
 p.parse(varargin{:});
@@ -47,7 +47,10 @@ elseif strcmp(p.type, 'individual')
         subplot(n_row, n_col,i)
 
          plot(p.steps,p_hat(:,i));
+         try
          title(p.names(i), 'interpreter', 'none')
+         catch
+         end
          xlabel('MCMC step')
 
          if ~isempty(p.ESS)
@@ -82,8 +85,10 @@ end
             end
 %             ylim([min_y max_y])
 
-            
+            try
             title(p.names(i), 'interpreter', 'none')
+            catch
+            end
             xlabel('MCMC step')
             
         end

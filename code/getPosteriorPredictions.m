@@ -3,7 +3,7 @@ if nargin<2
     error('GWMCMC:toofewinputs','AMCMC requires atleast 2 inputs.')
 end
 p=inputParser;
-p.addParameter('simTime',0:1:100);
+p.addParameter('simTime',1:1:100);
 p.parse(varargin{:});
 p=p.Results;
 

@@ -1,10 +1,10 @@
-function plotMCMCDiagnostics(params, logP, PI, varargin)
+function plotMCMCDiagnostics(params, logP, varargin)
 if nargin<3
     error('AMCMCH:toofewinputs','AMCMC requires atleast 3 inputs.')
 end
 p=inputParser;
 p.addParameter('model','',@ischar);
-p.addParameter('name',{PI.par(:).name},@ischar);
+p.addParameter('name',{});
 
 if sum(imag(logP)>0)>0
     imag_indx=sum(imag(logP)>0);
@@ -48,8 +48,8 @@ ylim([-1 1])
 title('Autocorrelation of posterior samples of')
 
 % Param traceplot
-figure
-plotTrace(phat, PI,'ESS',ESS)
+figure('Renderer', 'painters', 'Position', [10 10 1500 600])
+plotTrace(phat,'names', p.name,'ESS',ESS)
 
 % Correlation matrix
 figure

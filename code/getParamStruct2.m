@@ -7,8 +7,6 @@ inputs.addParameter('Sigma',3,@isnumeric);
 inputs.parse(varargin{:});
 inputs=inputs.Results;
 
-
-
 % Individual params
 indiv_indx=arrayfun(@(x)(x.name),H.IndividualParams,'UniformOutput',false); % Extract field names of individually-varying parameters
 try
@@ -25,7 +23,7 @@ param=[simFun.Parameters.Value(H.PopulationParams)];       %
 % concatenating all params
 
     % Min            Max                Start           % Mu             % Sigma
-p=[ param*0.01       param*100           param           param          
+p=[ param*0.00001       param*100           param           param          
     param_indiv*.01  param_indiv*100     param_indiv     param_indiv     
     sigmaParams*.01  sigmaParams*100     sigmaParams     sigmaParams];
 if length(inputs.Sigma)<2
@@ -39,10 +37,11 @@ end
 
 % Parameter names
 try
-paramNames=[simFun.Parameters.Name(setdiff(H.PopulationParams, [H.IndividualParams.EtaIndex]));...
-    arrayfun(@(x) strjoin({'eta' x.name},'_'),H.IndividualParams,'UniformOutput', false);
+paramNames=[simFun.Parameters.Name(H.PopulationParams);...
     repelem({(H.IndividualParams(1:end).name)}',n_sim,1);...
     sigmaNames];
+paramNames([H.IndividualParams.EtaIndex])=arrayfun(@(x)strjoin({'eta' x.name},'_'),...
+    H.IndividualParams','UniformOutput', false);
 catch
     disp('Parameter array will be built using population params only')
     paramNames=[simFun.Parameters.Name(setdiff(H.PopulationParams, [H.IndividualParams.EtaIndex]));...
