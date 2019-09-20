@@ -19,13 +19,10 @@ tic
 toc
 
 tic
-[x3, p_x3,accept3] = dream(x2(:,:,end)',@(p)(likelihood_fun(p)+prior_fun(p)),...
-    size(X0,1),1e3, 29, 'BurnIn', 1e4,'StepSize', 1.19);
+[x3, p_x3,accept3] = dreamHParallel(x2(:,:,end)',likelihood_fun,prior_fun,...
+    size(w0,1),ceil(5e5/size(w0,1)), length(finalValues), 'BurnIn', 0, 'StepSize', 1.1,'H',H);
 toc
 
-tic
-obj_fun(x_mat(end,:))
-toc
 %% Concatenating chains
 x_a=cat(3,x,x2);
 logP=[p_x; p_x2];
