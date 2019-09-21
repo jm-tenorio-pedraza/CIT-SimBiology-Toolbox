@@ -17,7 +17,7 @@ while delta >1e-4
 delta = abs(fval_fminsearch - fval_anneal);
 end
 tic
-finalValues=simulannealbnd(obj_fun,finalValues,[],[],options);
+finalValues=simulannealbnd(obj_fun,p_hat,[],[],options);
 toc
 % Stochastcic EM
 [params, logL] = saem(params, likelihood_fun, prior_fun,H,'m', 5e3,...
@@ -25,8 +25,8 @@ toc
     @(p)getPhi2(p,H,length(u)),7:8,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(p_hat),...
-    @(p)getPhi2(p,H,length(u)), length(observables)-2:length(observables),1:100);
+PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(params),...
+    @(p)getPhi2(p,H,length(u)), length(observables)-1:length(observables),1:100);
  
       
 % Plotting tumor volume
@@ -35,7 +35,7 @@ plotSimOutput(PI.data,i)
 legend(observables(i))
 end
 
-finalValue=num2cell(exp(p_hat'));
+finalValue=num2cell(exp(params'));
 [PI.par(1:end).finalValue]=finalValue{:,:};
 %% Save results
 save('PI_CIM.mat', 'PI')
