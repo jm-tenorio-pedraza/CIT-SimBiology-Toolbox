@@ -6,7 +6,7 @@ addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_2.sbproj');
 % Extract model
 model=out.m1;
 cs=model.getconfigset;
@@ -16,7 +16,7 @@ set(cs, 'MaximumWallClock', 0.25)
 
 %% Create function handle for simulations
 % Define parameters to estimate
-parameters = load('Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/parameters_hat.mat');
+parameters = load('Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/parameters_hat_2.mat');
 parameters = parameters.parameters_hat;
 % Define outputs
 observables={'TV' 'CD8_logit' 'CD107a_logit' 'Treg_logit' 'DC_logit' 'MDSC_logit' 'PDL1_Tumor_Rel' 'PDL1_Immune_Rel'};
@@ -68,4 +68,4 @@ w0 = [postSample(:, H.PopulationParams), mean(postSample(:, 9:21),2),...
 
 
 %% Save results
-save('PI_CIM.mat', 'PI')
+save('PI_CIM_2.mat', 'PI')

@@ -1,7 +1,7 @@
 %% Global sensitivity analysis
 
 % General setup for sensitivity evaluation
-[sim,u]=initializePI(model,parameters,observables,PI,dose,'CT26');
+[sim,u]=initializePI(model,parameters,observables,PI,dose,'MOC1');
 
 %% Hierarchical structure
 H.PopulationParams=1:length(parameters);
@@ -37,15 +37,12 @@ title('Singular values of sensitivity matrix')
 F = abs(U(:,1:size(V,1))).*diag(S)'.*(max(abs(V'),[],2)');
 group = [PI.data(:).Group];
 
-F_t = shmPlot2(F,group,time,observables,'tau', 0.01);
+F_t = shmPlot2(F,group,time,observables,'tau', 0.1);
 
 %% PSS
 par_hat = plotPSS(pcs,2,parameters,'threshold', -2);
-%% Save output
-save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kosinsky/phat_Control.mat','par_hat')
-save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/phat_TV.mat','par_hat')
 %% Compare parameter sensitivities between SAs
-phat_Control = load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kosinsky/phat_Control.mat','par_hat');
+phat_Control = load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/phat_Control.mat','par_hat');
 phat_TV = load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/phat_TV.mat');
 phat_TV = {phat_TV.par_hat(:).p_hat}';
 phat_TV = cat(1,phat_TV{:,:});
@@ -56,5 +53,4 @@ parameters_hat=unique([phat_Control; phat_TV]);
 catch
     parameters_hat = phat_Control;
 end
-%%
-save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kosinsky/parameters_hat.mat', 'parameters_hat')
+
