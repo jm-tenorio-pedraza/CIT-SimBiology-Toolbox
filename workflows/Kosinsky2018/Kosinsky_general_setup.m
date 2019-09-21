@@ -8,8 +8,8 @@ cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky/output/PI')
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kosinsky.sbproj');
 % Extract model
-kosinsky=out.m1;
-cs=kosinsky.getconfigset;
+model=out.m1;
+cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.2)
@@ -20,19 +20,21 @@ stateVar={'Tumor' 'CD8_logit' 'CD107a_logit' 'DC_Rel' 'GMDSC_Rel'...
 
 % Create function handle for simulations
 % Define parameters to estimate
-parameters={'k_LN'  'S_L' 'K_pdl' 'S_R' 'e_Td'  'TV_max' 'd_0'  'k_apo' 'k_pro' 'r'};
-% Define outputs
+parameters = load('Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kosinsky/parameters_hat.mat');
+parameters = parameters.parameters_hat;
+% Define outputs% Define outputs
 observables={'TV' 'CD8_logit' 'CD107a_logit' 'DCm' 'ISC' 'PDL1'};
 
 % Create PI with data
 groups_subset = {'MOC1_Control', 'MOC1_Control_Mean', 'MOC1_antiPDL1'};
 
 doses = {'Dose_antiPDL1'};
-run('Clavijo_Group_Pre_Processing.m')
 
-[sim,u]=initializePI(kosinsky,parameters,observables,PI,doses, 'CT26');
+PI=getPIData('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',stateVar,groups_subset,observables);
 
-PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]' 'Relative units []'...
+[sim,u]=initializePI(model,parameters,observables,PI,doses, 'MOC1');
+
+PI.variableUnits={'Volume [mL]' 'Logit []' 'Logit []' 'Relative units []'...
     'Relative units []' 'Relative units []'};
 
 
@@ -54,18 +56,11 @@ residuals_fun=@(p)getResiduals(p,@(x)sim(x,100,u,1:1:100),PI,...
 
 % Log-ikelihood function
 likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
-prior_fun=@(p)createPriorDistribution3(exp(p),PI,H,'type','lognormal');
+prior_fun=@(p)createPriorDistribution3(exp(p),PI,H,'type','uniform');
 
 % Obj function
 obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x')*(-1));
 
-%% MCMC setup
-postSample=models_array(:,:,1.8e4:1000:end);
-postSample=postSample(:,:)';
-
-w0 = [postSample(:, H.PopulationParams), mean(postSample(:, 9:21),2),...
-    postSample(:,9:21), std(postSample(:,9:21),0,2), postSample(:,22:27)];
-load('PI_Kosinsky.mat')
 
 %% Save results
-save('PI_kpro.mat', 'PI')
+save('PI.mat', 'PI')

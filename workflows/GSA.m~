@@ -40,7 +40,7 @@ group = [PI.data(:).Group];
 F_t = shmPlot2(F,group,time,observables,'tau', 0.01);
 
 %% PSS
-par_hat = plotPSS(pcs,2,parameters,'threshold', -2);
+par_hat = plotPSS(pcs,3,parameters,'threshold', -2);
 %% Save output
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kosinsky/phat_Control.mat','par_hat')
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/phat_TV.mat','par_hat')
