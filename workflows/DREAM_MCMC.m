@@ -19,7 +19,7 @@ toc
 
 tic
 [x3, p_x3,accept3] = dreamH(x2(:,:,end)',likelihood_fun,prior_fun,...
-    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5, 'StepSize', 0.8,'H',H);
+    size(w0,1),ceil(2e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5, 'StepSize', 0.8,'H',H);
 toc
 
 %% Concatenating chains
