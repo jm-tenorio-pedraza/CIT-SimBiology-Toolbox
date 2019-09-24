@@ -28,7 +28,7 @@ exclude_parameters = {'Avogadro' 'omega' 'vol_Tumor' 'CD25_0' 'CTLA4_CD8_0'...
     'koff_antiPDL1'};
 fixed_parameters = {'PDL1_Immune_0' 'PDL1_Tumor_0'...
     'k12' 'k23' 'k32' 'ka' 'ks_IFNg' 'ks_IL2' 'Tumor_P' 'Tumor_P_0'...
-    'kdeg_CTLA4' 'kdeg_PDL1' 'kel_Debris' 'f1' 'f2' 'f3'};
+    'kdeg_CTLA4' 'kdeg_PDL1' 'kel_Debris' 'f1' 'f2' 'f3' 'K_IFNg' };
 uncertain_parameters = {'K_IFNg' 'K_IL2'  'kpro_Naive_max' ...
     'kel_DC' 'kel_Effector' 'kel_MDSC' 'kel_Naive' 'kel_Treg' 'kel_Tumor'};
 parameters = setdiff(parameters, [exclude_parameters fixed_parameters ]);
@@ -49,9 +49,3 @@ doses={'Control'};
 %% Run pre-processing of data
 run('Clavijo_Group_Pre_Processing.m')
 close all
-%% Save output
-save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/phat_TV.mat','par_hat')
-
-save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/phat_Control.mat','par_hat')
-
-save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/parameters_hat_2.mat', 'parameters_hat')

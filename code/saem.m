@@ -11,7 +11,7 @@ function [parameters, logL] = saem(p0, likelihood,prior, H,varargin)
 
 p = inputParser;
 p.addParameter('Prior', 'Normal')
-p.addParameter('delta', 1e-6)
+p.addParameter('delta', 1e-4)
 p.addParameter('m', 2e3)
 p.addParameter('gamma', 1)
 p.addParameter('StepSize', 2.38^2/length(p0))
@@ -32,7 +32,8 @@ i = 1;
 min_fx = p.MinFunc;
 random_indx = arrayfun(@(x) x.Index, H.IndividualParams, 'UniformOutput',false);
 fixed_indx = [H.PopulationParams];
-fminunc_options = optimset('Display', 'iter','MaxIter',2e3,'MaxFunEvals',2e3);
+fminunc_options = optimset('Display', 'iter','MaxIter',1e4,'MaxFunEvals',1e4);
+new_p = curr_p;
 while errTol>p.delta
     %% Expectation
     % Evaluate integral by MCMC MH sampling
@@ -41,24 +42,28 @@ while errTol>p.delta
     E_prior = @(x) prior([curr_p([H.PopulationParams]) x curr_p(H.SigmaParams)]);
     [randeffects, logP, ~] = mcmc_mh(curr_p([random_indx{:,:}]),E_likelihood, E_prior, m,'StepSize',p.StepSize);
     q_k = mean(logP);
-    q_hat = q_prev + gamma*(q_k - q_prev);
     E_Z = mean(randeffects(p.BurnIn:end,:));
-    curr_p([random_indx{:,:}]) = E_Z;
+    new_p([random_indx{:,:}]) = E_Z;
     if ~isempty(H.SigmaParams)
-        E_prior = @(x) prior([curr_p([H.PopulationParams]) E_Z x]);
-        PI = p.OutputFn(curr_p);
+        E_prior = @(x) prior([new_p([H.PopulationParams]) E_Z x]);
+        PI = p.OutputFn(new_p);
         sigma_indx = size(H.IndividualParams.OmegaIndex,1)+1:length(H.SigmaParams);
         E_likelihood = (@(x)sum(getErrors(PI,exp(x(sigma_indx))))*(-1));
-        [sigma, logP_sigma, ~] = mcmc_mh(curr_p(H.SigmaParams),...
-            E_likelihood, E_prior, m,'StepSize', p.StepSize*10);
+        [sigma, logP_sigma, ~] = mcmc_mh(new_p(H.SigmaParams),...
+            E_likelihood, E_prior, m,'StepSize', p.StepSize);
         E_sigma = mean(sigma(p.BurnIn:end,:));
         q_sigma = mean(logP_sigma(p.BurnIn:end));
          
-         curr_p(H.SigmaParams) = E_sigma;
-         q_hat = (q_hat +q_sigma)/2;
+         new_p(H.SigmaParams) = E_sigma;
     end
     
-   
+       q_hat = q_prev + gamma*(mean([q_k q_sigma]) - q_prev);
+
+       if q_hat < q_prev
+           q_hat = q_prev;
+           E_Z = curr_p([H.IndividualParams(:).Index]);
+           E_sigma = curr_p([H.SigmaParams]);
+       end
     %% Maximization
      if ~isempty(H.SigmaParams)
         M_likelihood = @(x) likelihood([x(1:length(H.PopulationParams)) E_Z E_sigma]);
@@ -77,8 +82,7 @@ while errTol>p.delta
     end
     
     % Updating new values
-    curr_p([random_indx{:,:}]) = E_Z;
-    curr_p(fixed_indx) = fixedeffects;
+    new_p(fixed_indx) = fixedeffects;
     errTol = (-logL - q_hat);
     q_prev = -logL;
     i = i+1;

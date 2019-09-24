@@ -38,7 +38,6 @@ p_g = p.p_g;
 stepSize=p.StepSize;
 posterior = @(x)likelihood(x) + prior(x);
 x=nan(d,N,T); p_x = nan(T,N);                               % Preallocate chains and density
-Xp = nan(N,d); 
 R = nan(N,N-1); p_X = nan(N,1);
 
 [J,n_id] = deal(zeros(1,n_CR));                             % Variables selection prob. crossover
@@ -130,8 +129,8 @@ for t = 2:T
     x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                % Append current X and density
     
     if BurnIn>t*N
-        if (sum(J)>0), pCR = J./n_id; 
-            pCR = pCR/sum(pCR); end                         % update selection prob. crossover
+         pCR = J./n_id;
+        pCR = pCR/sum(pCR);                          % update selection prob. crossover
         [X, p_X] = check(X, mean((p_x(ceil(t/2):t,1:N))),p_X);       % Outlier detection and correction
     end
 end

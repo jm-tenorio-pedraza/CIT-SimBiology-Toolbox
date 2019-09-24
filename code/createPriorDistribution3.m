@@ -38,7 +38,7 @@ sigma=([PI.par(:).sigma_prior]);
 %norm_prior=@(x,m,s)sum(log(exp(-(x-m).^2./(2*s.^2))./sqrt(2*s.^2*pi)));
 unif_prior=@(x,indx)log((prod(and(x>=lower(indx),x<=upper(indx)))));
 %%jeff_prior = @(x)sum(log(1./(exp(x).^2)));
-lognorm_prior=@(x,m,s)sum(-(log(x)-log(m)).^2./(2*s.^2)-log(x.*s*sqrt(2*pi)));
+lognorm_prior=@(x,mu,sigma)sum(log(exp(-0.5 * ((log(x) - mu)./sigma).^2) ./ (x .* sqrt(2*pi) .* sigma)));
 
 % Evaluating handle at indexes:
 if strcmp(param.type, 'uniform')
@@ -46,18 +46,18 @@ if strcmp(param.type, 'uniform')
      % params
         logPrior = unif_prior(p(pop_indx), pop_indx)+...
             lognorm_prior((p(sigma_indx)),mu(sigma_indx),sigma(sigma_indx))+...
-        + sum(arrayfun(@(x) lognorm_prior(p(x.Index), p(x.EtaIndex),p(x.OmegaIndex)), H.IndividualParams));
+        + sum(arrayfun(@(x) lognorm_prior(p(x.Index), log(p(x.EtaIndex)),p(x.OmegaIndex)), H.IndividualParams));
     
 elseif strcmp(param.type,'normal')
         % Normal priors for fixed params and normal priors for individual
         % params
-        logPrior=norm_prior((p(pop_indx)), mu(pop_indx),sigma(pop_indx))...
+        logPrior = norm_prior((p(pop_indx)), mu(pop_indx),sigma(pop_indx))...
             + norm_prior((p(sigma_indx)),mu(sigma_indx),sigma(sigma_indx))...
-            + sum(arrayfun(@(x) lognorm_prior(p(x.Index), p(x.EtaIndex),p(x.OmegaIndex)), H.IndividualParams));
+            + sum(arrayfun(@(x) lognorm_prior(p(x.Index), log(p(x.EtaIndex)),p(x.OmegaIndex)), H.IndividualParams));
 else
-    logPrior= lognorm_prior((p(pop_indx)), mu(pop_indx),sigma(pop_indx))...
+    logPrior = lognorm_prior((p(pop_indx)), mu(pop_indx),sigma(pop_indx))...
             + lognorm_prior((p(sigma_indx)),mu(sigma_indx),sigma(sigma_indx))...
-            + sum(arrayfun(@(x) lognorm_prior(p(x.Index), (p(x.EtaIndex)),p(x.OmegaIndex)), H.IndividualParams));
+            + sum(arrayfun(@(x) lognorm_prior(p(x.Index), log(p(x.EtaIndex)),p(x.OmegaIndex)), H.IndividualParams));
 end
     
 return
