@@ -76,9 +76,6 @@ residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,100,u,1:1:100),PI,...
 likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
 prior_fun=@(p)createPriorDistribution3(exp(p),PI,H,'type','uniform');
 
-residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,100,u,1:1:100),PI,...
-    @(x)getPhi2(x,H,length(u)),finalValues(end-length(observables)+1:end),7:8);
-
 
 %% Save results
 save('PI_CIM_2.mat', 'PI')

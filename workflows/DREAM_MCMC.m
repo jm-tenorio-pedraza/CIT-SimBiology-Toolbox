@@ -53,7 +53,7 @@ PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observables);
 toc
 PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
 plotPosteriorPredictions(PI,observables)
-plotGroupPosteriorPredictions(PI,observables(1),exp(x_mat(1e5:100:end,:)),H)
+plotGroupPosteriorPredictions(PI,observables(1),postSamples,H)
 
 %% Save results
 save('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI/DREAM_MCMC_p.mat', 'x_a')

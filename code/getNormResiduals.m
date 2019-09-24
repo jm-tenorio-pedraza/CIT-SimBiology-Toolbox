@@ -1,4 +1,4 @@
-function residuals=getResiduals(p,simFun,PI,getPhi,sigma,normIndx)
+function residuals=getNormResiduals(p,simFun,PI,getPhi,getCovariance,normIndx)
 % Calculates normalized residuals with the paramaters (double) input mapping inputFun (handle)
 % simFun (handle), function and the data (table) provided
 nVar=size(PI.data(1).dataValue,2);
@@ -8,6 +8,8 @@ end
 % Generate parameter structure
 phi=getPhi(p);
 
+% Generate Sigma structure
+sigma=getCovariance(p); % 1xp vector
 
 % Simulate model with parameter structure
 try
@@ -45,17 +47,11 @@ simOutput=cellfun(@(x)x./repmat([ones(1,nVar-length(normIndx)) x(end,normIndx)],
 [PI.data(1:length(simOutput)).('y_hat')]=simOutput{:,:};
 
 % Errors of log-transformed data
-error=arrayfun(@(x)reshape((log(x.y_hat)-log(x.dataValue))./...% squared residuals
-    (sqrt(2)*(sigma)),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
-    
-
-error=cellfun(@(x)x(~isnan(x)),error,'UniformOutput',false);
-residuals=[error{:,:}];
-
+residuals=getErrors(PI,sigma);
 
 if (length(residuals)~= PI.n_data)
-    residuals=repelem(1e2, 1,PI.n_data);
+    residuals=1e7;
 elseif any([isinf(residuals), ~isreal(residuals)])
-    residuals=repelem(1e2, 1,PI.n_data);
+    residuals=1e7;
 end
 return
