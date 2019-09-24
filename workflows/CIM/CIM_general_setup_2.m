@@ -49,3 +49,5 @@ dose = {'Dose_antiPDL1'};
 doses={'Control'};
 %% Run pre-processing of data
 run('Clavijo_Group_Pre_Processing.m')
+%%
+save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/phat_TV.mat','par_hat')

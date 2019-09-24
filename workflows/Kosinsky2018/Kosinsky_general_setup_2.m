@@ -43,3 +43,9 @@ dose = {'Dose_antiPDL1'};
 
 PI.variableUnits={'Volume [mL]' 'Logit []' 'Logit []' 'Relative units []'...
     'Relative units []' 'Relative units []'};
+%% Save output
+save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kosinsky/phat_Control.mat','par_hat')
+save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kosinsky/parameters_hat.mat', 'parameters_hat')
+
+%% Load results
+phat_Control = load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kosinsky/phat_Control.mat','par_hat');

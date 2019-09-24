@@ -51,7 +51,7 @@ sigma_prior=[repelem(2,length(parameters),1);repelem(1,length(observables),1)];
 PI.par = getParamStruct2(sim,H,13,repelem(0.5,6,1),sigmaNames,'Sigma', sigma_prior);
 
 % Residuals function
-residuals_fun=@(p)getResiduals(p,@(x)sim(x,100,u,1:1:100),PI,...
+residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,100,u,1:1:100),PI,...
     @(x)getPhi2(x,H,size(PI.data,1)),(@(x)getCovariance(x,H)),4:6);
 
 % Log-ikelihood function
