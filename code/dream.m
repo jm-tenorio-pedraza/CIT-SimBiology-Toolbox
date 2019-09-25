@@ -55,38 +55,38 @@ try
 catch
     param_index = 1:d;
 end
+D = reshape(randsample(1:delta, T*N, true), T,N);                       % Select delta (equal selection probability)
+lambda = reshape(unifrnd(-c, c, T*N,1),T,N);                           % Draw N lambda values
+z = rand(N*T,d);                                          % Draw d values from U[0,1]
+U_ind = log(rand(N,T));                                        % Draw N values from U(0,1)
+U_pop = log(rand(N,T));                                        % Draw N values from U(0,1)
 
 accept_pop = 0;
 accept_ind = 0;
 for t = 2:T
     [~, draw] = sort(rand(N-1,N));                          % Permute [1, ..., N-1] N times
     dX = zeros(N,d);                                        % Set N jump vectors to zero
-    lambda = unifrnd(-c, c, N,1);                           % Draw N lambda values
     std_X = std(X);                                         % Compute std each dimenstion
-    D = randsample(1:delta, N, true);                       % Select delta (equal selection probability)
     id = randsample(1:n_CR, N, true, pCR);                  % Select index of crossover value
-    z = rand(N,d);                                          % Draw d values from U[0,1]
-    U_ind = log(rand(N,1));                                        % Draw N values from U(0,1)
-    U_pop = log(rand(N,1));                                        % Draw N values from U(0,1)
+    Xp = X;
 
     for i = 1:N                                             % Create proposals and accept/reject
-        a = R(i, draw(1:D(i), i)); 
-        b = R(i, draw(D(i)+1:2*D(i),i));                    % Extract vectors a and b whose entries are indexes not equal to i
+        a = R(i, draw(1:D(t,i), i)); 
+        b = R(i, draw(D(t,i)+1:2*D(t,i),i));                    % Extract vectors a and b whose entries are indexes not equal to i
         A = find(z(i,:) < CR(id(i)));                         % Derive subset A with selected dimensions to be updated
         d_star = numel(A);                                  % How many dimensions sampled?
-        if d_star == 0, [~, A] = min(z(i,:)); 
+        if d_star == 0, [~, A] = min(z((t-1)*T+i,:)); 
             d_star = 1; end                                 % A must contain at least 1 value
-        gamma_d = stepSize/sqrt(2*D(i)*d_star);             % Calculate jump rate
+        gamma_d = stepSize/sqrt(2*D(t,i)*d_star);             % Calculate jump rate
         g=randsample([gamma_d 1], 1, true, [1-p_g p_g]);    % Select gamma: 80/20 mix [default 1]
         dX(i,A) = c_star*randn(1, d_star) + ...             
-            (1+lambda(i))*g*sum(X(a,A)-X(b,A),1);           % Compute ith jump diff. evol.
-        Xp(i,:) = X(i,:);
+            (1+lambda(t,i))*g*sum(X(a,A)-X(b,A),1);           % Compute ith jump diff. evol.
         if ~isempty(H.IndividualParams)
             X_i([H.IndividualParams(:).Index]) = Xp(i,[H.IndividualParams(:).Index])...
                 + dX(i,[H.IndividualParams(:).Index]);      % Compute ith proposal for the individual parameters
             [Xp(i,:), p_Xp(i,1), accept_i]= mcmcstep(X(i,:),...
                 X_i, p_X(i,1), likelihood, prior,...
-                U_ind(i), accept_ind);                      % Calculate pdf for ith proposal from individual parameters
+                U_ind(t,i), accept_ind);                      % Calculate pdf for ith proposal from individual parameters
             if accept_i > accept_ind                        % MH criterion
                 accept_ind = accept_ind + 1;
             else
@@ -94,11 +94,11 @@ for t = 2:T
             end
         else
         end
-        X_i(param_index) = Xp(i,param_index) +...
+        Xp(param_index) = Xp(i,param_index) +...
             dX(i,param_index);                              % Compute ith proposal for the population parameters
         [X(i,1:d), p_X(i,1), accept_i]= mcmcstep(X(i,:),...
             X_i, p_Xp(i,1), likelihood, prior,...
-            U_pop(i), accept_pop);
+            U_pop(t,i), accept_pop);
         if accept_i > accept_pop                           % MH criterion for the population parameters
             accept_pop = accept_pop + 1;
         else

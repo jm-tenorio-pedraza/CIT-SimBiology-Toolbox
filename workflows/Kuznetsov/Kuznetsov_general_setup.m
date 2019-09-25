@@ -32,8 +32,8 @@ end
 % Define outputs
 observables={'TV' 'CD8_logit'};
 stateVar={'Tumor' 'CD8_logit'};
-groups_subset = {'MOC1_Control' 'MOC1_antiPDL1' 'MOC1_Control_Mean' 'MOC1_antiCTLA4' 'MOC1_antiCTLA4_antiPDL1'};
-doses = {'Dose_antiPDL1' 'Dose_antiCTLA4'};
+groups_subset = {'MOC1_Control' 'MOC1_antiPDL1' 'MOC1_Control_Mean' };
+doses = {'Dose_antiPDL1'};
 PI=getPIData('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',stateVar,groups_subset,observables);
 PI.variableUnits={'Volume [mL]' 'Percentage [%]'};
 
@@ -41,15 +41,14 @@ PI.variableUnits={'Volume [mL]' 'Percentage [%]'};
 
 %% Optimization setup
 % Hierarchical structure
-H.PopulationParams=1:length(parameters);
-H.IndividualParams=struct('name', parameters(1:2),...
-    'Index', {length(parameters)+1:length(parameters)+length(u);...
-    length(parameters)+length(u)+1:length(parameters)+length(u)*2},...
-    'EtaIndex', {1;2},...
-    'OmegaIndex', {length(parameters)+length(u)*2+1;length(parameters)+length(u)*2+2});
-H.SigmaParams=length(parameters)+length(u)*2+1:length(parameters)+length(observables)+length(u)*2+2;
+H = getHierarchicalStruct(parameters,'n_sigma', length(observables), 'n_rand', 1, 'n_indiv', length(u));
+try
+    sigmaNames={arrayfun(@(x)strjoin({'Omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)};
+    sigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);
+catch
+    sigmaNames= cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);
+end
 % Generating PI
-sigmaNames={'Omega_kpro_max_effector';'Omega_kin_max';'b_TV'; 'b_CD8'};
 sigma_prior= [ repelem(1,length(H.PopulationParams), 1);...
      repelem(1, length([H.IndividualParams(:).Index]),1);...
     repelem(.01, length(H.SigmaParams),1)];

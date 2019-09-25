@@ -30,4 +30,5 @@ for i=1:length(parameters)
     delta = reshape([y_i{:,:}],[],1);
     sensmatrix(:,i) = delta;
 end
+sensmatrix=sensmatrix*1/sqrt(time(end));
 
