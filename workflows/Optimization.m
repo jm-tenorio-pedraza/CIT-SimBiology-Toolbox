@@ -19,31 +19,16 @@ options = optimoptions('simulannealbnd','PlotFcns',...
 delta = 1;
 
 %% Local optimisation
-sigma_prior = @(x) prior_fun([finalValues([H.PopulationParams]) finalValues([H.IndividualParams.Index]) x]);
-sigma_indx = size(H.IndividualParams.OmegaIndex,1)+1:length(H.SigmaParams);
-sigma_likelihood = (@(x)sum(getErrors(PI,exp(x(sigma_indx))))*(-1));
-sigma_obj = @(x)((sigma_prior(x)+sigma_likelihood(x))*(-1));
 
 ub = log([PI.par([H.PopulationParams H.IndividualParams.Index]).maxValue]);
 lb = log([PI.par([H.PopulationParams H.IndividualParams.Index]).minValue]);
 
 [p_hat, ~] = lsqnonlin(residuals_fn,finalValues([H.PopulationParams H.IndividualParams.Index]), lb,ub, options_fminsearch);
-
-lhs = lhsdesign(100,length(ub));
-p0 = unifinv(lhs,repelem(lb,100,1),repelem(ub,100,1));
-p_hat = nan(size(p0)); fval_lsqnonlin = nan(size(p0,1),1);
-for i = 1:size(p0,1)
-[p_hat(i,:), fval_lsqnonlin(i)] = lsqnonlin(loglikelihood_fn,p0(i,:), lb,ub, options_fminsearch);
-end
-[fval_sorted,I]=sort(fval_lsqnonlin);
-
-p_hat_sorted = p_hat(I,:);
-finalValues=[p_hat_sorted(1,:) finalValues([H.SigmaParams])];
-set(gca,'YScale','log')
+finalValues([H.PopulationParams H.IndividualParams.Index])=p_hat;
 %% Global optimisation
-while delta >1e-4
+while delta >1e-2
 % Nelder-Mead
-[p_hat, fval_fminsearch]=fminsearch(obj_fun,p_hat,options_fminsearch);
+[p_hat, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 % Simulated annealing
 [finalValues, fval_anneal]=anneal(obj_fun,p_hat,options_anneal);
 delta = abs(fval_fminsearch - fval_anneal);
