@@ -41,9 +41,9 @@ p_hat_sorted = p_hat(I,:);
 finalValues=[p_hat_sorted(1,:) finalValues([H.SigmaParams])];
 set(gca,'YScale','log')
 %% Global optimisation
-while delta >1e-4
+while delta >1e-2
 % Nelder-Mead
-[p_hat, fval_fminsearch]=fminsearch(obj_fun,p_hat,options_fminsearch);
+[p_hat, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 % Simulated annealing
 [finalValues, fval_anneal]=anneal(obj_fun,p_hat,options_anneal);
 delta = abs(fval_fminsearch - fval_anneal);
@@ -57,7 +57,7 @@ toc
     @(p)getPhi2(p,H,length(u)),7:8,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(p_hat),...
+PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(finalValues),...
     @(p)getPhi2(p,H,length(u)), [],1:100);
  
       
