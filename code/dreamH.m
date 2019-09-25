@@ -129,13 +129,11 @@ for t = 2:T
     x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                % Append current X and density
     
     if BurnIn>t*N
-<<<<<<< HEAD
-        pCR = J./n_id;
+        if sum(J)>0
+            pCR = J./n_id;
+        end
         pCR = pCR/sum(pCR);                         % update selection prob. crossover
-=======
-         pCR = J./n_id;
-        pCR = pCR/sum(pCR);                          % update selection prob. crossover
->>>>>>> 928cfaa9c664f979d272b42b18ce72cba3949fd3
+
         [X, p_X] = check(X, mean((p_x(ceil(t/2):t,1:N))),p_X);       % Outlier detection and correction
     end
 end
