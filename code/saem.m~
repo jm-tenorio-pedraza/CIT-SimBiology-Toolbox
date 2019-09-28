@@ -78,7 +78,6 @@ while errTol>p.delta
         [fixedeffects, logL] = fminunc(@(x)( (M_likelihood(x)+M_prior(x))*(-1)),...
             curr_p([H.PopulationParams]),fminunc_options);
     elseif strcmp(min_fx, 'lsqnonlin')
-        
             residuals_fn = @(x) getResiduals(exp(x),p.SimFn,PI,...
                 @(x)getPhi2(x,H,length(u)),E_Z,normIndx);
             [p_hat, ~] = lsqnonlin(residuals_fn,finalValues([H.PopulationParams H.IndividualParams.Index]), lb,ub, options_fminsearch);

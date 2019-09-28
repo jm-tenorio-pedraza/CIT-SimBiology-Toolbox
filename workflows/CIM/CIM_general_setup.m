@@ -3,6 +3,8 @@
 clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
+addpath(genpath('/Users/migueltenorio/Documents/GitHub/MATLAB_pcode_DREAM_V3.0/diagnostics'))
+
 cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI')
 
 %% Load project 
@@ -56,14 +58,14 @@ close all
 % Hierarchical structure
 H = getHierarchicalStruct(parameters,'n_sigma', length(observables), 'n_rand', 1, 'n_indiv', length(u));
 try
-    sigmaNames={arrayfun(@(x)strjoin({'Omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)};
+    sigmaNames=arrayfun(@(x)strjoin({'Omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false);
     sigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);
 catch
     sigmaNames= cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);
 end
 sigma_prior= [ repelem(1,length(H.PopulationParams), 1);...
     repelem(1, length(H.IndividualParams.Index),1);...
-    repelem(1, length(H.SigmaParams),1)];
+    repelem(0.5, length(H.SigmaParams),1)];
 PI.par = getParamStruct2(sim,H,7,repelem(0.5,length(H.SigmaParams),1),sigmaNames,'Sigma', sigma_prior);
 
 % load('PI_CIM.mat')
@@ -81,8 +83,10 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,100,u,1:1:100),PI,...
 
 
 %% Save results
-save('PI_CIM_2.mat', 'PI')
-load('PI_CIM_2.mat')
+save('PI_CIM.mat', 'PI')
+load('PI_CIM.mat')
+load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
+load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
 %% Save output
 
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/parameters_hat.mat', 'parameters_hat')

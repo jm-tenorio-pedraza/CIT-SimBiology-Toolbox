@@ -39,13 +39,13 @@ sigma=([PI.par(:).sigma_prior]);
 unif_prior=@(x,indx)log((prod(and(x>=lower(indx),x<=upper(indx)))));
 %%jeff_prior = @(x)sum(log(1./(exp(x).^2)));
 lognorm_prior=@(x,m,s)sum(log(exp(-0.5 * ((log(x) - m)./s).^2) ./ (x .* sqrt(2*pi) .* s)));
-
+invgamma_prior= @(x,a,b)sum(log(b.^a./gamma(a).*x.^(-a-1).*exp(-b./x)));
 % Evaluating handle at indexes:
 if strcmp(param.type, 'uniform')
      % Uniform priors for fixed params and normal priors for individual
      % params
         logPrior = unif_prior(p(pop_indx), pop_indx)+...
-            lognorm_prior((p(sigma_indx)),log(mu(sigma_indx)),sigma(sigma_indx))+...
+            invgamma_prior((p(sigma_indx)),(mu(sigma_indx)),sigma(sigma_indx))+...
         + sum(arrayfun(@(x) lognorm_prior(p(x.Index), log(p(x.EtaIndex)),p(x.OmegaIndex)), H.IndividualParams));
     
 elseif strcmp(param.type,'normal')

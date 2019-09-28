@@ -4,6 +4,16 @@ p.addParameter('allVariables', true);
 p.parse(varargin{:})
 p=p.Results;
 
+% Simulate model at inputs
+simdata = sim(inputs);               % Simulate model and resample simulation results
+simdata = resample(simdata, time);
+[~,y_i,~] = getdata(simdata);
+try
+    [PI.data(1:end).simValue] = y_i{:,:}; % for the case when there is more than 1 output
+catch
+    y_i={y_i};                        % for the case when there is only 1 output
+    [PI.data(1:end).simValue] = y_i{:,:};
+end
 inputs(2,:) =inputs(1,:)*1.1; % Add another row to the initial parameter vector 
 phi_i = NaN(1,length(parameters));
 sensmatrix = NaN(length(observables)*length(time)*size(PI.data,1), length(parameters)); % allocate spcace to the sensitivity matrix 

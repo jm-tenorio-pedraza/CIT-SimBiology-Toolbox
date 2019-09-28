@@ -7,14 +7,15 @@ logL=rowfun(obj_fun,table(X0));
 
 w0=X0(I(1:length(finalValues)*1),:);
 
+h.IndividualParams=[];
 tic
-[x, p_x,accept] = dreamH(w0,likelihood_fun,prior_fun,...
-    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 1e5,'StepSize', 1.1,'H', H);
+[x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun,...
+    size(w0,1),ceil(1e5/size(w0,1)), length(finalValues), 'BurnIn', 1e5,'StepSize', 0.1,'H', h);
 toc
 
 tic
-[x2, p_x2,accept2] = dreamH(x(:,:,end)',likelihood_fun,prior_fun,...
-    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 0, 'StepSize', 1.1,'H',H);
+[x2, p_x2,accept2] = dreamHParallel(x(:,:,end)',likelihood_fun,prior_fun,...
+    size(w0,1),ceil(4e5/size(w0,1)), length(finalValues), 'BurnIn', 1e4, 'StepSize', 0.2,'H',h);
 toc
 
 tic
@@ -25,36 +26,37 @@ toc
 %% Concatenating chains
 x_a=cat(3,x,x2);
 logP=[p_x; p_x2];
-x_mat=x_a(:,:)';
+x_mat=x(:,:)';
 
 %% Diagnostics
-plotMCMCDiagnostics(x_a, logP,'name', {PI.par(:).name})
+plotMCMCDiagnostics(x_a(:,:,1:ceil(1e6/13)), logP(1:ceil(1e6/13),:),'name',...
+    {PI.par(:).name},'model', ' Kosinsky','plots', 'trace')
 plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name})
-
+getGelmanRubinStatistic(x_a,{PI.par(:).name})
 %% Plotting results
 
-postSamples = x_mat(2e5:1e3:end,:);
-plotMCMCDiagnostics(x,p_x,'name', {PI.par(:).name},'model', 'CIM');
-plotBivariateMarginals_2((postSamples(:,H.PopulationParams)),'names',{PI.par(H.PopulationParams).name})
-plotBivariateMarginals_2(exp(postSamples(:,[H.IndividualParams.EtaIndex H.IndividualParams.OmegaIndex])),...
-    'names',{PI.par([H.IndividualParams.EtaIndex H.IndividualParams.OmegaIndex]).name})
-plotBivariateMarginals_2(exp(postSamples(:,[H.IndividualParams.EtaIndex...
-    H.IndividualParams.Index])),'names', {PI.par([H.IndividualParams.EtaIndex...
-    H.IndividualParams.Index]).name})
-plotBivariateMarginals_2(exp(postSamples(:, H.SigmaParams)),'names', {PI.par(H.SigmaParams).name})
-plot(logP)
-plot(lags,c)
+postSamples =x_a(:,:,ceil(size(x_a,3)/2):100:ceil(1e6/13));
+logP_thinned = logP(ceil(size(x_a,3)/2):100:end,:);
+plotMCMCDiagnostics(postSamples,logP_thinned,'name', {PI.par(:).name},'model', 'CIM');
+postSamples=postSamples(:,:)';
 
+% Population Parameters
+plotBivariateMarginals_2(exp(postSamples(:,H.PopulationParams)),'names',{PI.par(H.PopulationParams).name})
+% Individual and population parameters
+plotBivariateMarginals_2(exp(postSamples(:,[H.IndividualParams.EtaIndex...
+    H.IndividualParams.OmegaIndex H.IndividualParams.Index])),'names', {PI.par([H.IndividualParams.EtaIndex...
+    H.IndividualParams.OmegaIndex H.IndividualParams.Index]).name})
+% Sigma parameters
+plotBivariateMarginals_2(exp(postSamples(:, H.SigmaParams)),'names', {PI.par(H.SigmaParams).name})
 %% Posterior predictions
 simFun=@(x)getOutput(PI,@(p)sim(p,100,u,1:1:100),x,...
-    @(p)getPhi2(p,H,length(u)), length(observables)-1:length(observables), 1:100);
+    @(p)getPhi2(p,H,length(u)),normIndx, 1:100);
 tic
 PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observables);
 toc
 PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
 plotPosteriorPredictions(PI,observables)
-plotGroupPosteriorPredictions(PI,observables(1),postSamples,H)
 
 %% Save results
-save('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI/DREAM_MCMC_p.mat', 'x_a')
-save('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI/DREAM_MCMC_logP.mat', 'logP')
+save('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI/DREAM_MCMC_p2.mat', 'x')
+save('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI/DREAM_MCMC_logP2.mat', 'p_x')

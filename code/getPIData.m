@@ -96,7 +96,7 @@ PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},'UniformOutput
 
 figure;
 hold on
-arrayfun(@(x)plot(x.dataTime, x.dataValue(:,1)),PI.data)
-legend({PI.data(:).Name})
+arrayfun(@(x)plot(x.dataTime, x.dataValue(:,1),'*'),PI.data)
+legend({PI.data(:).Name},'Interpreter', 'none')
 set(gca,'YScale', 'log')
 return

@@ -1,4 +1,4 @@
-function [x, p_x,accept] = dreamHParallel(X0,likelihood,prior,N,T,d,varargin)
+function [x, p_x,accept,pCR] = dreamHParallel(X0,likelihood,prior,N,T,d,varargin)
 % Inputs
 % prior = handle to generate initial random samples
 % pdf = handle to log-posterior function
@@ -74,72 +74,80 @@ for t = 2:T
     std_X = std(X);                                         % Compute std each dimension
     Xp = X;
     id = randsample(1:n_CR, N, true, pCR);                  % Select index of crossover value
-    A = z_t < CR(id);                       % Derive subset A with selected dimensions to be updated
-    d_star = sum(A,2);                                  % How many dimensions sampled?
+    A = z_t < CR(id);                                       % Derive subset A with selected dimensions to be updated
+    d_star = sum(A,2);                                      % How many dimensions sampled?
     
     if sum(d_star == 0)
         A(d_star==0,:) = ismember(z_t(d_star==0,:),min(z_t(d_star==0,:)));
         d_star(d_star==0) = 1;
-    end                                 % A must contain at least 1 value
-    gamma_d = stepSize./sqrt(2*D(t,:)'.*d_star);           % Calculate jump rate
+    end                                                     % A must contain at least 1 value
+    gamma_d = stepSize./sqrt(2*D(t,:)'.*d_star);            % Calculate jump rate
     
     for i = 1:N                                             % Create proposals for individual parameters
         a = R(i, draw(1:D(t,i), i));
         b = R(i, draw(D(t,i)+1:2*D(t,i),i));                % Extract vectors a and b whose entries are indexes not equal to i
         % Calculate step size and update only those columns in A
-        g=randsample([gamma_d(i) 1], 1, true, [1-p_g p_g]);    % Select gamma: 80/20 mix [default 1]
+        g=randsample([gamma_d(i) 1], 1, true, [1-p_g p_g]); % Select gamma: 80/20 mix [default 1]
         
         dX(i,A(i,:)) = c_star*randn(1, d_star(i)) + ...
-            (1+lambda(t,i))*g*sum(X(a,A(i,:))-X(b,A(i,:)),1);         % Compute ith jump diff. evol.
-        J(id(i)) = J(id(i)) + sum((dX(i, 1:d)./std_X).^2);  % Update jump distance crossover idx
-        n_id(id(i)) = n_id(id(i)) + 1;                      % How many times idx crossover used
+            (1+lambda(t,i))*g*sum(X(a,A(i,:))-X(b,A(i,:)),1);   % Compute ith jump diff. evol.
+        J(id(i)) = J(id(i)) + sum((dX(i, 1:d)./std_X).^2);      % Update jump distance crossover idx
+        n_id(id(i)) = n_id(id(i)) + 1;                          % How many times idx crossover used
     end
     
-    Xp(:,ind_index) = Xp(:,ind_index)...
-        + dX(:,ind_index);                          % Compute ith proposal for the individual parameters
+                                       % Compute ith proposal for the individual parameters
     if ~isempty(H.IndividualParams)
-        parfor i=1:N
+         Xp(:,ind_index) = Xp(:,ind_index)...
+        + dX(:,ind_index);  
+        parfor k=1:N
             % Check if there are individual parameters to estimate
             % Evaluate proposal of new individual parameters
-            [X(i,:), p_X(i,1), accept_i]= mcmcstep(X(i,:),...
-                Xp(i,:), p_X(i,1), likelihood, prior,...
-                U_ind(i), accept_ind(i));                      % Calculate pdf for ith proposal from individual parameters
-            if accept_i > accept_ind(i)                        % MH criterion
-                accept_ind(i) = accept_ind(i) + 1;
+            [X(k,:), p_X(k,1), accept_i]= mcmcstep(X(k,:),...
+                Xp(k,:), p_X(k,1), likelihood, prior,...
+                U_ind(k), accept_ind(k));                      % Calculate pdf for ith proposal from individual parameters
+            if accept_i > accept_ind(k)                        % MH criterion
+                accept_ind(k) = accept_ind(k) + 1;
             else
-                dX(i,ind_index) = 0;    % Set jump back to 0 for pCR for the individual parameters
+                dX(k,ind_index) = 0;                           % Set jump back to 0 for pCR for the individual parameters
             end
         end
     end
     
     Xp(:,param_index) = Xp(:,param_index)...
-        + dX(:,param_index);      % Compute ith proposal for the individual parameters
-    parfor i=1:N
-        [X(i,:), p_X(i,1), accept_i]= mcmcstep(X(i,:),...
-            Xp(i,:), p_X(i,1), likelihood, prior,...
-            U_pop(i), accept_pop(i));
+        + dX(:,param_index);                                    % Compute ith proposal for the individual parameters
+    parfor k=1:N
+        [X(k,:), p_X(k,1), accept_i]= mcmcstep(X(k,:),...
+            Xp(k,:), p_X(k,1), likelihood, prior,...
+            U_pop(k), accept_pop(k));
         
-        if accept_i > accept_pop(i)                            % MH criterion for the population parameters
-            accept_pop(i) = accept_pop(i) + 1;
+        if accept_i > accept_pop(k)                             % MH criterion for the population parameters
+            accept_pop(k) = accept_pop(k) + 1;
         else
-            dX(i,param_index) = 0;                          % Set jump back to 0 for pCR for population parameters
+            dX(k,param_index) = 0;                              % Set jump back to 0 for pCR for population parameters
         end
     end
+    
     totcount = N*(t);
+    J(id(i)) = J(id(i)) + sum((dX(i, 1:d)./std_X).^2);          % Update jump distance crossover idx
+    n_id(id(i)) = n_id(id(i)) + 1;                              % How many times idx crossover used
     
+    if ~isempty(H.IndividualParams)
+        accept = mean([sum(accept_pop),sum(accept_ind)])/totcount;
+    else
+        accept = sum(accept_pop)/totcount;
+    end
     progress((t-1)/T,mean(X)',...
-        mean([sum(accept_pop),sum(accept_ind)])/totcount)             % Print out progress status
+       accept)       % Print out progress status
     
-    x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                % Append current X and density
+    x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                    % Append current X and density
     
     if BurnIn>t*N
         if (sum(J)>0), pCR = J./n_id;
-            pCR = pCR/sum(pCR); end                         % update selection prob. crossover
-        [X, p_X] = check(X, mean((p_x(ceil(t/2):t,1:N))),p_X);       % Outlier detection and correction
+            pCR = pCR/sum(pCR); end                             % update selection prob. crossover
+        [X, p_X] = check(X, mean((p_x(ceil(t/2):t,1:N))),p_X);  % Outlier detection and correction
     end
 end
 
-accept = mean([sum(accept_pop),sum(accept_ind)])/totcount;
 
 function textprogress(pct,curm,acceptpct)
 persistent lastNchar lasttime starttime
