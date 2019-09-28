@@ -5,6 +5,7 @@ end
 p=inputParser;
 p.addParameter('model','',@ischar);
 p.addParameter('name',{});
+p.addParameter('plots',{'trace' 'autocorr' 'corr'});
 
 if sum(imag(logP)>0)>0
     imag_indx=sum(imag(logP)>0);
@@ -32,26 +33,52 @@ end
 if size(logP,3)>1
     logP=sum(logP(:,:))';
 end
+[C,lags,ESS]=eacorr(params);
 % LogL traceplot
+if ismember('trace', p.plots)
 figure
-plot(-logP)
+h=plot(-logP);
 xlabel('MCMC step')
 ylabel('Negative Log-Likelihood')
-title(strjoin({'Log-posterior trace plot of',p.model},''), 'interpreter', 'none')
+title(strjoin({'Log-posterior density trace plot of',p.model},''), 'interpreter', 'none')
 set(gca, 'YScale', 'log')
-
-% Autocorrelation
-figure
-[C,lags,ESS]=eacorr(params);
-plot(lags,C)
-ylim([-1 1])
-title('Autocorrelation of posterior samples of')
-
+colors = linspecer(size(logP,2));
+for i=1:size(logP,2)
+    h(i).Color = colors(i,:);
+end
 % Param traceplot
 figure('Renderer', 'painters', 'Position', [10 10 1500 600])
-plotTrace(phat,'names', p.name,'ESS',ESS)
+plotTrace(params,'names', p.name,'ESS',ESS)
+end
+% Autocorrelation
+if ismember('autocorr', p.plots)
+figure
+
+
+ncol = ceil(sqrt(length(ESS)));
+nrow = ceil(length(ESS)/ncol);
+colors = linspecer(2);
+for i=1:length(ESS)
+    subplot(nrow,ncol,i)
+    plot(lags,C(:,i))
+    hold on
+    plot([lags(1) lags(end)],zeros(1,2),'-k', 'Color', colors(1,:))
+    ylim([-1 1])
+    tau = cumsum(C(:,i));
+    indx = find(tau*5<(1:length(tau))');
+    title(strjoin({'Autocorrelation of' p.name{i}},' '),'Interpreter', 'none')
+    try
+    legend (strjoin({'\tau =' num2str(1+2*sum(C(1:indx(1),i)))},' '))
+    catch
+       legend (strjoin({'\tau =' num2str(1+2*sum(C(1:end,i)))},' '))
+
+    end
+end
+end
 
 % Correlation matrix
+if ismember('corr', p.plots)
 figure
 plotCorrMat(phat, p.name, 'model', p.model)
+end
 end

@@ -1,4 +1,4 @@
-function plotTrace(p_hat,varargin)
+function h = plotTrace(p_hat,varargin)
 if nargin<2
     error('GWMCMC:toofewinputs','AMCMC requires atleast 2 inputs.')
 end
@@ -66,7 +66,7 @@ end
         for i=1:n_p
             subplot(n_row, n_col,i)
             hold on
-            if dim_phat(2)<dim_phat(3)
+            if dim_phat(2)<=dim_phat(3)
             p_ij=reshape(p_hat(i,:,:),n_w,dim_phat(3),1);
                 colors=linspecer(n_w);
 
@@ -90,7 +90,7 @@ end
             catch
             end
             xlabel('MCMC step')
-            
+            %ylim([min_y max_y])
         end
             
 end

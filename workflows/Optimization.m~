@@ -1,5 +1,6 @@
 
 %% Objective function
+finalValues = log([PI.par(:).startValue]);
 
 % Obj function
 obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x')*(-1));
@@ -22,22 +23,15 @@ delta = 1;
 ub = log([PI.par([H.PopulationParams H.IndividualParams.Index]).maxValue]);
 lb = log([PI.par([H.PopulationParams H.IndividualParams.Index]).minValue]);
 
+[p_hat, ~] = lsqnonlin(residuals_fn,finalValues([H.PopulationParams H.IndividualParams.Index]), lb,ub, options_fminsearch);
+finalValues([H.PopulationParams H.IndividualParams.Index])=p_hat;
 %% Global optimisation
 while delta >1e-2
 % Nelder-Mead
 [p_hat, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
-
 % Simulated annealing
 [finalValues, fval_anneal]=anneal(obj_fun,p_hat,options_anneal);
 delta = abs(fval_fminsearch - fval_anneal);
-
-% Local optimization
-% Residuals 
-residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,100,u,1:1:100),PI,...
-    @(x)getPhi2(x,H,length(u)),finalValues(end-length(observables)+1:end),normIndx);
-[p_hat, ~] = lsqnonlin(residuals_fn,finalValues([H.PopulationParams H.IndividualParams.Index]), lb,ub, options_fminsearch);
-finalValues([H.PopulationParams H.IndividualParams.Index])=p_hat;
-
 end
 tic
 finalValues=simulannealbnd(obj_fun,finalValues,[],[],options);
@@ -48,8 +42,8 @@ toc
     @(p)getPhi2(p,H,length(u)),7:8,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(finalValues),...
-    @(p)getPhi2(p,H,length(u)), normIndx,1:100);
+PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(p_hat),...
+    @(p)getPhi2(p,H,length(u)), [],1:100);
  
       
 % Plotting tumor volume
@@ -59,11 +53,13 @@ legend(observables(i))
 
 end
 
-finalValue=num2cell(exp(finalValues'));
+finalValue=num2cell(exp(p_hat'));
 [PI.par(1:end).finalValue]=finalValue{:,:};
 
 %% Create variant object
 MOC1_optimized = createVariant(PI,H,'MOC1_optimized');
 variant = addvariant(model, 'MOC1_optimized');
+
 addcontent(variant, MOC1_optimized.Content);
 out.m1 = model;
+sbiosaveproject '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_2.sbproj' 'model'

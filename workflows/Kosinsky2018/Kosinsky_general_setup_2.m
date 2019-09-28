@@ -27,7 +27,7 @@ value = value(I);
 % Define parameters to estimate
 parameters=name(value>0);
 exclude_parameters = {'CD107a' 'CD8' 'K_D_antiPDL1' 'Total_Cell_Count' 'vol_Tcell' 'vol_Tumor', 'T_0'};
-parameters = setdiff(parameters, [exclude_parameters]);
+parameters = setdiff(parameters, exclude_parameters);
 
 % Define outputs
 observables={'TV' 'CD8_logit' 'CD107a_logit' 'DCm' 'ISC' 'PDL1'};

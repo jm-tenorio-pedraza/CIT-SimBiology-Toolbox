@@ -33,10 +33,13 @@ for i=1:p
                 'Fontweight','normal','Interpreter','none');
             ylab.Rotation=30;
             ylab.HorizontalAlignment = 'right';
+            ax.XTickLabels ={};
+
            elseif i==p
              xlab=xlabel(param.names(j),'Fontsize',10,...
                 'Fontweight','normal','Interpreter','none');
             xlab.Rotation=30;
+
            else
                 ax.XTickLabels ={};
                 ax.YTickLabels ={};
@@ -55,18 +58,21 @@ for i=1:p
             p_max=max(h.Values);
             m=mean(posterior(:,i));
             sigma=std(posterior(:,i));
-            ax.YTickLabels ={};
-            ax.XTickLabels ={};
+          
 
             if p<11
 %             text(m,p_max,{strjoin({'\mu = ' num2str(m)},'') strjoin({'\sigma = ' num2str(sigma)},'') })
 %             legend({strjoin({'\mu = ' num2str(m)},'') strjoin({'\sigma = ' num2str(sigma)},'') },'Location','best')
             end
-             if j==1||i==p
+             if i==p || j==p&&i==p
              xlab=xlabel(param.names(j),'Fontsize',10,...
                  'Fontweight','normal','Interpreter','none');
              xlab.Rotation=30;
-             else
+             elseif i == 1 && j==1
+                  ylab=ylabel(param.names(i),'Fontsize',10,...
+                'Fontweight','normal','Interpreter','none');
+                ylab.Rotation=30;
+                ylab.HorizontalAlignment = 'right';
              end
              ylabel('pdf','Fontsize',5,'Fontweight','normal')
 
