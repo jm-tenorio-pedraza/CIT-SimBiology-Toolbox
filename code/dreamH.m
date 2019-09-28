@@ -1,4 +1,4 @@
-function [x, p_x,accept] = dreamH(X0,likelihood,prior,N,T,d,varargin)
+function [x, p_x,accept,pCR] = dreamH(X0,likelihood,prior,N,T,d,varargin)
 % Inputs
     % prior = handle to generate initial random samples
     % pdf = handle to log-posterior function
@@ -123,9 +123,14 @@ for t = 2:T
         totcount = N*(t-1)+i;
     end
     
-    progress((t-1)/T,X(i,:)',...
-        mean([accept_pop,accept_ind])/totcount)             % Print out progress status
-
+    if ~isempty(H.IndividualParams)
+        accept = mean([sum(accept_pop),sum(accept_ind)])/totcount;
+    else
+        accept = sum(accept_pop)/totcount;
+    end
+    progress((t-1)/T,mean(X)',...
+       accept)       % Print out progress status
+    
     x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                % Append current X and density
     
     if BurnIn>t*N

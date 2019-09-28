@@ -1,11 +1,4 @@
 
-%% Objective function
-
-% Obj function
-obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x')*(-1));
-tic
-obj_fun(finalValues)
-toc
 
 %% Optimization
 
@@ -48,7 +41,7 @@ toc
     @(p)getPhi2(p,H,length(u)),7:8,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(finalValues),...
+PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(p_hat),...
     @(p)getPhi2(p,H,length(u)), normIndx,1:100);
  
       
@@ -59,7 +52,7 @@ legend(observables(i))
 
 end
 
-finalValue=num2cell(exp(finalValues'));
+finalValue=num2cell(exp(p_hat'));
 [PI.par(1:end).finalValue]=finalValue{:,:};
 
 %% Create variant object

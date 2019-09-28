@@ -3,7 +3,7 @@
 warning off
 clear all
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kosinsky/output/PI')
+cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kosinsky/PI')
 
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kosinsky_2.sbproj');

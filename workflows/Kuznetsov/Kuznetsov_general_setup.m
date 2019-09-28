@@ -4,7 +4,7 @@
 clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/Kuznetsov/output/PI')
+cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/PI')
 
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kuznetsov.sbproj');
@@ -26,7 +26,7 @@ if sensitivity
 
 else
     % Define parameters to estimate
-    parameters = load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/parameters_hat.mat');
+    parameters = load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/PI/parameters_hat.mat');
     parameters = parameters.parameters_hat;
 end
 % Define outputs
@@ -67,8 +67,15 @@ prior_fun=@(p)(createPriorDistribution3(exp(p),PI,H,'type','uniform'));
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,100,u,1:1:100),PI,...
     @(x)getPhi2(x,H,length(u)),finalValues(end-length(observables)+1:end),[]);
 
+% Objective function
+obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x')*(-1));
+tic
+obj_fun(finalValues)
+toc
+
 %% Save results
 save('PI_Kuznetsov.mat', 'PI')
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/parameters_hat.mat','parameters_hat')
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
+load(strjoin({cd 'PI_Kuznetsov.mat'},'/'))

@@ -11,7 +11,7 @@ h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dreamH(w0,likelihood_fun,prior_fun,...
     size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
-    1.38,'H', h);
+    .238,'H', h);
 toc
 
 
