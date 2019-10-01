@@ -46,5 +46,23 @@ for i=1:length(group)
 end
 
 u=u(:,1:length(dose));
+
+ncol = ceil(sqrt(size(u,1)));
+nrow = ceil(size(u,1)/ncol);
+
+figure
+for i=1:size(u,1)
+    subplot(nrow,ncol,i)
+    hold on
+    for j=1:size(u,2)
+        plot(u{i,j}.Time, u{i,j}.Amount, '*')
+       
+    end
+    plot(u{i,j}.Time, zeros(length(u{i,j}.Time),1), '-k')
+
+    legend(dose)
+    title(PI.data(i).Group,'Interpreter', 'none')
+    ylim([0 0.002])
+end
 return
 

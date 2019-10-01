@@ -4,7 +4,7 @@
 % Obj function
 obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x')*(-1));
 tic
-obj_fun(finalValues)
+obj_fun((finalValues))
 toc
 
 %% Optimization
@@ -29,14 +29,15 @@ while delta >1e-2
 
 % Simulated annealing
 [finalValues, fval_anneal]=anneal(obj_fun,p_hat,options_anneal);
-delta = abs(fval_fminsearch - fval_anneal);
 
 % Local optimization
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,100,u,1:1:100),PI,...
-    @(x)getPhi2(x,H,length(u)),finalValues(end-length(observables)+1:end),normIndx);
-[p_hat, ~] = lsqnonlin(residuals_fn,finalValues([H.PopulationParams H.IndividualParams.Index]), lb,ub, options_fminsearch);
+    @(x)getPhi2(x,H,length(u),x_0),exp(finalValues(end-length(observables)+1:end)),normIndx);
+[p_hat, ~] = lsqnonlin(residuals_fn,(finalValues([H.PopulationParams H.IndividualParams.Index])), lb,ub, options_fminsearch);
 finalValues([H.PopulationParams H.IndividualParams.Index])=p_hat;
+fval_lsqnonlin = obj_fun(finalValues);
+delta = abs(fval_fminsearch - fval_lsqnonlin);
 
 end
 tic
@@ -49,7 +50,7 @@ toc
 
 %% Simulation output
 PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(finalValues),...
-    @(p)getPhi2(p,H,length(u)), normIndx,1:100);
+    @(p)getPhi2(p,H,length(u),x_0), normIndx,1:100);
  
       
 % Plotting tumor volume

@@ -5,7 +5,7 @@ clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/PI')
-sensitivity = false;
+sensitivity = true;
 
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kuznetsov.sbproj');
@@ -30,7 +30,7 @@ else
     parameters = load(strjoin({cd 'parameters_hat.mat'},'/'));
     parameters = parameters.parameters_hat;
     parameters = [parameters; 'Tumor_P'];
-%     parameters = [{'kpro_Tumor'}; setdiff(parameters,'kpro_Tumor','stable')];
+    parameters = [{'kpro_Tumor'}; setdiff(parameters,'kpro_Tumor','stable')];
 end
 % Define outputs
 observables={'TV' 'CD8_logit'};
@@ -50,9 +50,9 @@ x_0 = getInitialValues([PI.data(:).Group], initialStruct);
 
 %% Optimization setup
 % Hierarchical structure
-H = getHierarchicalStruct(parameters(1:end-1),'n_sigma', length(observables), 'n_rand', 4, 'n_indiv', length(u));
+H = getHierarchicalStruct(parameters(1:end-1),'n_sigma', length(observables), 'n_rand', 1, 'n_indiv', length(u));
 try
-    sigmaNames=arrayfun(@(x)strjoin({'Omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
+    sigmaNames={arrayfun(@(x)strjoin({'Omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)};
     sigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);
 catch
     sigmaNames= cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);
@@ -60,11 +60,10 @@ end
 % Generating PI
 sigma_prior= [ repelem(1,length(H.PopulationParams), 1);...
      repelem(1, length([H.IndividualParams(:).Index]),1);...
-    repelem(0.1, length(H.SigmaParams),1)];
-PI.par = getParamStruct2(sim,H,size(PI.data,1),repelem(0.5,length(H.SigmaParams),1),...
+    repelem(1, length(H.SigmaParams),1)];
+PI.par = getParamStruct2(sim,H,size(PI.data,1),repelem(2,length(H.SigmaParams),1),...
     sigmaNames,'Sigma', sigma_prior);
 finalValues =log([PI.par(:).startValue]);
-
 % Residuals function
 residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,100,u,1:1:100),PI,...
     @(x)getPhi2(x,H,size(PI.data,1),x_0),(@(x)getCovariance(x,H)),[]);

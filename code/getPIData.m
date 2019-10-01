@@ -73,11 +73,16 @@ nanIndx = arrayfun(@(x) all(all(isnan(x.dataValue))), data);
 
 PI.data = data(:,~nanIndx)';
 
-%% Subsetting to use only Control and antiPDL1
+%% Change group identity
 
 PI.data = PI.data(ismember([PI.data(:).Group], groups_subset));
 try
 PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).Group = 'MOC1_Control';
+catch
+end
+
+try
+PI.data(ismember([PI.data(:).Group], 'MOC2_Control_Mean')).Group = 'MOC2_Control';
 catch
 end
 %% Control for data with non-admissible values (0)
@@ -93,10 +98,15 @@ dataTime = arrayfun(@(x) x.dataTime(~x.zero_indx,:), PI.data, 'UniformOutput', f
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},'UniformOutput',true));
 
 %% Plot data
-
+ncol = ceil(sqrt(length(stateVar)));
+nrow = ceil(length(stateVar)/ncol);
 figure;
-hold on
-arrayfun(@(x)plot(x.dataTime, x.dataValue(:,1),'*'),PI.data)
-legend({PI.data(:).Name},'Interpreter', 'none')
-set(gca,'YScale', 'log')
+for i = 1:length(stateVar)
+    subplot(nrow,ncol,i)
+    hold on
+    arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i),'*'),PI.data)
+    legend({PI.data(:).Name},'Interpreter', 'none')
+    title(stateVar(i))
+    set(gca,'YScale', 'log')
+end
 return

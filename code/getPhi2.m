@@ -1,4 +1,4 @@
-function phi=getPhi2(p,H,n_sim)
+function phi=getPhi2(p,H,n_sim,x_0)
 % Input:    1) parameter vector of dimension (px1)
 %           2) H, structure array with k fields, one for each variant +1 ... 
 %               for joint sigma parameters:
@@ -28,3 +28,4 @@ try
     phi(:,etaIndx) = p_indiv';
 catch 
 end
+phi(:,end+1) = x_0;
