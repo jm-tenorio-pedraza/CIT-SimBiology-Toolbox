@@ -25,10 +25,10 @@ lb = log([PI.par([H.PopulationParams H.IndividualParams.Index]).minValue]);
 %% Global optimisation
 while delta >1e-2
 % Nelder-Mead
-[p_hat, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
+[finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 
 % Simulated annealing
-[finalValues, fval_anneal]=anneal(obj_fun,p_hat,options_anneal);
+[finalValues, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
 
 % Local optimization
 % Residuals 

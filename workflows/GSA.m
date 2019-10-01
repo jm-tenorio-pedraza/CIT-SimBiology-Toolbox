@@ -13,7 +13,7 @@ sensmatrix = getSensitivities(inputs, PI,@(p)sim(p,100,u_subset,1:1:100),...
 % Get SVD
 [U,S,V]=svd(sensmatrix,'econ');
 
-% plot singular values
+%% plot singular values
 s_ij = log10(diag(S)/max(diag(S)));
 plot(s_ij, '-d')
 hold on
@@ -27,7 +27,7 @@ s=shmPlot2(F,groups_subset(indx),time, observables,'tau',0.1);
 %% Get PSS
 pcs = V*S;
 pcs = (pcs/max(max(abs(pcs))));
-pc = plotPSS(pcs,2,parameters(2:end),'threshold',-4);
+pc = plotPSS(pcs,2,parameters(2:end),'threshold',-5);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');
