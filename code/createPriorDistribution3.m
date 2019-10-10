@@ -35,7 +35,7 @@ mu=([PI.par(:).mu_prior]);
 sigma=([PI.par(:).sigma_prior]);
 
 % Defining prior functions of the parameters and indexes
-%norm_prior=@(x,m,s)sum(log(exp(-(x-m).^2./(2*s.^2))./sqrt(2*s.^2*pi)));
+norm_prior=@(x,m,s)sum(log((exp(-(x - m).^2. / (2*s.^2))) ./ sqrt(2 * s.^2 * pi)));
 unif_prior=@(x,indx)log((prod(and(x>=lower(indx),x<=upper(indx)))));
 %%jeff_prior = @(x)sum(log(1./(exp(x).^2)));
 lognorm_prior=@(x,m,s)sum(log(exp(-0.5 * ((log(x) - m)./s).^2) ./ (x .* sqrt(2*pi) .* s)));
@@ -45,8 +45,9 @@ if strcmp(param.type, 'uniform')
      % Uniform priors for fixed params and normal priors for individual
      % params
         logPrior = unif_prior(p(pop_indx), pop_indx)+...
-            invgamma_prior((p(sigma_indx)),(mu(sigma_indx)),sigma(sigma_indx))+...
-        + sum(arrayfun(@(x) lognorm_prior(p(x.Index), log(p(x.EtaIndex)),p(x.OmegaIndex)), H.IndividualParams));
+            invgamma_prior((p(sigma_indx)).^2,(mu(sigma_indx)),sigma(sigma_indx))+...
+        + sum(arrayfun(@(x) norm_prior(log(p(x.Index)), log(p(x.EtaIndex)),...
+        p(x.OmegaIndex)), H.IndividualParams));
     
 elseif strcmp(param.type,'normal')
         % Normal priors for fixed params and normal priors for individual

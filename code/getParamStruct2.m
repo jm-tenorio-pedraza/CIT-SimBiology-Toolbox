@@ -23,7 +23,7 @@ param=[simFun.Parameters.Value(H.PopulationParams)];       %
 % concatenating all params
 
     % Min            Max                Start           % Mu             % Sigma
-p=[ param*0.00001       param*100           param           param          
+p=[ param*1e-5       param*1e5           param           param          
     param_indiv*.01  param_indiv*100     param_indiv     param_indiv     
     sigmaParams*.01  sigmaParams*100     sigmaParams     sigmaParams];
 if length(inputs.Sigma)<2

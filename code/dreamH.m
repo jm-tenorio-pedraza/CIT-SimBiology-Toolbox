@@ -96,7 +96,7 @@ for t = 2:T
             % Evaluate proposal of new individual parameters
             [X(i,:), p_X(i,1), accept_i]= mcmcstep(X(i,:),...
                 Xp(i,:), p_X(i,1), likelihood, prior,...
-                U_ind(i), accept_ind);                      % Calculate pdf for ith proposal from individual parameters
+                U_ind(t,i), accept_ind);                      % Calculate pdf for ith proposal from individual parameters
            
             if accept_i > accept_ind                        % MH criterion
                 accept_ind = accept_ind + 1;
@@ -110,7 +110,7 @@ for t = 2:T
         % Evaluate proposal of all new parameters
         [X(i,1:d), p_X(i,1), accept_i]= mcmcstep(X(i,:),...
             Xp(i,:), p_X(i,1), likelihood, prior,...
-            U_pop(i), accept_pop);
+            U_pop(t,i), accept_pop);
         
         if accept_i > accept_pop                            % MH criterion for the population parameters
             accept_pop = accept_pop + 1;

@@ -20,9 +20,9 @@ catch ME
         return  
     end
 end
-    
+ 
 % Obtain simulation output at pre-designated time points
-simdata=resample(simdata,0:1:100);
+simdata=resample(simdata,PI.tspan);
 [T,Y,~]=getdata(simdata);
 
 % Incorporate simulations into data structure array
