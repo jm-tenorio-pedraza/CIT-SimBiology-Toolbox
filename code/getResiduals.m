@@ -1,6 +1,14 @@
-function residuals=getResiduals(p,simFun,PI,getPhi,sigma,normIndx)
+function residuals = getResiduals(p,simFun,PI,getPhi,sigma,normIndx,varargin)
 % Calculates normalized residuals with the paramaters (double) input mapping inputFun (handle)
 % simFun (handle), function and the data (table) provided
+
+
+par=inputParser;
+par.addParameter('addSigma',false)
+par.addParameter('output','residuals')
+par.parse(varargin{:});
+par=par.Results;
+
 nVar=size(PI.data(1).dataValue,2);
 if size(p,1)>size(p,2)
     p=p';
@@ -18,9 +26,9 @@ catch ME
         return  
     end
 end
-    
+ tspan = unique(cat(1,PI.data(:).dataTime));
 % Obtain simulation output at pre-designated time points
-simdata=resample(simdata,0:1:100);
+simdata=resample(simdata,tspan);
 [T,Y,~]=getdata(simdata);
 
 % Incorporate simulations into data structure array
@@ -45,11 +53,18 @@ simOutput=cellfun(@(x)x./repmat([ones(1,nVar-length(normIndx)) x(end,normIndx)],
 [PI.data(1:length(simOutput)).('y_hat')]=simOutput{:,:};
 
 % Errors of log-transformed data
+if par.addSigma
+    error=arrayfun(@(x)reshape((log(x.y_hat)-log(x.dataValue)).^2./...% squared residuals
+    ((2*sigma.^2))+...% normalized by their variance
+    (log(sigma*sqrt(pi*2))),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
+
+else
 error=arrayfun(@(x)reshape((log(x.y_hat)-log(x.dataValue))./...% squared residuals
     (sqrt(2)*(sigma)),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
-    
+end
 
 error=cellfun(@(x)x(~isnan(x)),error,'UniformOutput',false);
+[PI.data(1:end).residuals] = error{:,:};
 residuals=[error{:,:}];
 
 
@@ -57,5 +72,10 @@ if (length(residuals)~= PI.n_data)
     residuals=repelem(1e2, 1,PI.n_data);
 elseif any([isinf(residuals), ~isreal(residuals)])
     residuals=repelem(1e2, 1,PI.n_data);
+end
+
+if strcmp(par.output, 'residuals')
+else 
+    residuals = PI;
 end
 return

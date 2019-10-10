@@ -1,4 +1,10 @@
-function PI=getOutput(PI,simFun,p,getPhi,normIndx,time)
+function PI=getOutput(PI,simFun,p,getPhi,normIndx,H,varargin)
+par = inputParser;
+par.addParameter('prob', 0.95)
+par.addParameter('n_samples',1e3)
+
+par.parse(varargin{:})
+par=par.Results;
 nVar=size(PI.data(1).dataValue,2);
 
 % Generate parameter structure
@@ -8,7 +14,6 @@ phi=getPhi(p);
 simdata=simFun(phi);
 
 % Obtain simulation output at pre-designated time points
-simdata=resample(simdata,time);
 [T,Y,~]=getdata(simdata);
 
 % Incorporate simulations into data structure array
@@ -39,5 +44,16 @@ simOutput=arrayfun(@(x)x.simOutput(ismember(x.simTime,x.dataTime),:),PI.data,...
 
 % Input into data array
 [PI.data(1:length(simOutput)).('y_hat')]=simOutput{:,:};
+
+% Get lower and upper boudaries
+sigma = p(setdiff(H.SigmaParams, [H.IndividualParams(:).OmegaIndex]));
+
+
+lb = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),1-par.prob,3),...
+    PI.data,'UniformOutput',false);
+ub = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),par.prob,3),...
+    PI.data,'UniformOutput',false);
+[PI.data(1:end).lb]= lb{:,:};
+[PI.data(1:end).ub] = ub{:,:};
 
 end

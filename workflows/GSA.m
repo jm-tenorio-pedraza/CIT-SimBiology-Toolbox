@@ -1,8 +1,8 @@
 %% GSA
 time = 1:100;
-inputs = sim.Parameters.Value';
+inputs = sim.Parameters.Value(1:end-1)';
 % inputs = [PI.par(H.PopulationParams).finalValue];
-inputs = [x_0, repelem(inputs(:,2:end),size(x_0,1),1)];
+inputs = [repelem(inputs,size(x_0,1),1) x_0];
 [group, indx] = unique([PI.data(:).Group]);
 u_subset = u(indx,:);
 inputs = inputs(indx,:);
@@ -27,10 +27,10 @@ s=shmPlot2(F,groups_subset(indx),time, observables,'tau',0.1);
 %% Get PSS
 pcs = V*S;
 pcs = (pcs/max(max(abs(pcs))));
-pc = plotPSS(pcs,2,parameters(2:end),'threshold',-5);
+pc = plotPSS(pcs,5,parameters(1:end-1),'threshold',-1.5);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');
 %% Save results to cd
-save(strjoin({cd 'parameters_hat.mat'},'/'), 'parameters_hat')
+save(strjoin({cd 'parameters_hat_2.mat'},'/'), 'parameters_hat')
 sensitivity = false;

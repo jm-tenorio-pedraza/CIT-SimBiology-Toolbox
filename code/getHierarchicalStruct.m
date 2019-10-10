@@ -12,7 +12,7 @@ n_indiv = p.n_indiv;
 
 H.PopulationParams = 1:length(params);
  [H.IndividualParams(1:n_rand).name] = params{1:n_rand};
-    Index=mat2cell(reshape(length(params)+1:length(params)+n_indiv*n_rand,n_rand,[]),ones(n_rand,1));
+    Index=mat2cell(reshape(length(params)+1:length(params)+n_indiv*n_rand,[],n_rand)',ones(n_rand,1));
     EtaIndex = mat2cell(reshape(1:n_rand,n_rand,[]),ones(n_rand,1));
     [H.IndividualParams(1:n_rand).Index] = Index{:,:};
     [H.IndividualParams(1:n_rand).EtaIndex] = EtaIndex{:,:};

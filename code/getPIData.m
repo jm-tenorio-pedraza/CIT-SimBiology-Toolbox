@@ -1,5 +1,9 @@
-function PI=getPIData(data_ext,stateVar,groups_subset,observables)
+function PI=getPIData(data_ext,stateVar,groups_subset,observables,varargin)
 % Preprocess data for group-wise parameter estimation
+p=inputParser;
+p.addParameter('zeroAction', 'input')
+p.parse(varargin{:})
+p=p.Results;
 
 load(data_ext)
 PI.data = PI.data';
@@ -44,6 +48,7 @@ for i=1:length(groups)
            
     end
     % Replacing zero values in TV for minimum tumor volume measured
+    if strcmp(p.zeroAction,'input')
     zeroIndx_responders = mat_i_responders(:,1)==0;
     zeroIndx_progressors = mat_i_progressors(:,1)==0;
 
@@ -52,6 +57,8 @@ for i=1:length(groups)
     min_progressors = min(mat_i_progressors(~zeroIndx_progressors,1));
     mat_i_responders(zeroIndx_responders,1) = min_responders;
     mat_i_progressors(zeroIndx_progressors,1) = min_progressors;
+    else
+    end
     
     data(i).Name = strjoin({groups{i} 'Progressors'},'_');    
     data(i).dataTime = time;
@@ -62,9 +69,6 @@ for i=1:length(groups)
     data(i+length(groups)).dataTime = time;
     data(i+length(groups)).dataValue = mat_i_responders;
     data(i+length(groups)).Group = groups(i);
-    
-    
-    
     
 end
 
@@ -101,12 +105,15 @@ PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},'UniformOutput
 ncol = ceil(sqrt(length(stateVar)));
 nrow = ceil(length(stateVar)/ncol);
 figure;
+colors = table2cell(table(linspecer(size(PI.data,1))));
+[PI.data(1:end).colors] = colors{:,:};
 for i = 1:length(stateVar)
     subplot(nrow,ncol,i)
     hold on
-    arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i),'*'),PI.data)
+    arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i),'Color',x.colors,'Marker','*'),PI.data)
     legend({PI.data(:).Name},'Interpreter', 'none')
     title(stateVar(i))
     set(gca,'YScale', 'log')
 end
+PI.tspan = unique(cat(1,PI.data(:).dataTime));
 return

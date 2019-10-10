@@ -21,6 +21,10 @@ delta = 1;
 
 ub = log([PI.par([H.PopulationParams H.IndividualParams.Index]).maxValue]);
 lb = log([PI.par([H.PopulationParams H.IndividualParams.Index]).minValue]);
+[phat, ~] = lsqnonlin(residuals_fn,(finalValues([H.PopulationParams...
+    H.IndividualParams.Index])), lb,ub, options_fminsearch);
+
+finalValues([H.PopulationParams H.IndividualParams.Index])=phat;
 
 %% Global optimisation
 while delta >1e-2
@@ -28,36 +32,43 @@ while delta >1e-2
 [finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 
 % Simulated annealing
-[finalValues, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
+[p_hat, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
 
 % Local optimization
 % Residuals 
-residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,100,u,1:1:100),PI,...
-    @(x)getPhi2(x,H,length(u),x_0),exp(finalValues(end-length(observables)+1:end)),normIndx);
-[p_hat, ~] = lsqnonlin(residuals_fn,(finalValues([H.PopulationParams H.IndividualParams.Index])), lb,ub, options_fminsearch);
-finalValues([H.PopulationParams H.IndividualParams.Index])=p_hat;
-fval_lsqnonlin = obj_fun(finalValues);
-delta = abs(fval_fminsearch - fval_lsqnonlin);
+residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,144,u,1:.1:144),PI,...
+    @(x)getPhi2(x,H,length(u),'initialvalue',x_0),exp(p_hat(setdiff([H.SigmaParams],...
+    [H.IndividualParams(:).OmegaIndex]))),normIndx);
+[phat, ~] = lsqnonlin(residuals_fn,(p_hat([H.PopulationParams...
+    H.IndividualParams.Index])), lb,ub, options_fminsearch);
+finalValues=p_hat;
 
+finalValues([H.PopulationParams H.IndividualParams.Index])=phat;
+
+[finalValues, fval_fminunc,~,~,grad,hessian] = fminunc(obj_fun,finalValues,options_fminsearch);
+delta = abs(fval_fminsearch - fval_fminunc);
 end
 tic
 finalValues=simulannealbnd(obj_fun,finalValues,[],[],options);
 toc
+residuals_func = @(x,sigma, addSigma) getResiduals(exp(x),@(x)sim(x,100,u,1:1:100),PI,...
+    @(x)getPhi2(x,H,length(u),x_0),sigma,normIndx, 'addSigma', addSigma);
+
 % Stochastcic EM
-[params, logL] = saem(p_hat', likelihood_fun, prior_fun,H,'m', 2e3,...
-    'StepSize',0.05,'MinFunc', 'fminsearch','OutputFn', @(x)getOutput(PI,@(p)sim(p,100,u,1:100),exp(x),...
-    @(p)getPhi2(p,H,length(u)),7:8,1:100));
+[params, logL] = saem(finalValues, residuals_func, prior_fun,H,PI,...
+    'm', 5e3,'StepSize',0.1,'MinFunc', 'lsqnonlin','OutputFn',...
+    @(x)getOutput(PI,@(p)sim(p,100,u,1:100),exp(x),...
+    @(p)getPhi2(p,H,length(u),x_0),normIndx,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(finalValues),...
-    @(p)getPhi2(p,H,length(u),x_0), normIndx,1:100);
+PI=getOutput(PI,@(p)sim(p,150,u,1:.1:150),exp(finalValues),...
+    @(p)getPhi2(p,H,length(u),'initialValue',x_0), normIndx,H);
  
       
 % Plotting tumor volume
 for i=1:length(observables)
-plotSimOutput(PI.data,i)
+plotSimOutput(PI,i)
 legend(observables(i))
-
 end
 
 finalValue=num2cell(exp(finalValues'));

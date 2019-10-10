@@ -56,6 +56,6 @@ end
 sensmatrix=sensmatrix*1/sqrt(time(end));
 
 if p.initialValue
-    sensmatrix = sensmatrix(:,2:end);
+    sensmatrix = sensmatrix(:,1:end-1);
 end
 
