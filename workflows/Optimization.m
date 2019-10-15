@@ -45,23 +45,19 @@ finalValues=p_hat;
 
 finalValues([H.PopulationParams H.IndividualParams.Index])=phat;
 
-[finalValues, fval_fminunc,~,~,grad,hessian] = fminunc(obj_fun,finalValues,options_fminsearch);
+% [finalValues, fval_fminunc,~,~,grad,hessian] = fminunc(obj_fun,finalValues,options_fminsearch);
+fval_fminunc = obj_fun(finalValues);
 delta = abs(fval_fminsearch - fval_fminunc);
 end
-tic
-finalValues=simulannealbnd(obj_fun,finalValues,[],[],options);
-toc
-residuals_func = @(x,sigma, addSigma) getResiduals(exp(x),@(x)sim(x,100,u,1:1:100),PI,...
-    @(x)getPhi2(x,H,length(u),x_0),sigma,normIndx, 'addSigma', addSigma);
 
-% Stochastcic EM
+%% 
 [params, logL] = saem(finalValues, residuals_func, prior_fun,H,PI,...
     'm', 5e3,'StepSize',0.1,'MinFunc', 'lsqnonlin','OutputFn',...
     @(x)getOutput(PI,@(p)sim(p,100,u,1:100),exp(x),...
     @(p)getPhi2(p,H,length(u),x_0),normIndx,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,150,u,1:.1:150),exp(finalValues),...
+PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(finalValues),...
     @(p)getPhi2(p,H,length(u),'initialValue',x_0), normIndx,H);
  
       
