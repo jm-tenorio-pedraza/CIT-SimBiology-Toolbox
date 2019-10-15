@@ -29,7 +29,7 @@ else
     % Define parameters to estimate
     parameters = load(strjoin({cd 'parameters_hat_2.mat'},'/'));
     parameters = parameters.parameters_hat;
-    parameters = [parameters; 'T_0'];
+    parameters = ['E_0';parameters; 'T_0'];
 %     parameters = [{'kpro_Tumor'}; setdiff(parameters,'kpro_Tumor','stable')];
 end
 % Define outputs
@@ -40,7 +40,7 @@ groups_subset = {'MOC1_Control' 'MOC1_antiPDL1' 'MOC1_Control_Mean'...
     'MOC2_antiPDL1' 'MOC2_antiCTLA4'};
 doses = {'Dose_antiPDL1' 'Dose_antiCTLA4'};
 PI=getPIData('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
-    stateVar,groups_subset,observables,'zeroAction','omit');
+    stateVar,groups_subset,observables,'zeroAction','omit','mergePhenotypes',true);
 PI.variableUnits={'Volume [mL]' 'Logit []'};
 
 [sim,u]=initializePI(model,parameters,observables,PI,doses, '');
@@ -48,7 +48,7 @@ normIndx = [];
 initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1});
 % Get initial values
 x_0 = getInitialValues([PI.data(:).Group], initialStruct);
-
+close all
 %% Optimization setup
 % Hierarchical structure
 H = getHierarchicalStruct(parameters(1:end-1),'n_sigma', length(observables), 'n_rand', 1, 'n_indiv', length(u));
