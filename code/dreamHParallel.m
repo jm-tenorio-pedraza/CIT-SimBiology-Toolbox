@@ -73,11 +73,11 @@ for t = 2:T
     dX = zeros(N,d);                                        % Set N jump vectors to zero
     std_X = std(X);                                         % Compute std each dimension
     Xp = X;
-    id = randsample(1:n_CR, N, true, pCR);                  % Select index of crossover value
-    A = z_t < CR(id);                                       % Derive subset A with selected dimensions to be updated
+    id = randsample(1:n_CR, N, true, pCR)';                  % Select index of crossover value
+    A = z_t < CR(id)';                                       % Derive subset A with selected dimensions to be updated
     d_star = sum(A,2);                                      % How many dimensions sampled?
     
-    if sum(d_star == 0)
+    if any(d_star == 0)
         A(d_star==0,:) = ismember(z_t(d_star==0,:),min(z_t(d_star==0,:)));
         d_star(d_star==0) = 1;
     end                                                     % A must contain at least 1 value
@@ -104,7 +104,7 @@ for t = 2:T
             % Evaluate proposal of new individual parameters
             [X(k,:), p_X(k,1), accept_i]= mcmcstep(X(k,:),...
                 Xp(k,:), p_X(k,1), likelihood, prior,...
-                U_ind(k), accept_ind(k));                      % Calculate pdf for ith proposal from individual parameters
+                U_ind(t,k), accept_ind(k));                      % Calculate pdf for ith proposal from individual parameters
             if accept_i > accept_ind(k)                        % MH criterion
                 accept_ind(k) = accept_ind(k) + 1;
             else
@@ -118,7 +118,7 @@ for t = 2:T
     parfor k=1:N
         [X(k,:), p_X(k,1), accept_i]= mcmcstep(X(k,:),...
             Xp(k,:), p_X(k,1), likelihood, prior,...
-            U_pop(k), accept_pop(k));
+            U_pop(t,k), accept_pop(k));
         
         if accept_i > accept_pop(k)                             % MH criterion for the population parameters
             accept_pop(k) = accept_pop(k) + 1;

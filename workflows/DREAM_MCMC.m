@@ -1,15 +1,21 @@
 %% DREAM MCMC
-
+N = 20;
 finalValues = log([PI.par(:).finalValue]);
 X0 =[ (finalValues); randn(100,length(finalValues))*0.1 + finalValues];
 logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
 
-w0=X0(I(1:length(finalValues)),:);
+w0=X0(I(1:N),:);
 
 h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dreamH(w0,likelihood_fun,prior_fun,...
+    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
+    1.38,'H', h);
+toc
+
+tic
+[x2, p_x2,accept2,pCR2] = dreamHParallel(w0,likelihood_fun,prior_fun,...
     size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
     1.38,'H', h);
 toc

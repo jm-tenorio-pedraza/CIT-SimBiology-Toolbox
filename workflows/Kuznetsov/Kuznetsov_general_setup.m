@@ -51,7 +51,7 @@ x_0 = getInitialValues([PI.data(:).Group], initialStruct);
 
 %% Optimization setup
 % Hierarchical structure
-H = getHierarchicalStruct(parameters(1:end-1),'n_sigma', length(observables), 'n_rand', 8, 'n_indiv', length(u));
+H = getHierarchicalStruct(parameters(1:end-1),'n_sigma', length(observables), 'n_rand', 1, 'n_indiv', length(u));
 try
     sigmaNames=arrayfun(@(x)strjoin({'Omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
     sigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);
