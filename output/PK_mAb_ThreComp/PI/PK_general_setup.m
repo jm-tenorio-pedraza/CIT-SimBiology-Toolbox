@@ -6,7 +6,7 @@ warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreComp/PI')
 sensitivity = false;
-
+PI=1;
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/PK_mAb_ThreeComp.sbproj');
 % Extract model
@@ -19,9 +19,14 @@ set(cs, 'MaximumWallClock', 0.25)
     value = cell2mat(get(model.Parameters, 'Value'));
     value = value(I);
     parameters=name(value>0);
+    if PI ==1
 exclude_parameters = {'k12' 'k21' 'k23' 'k32' 'ID_g_Tumor'...
+        'T2B'  'ID_g_Blood' 'ka_Tumor' 'ka_IP', 'ID','ke_Central','ke_Tumor'};
+    else
+        exclude_parameters = {'k12' 'k21' 'k23' 'k32' 'ID_g_Tumor'...
         'T2B'  'ID_g_Blood' 'ka_Tumor' 'ka_IP', 'ID','ke_Central'};
 
+    end
 parameters = setdiff(parameters, [exclude_parameters]);
 parameters = ['Blood'; 'Tumor';'ke_Central';parameters; 'IP'; 'ID'];
 % Define outputs
