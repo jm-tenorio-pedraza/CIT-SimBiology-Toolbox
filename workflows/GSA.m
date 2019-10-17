@@ -27,7 +27,7 @@ s=shmPlot2(F,groups_subset(indx),time, observables,'tau',0.1);
 %% Get PSS
 pcs = V*S;
 pcs = (pcs/max(max(abs(pcs))));
-pc = plotPSS(pcs,3,parameters(1:end-1),'threshold',-3.5);
+pc = plotPSS(pcs,4,parameters(1:end-1),'threshold',-1.5);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');

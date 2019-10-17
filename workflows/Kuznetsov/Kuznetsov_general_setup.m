@@ -15,6 +15,7 @@ cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.25)
+%% Load parameters to estimate and data
 if sensitivity
     [name,I] = sort(get(model.Parameters, 'Name'));
     value = cell2mat(get(model.Parameters, 'Value'));
@@ -22,7 +23,7 @@ if sensitivity
     parameters=name(value>0);
     % Define parameters to exclude from SA
     exclude_parameters = {'k12' 'k21' 'K_D_antiPDL1' 'k23' 'k32' 'vol_Tumor'...
-        'T_0'  'CD8' 'CD8_E' 'Tumor_P' 'TV' 'kde_Tumor' 'CD8_logit'};
+        'T_0'  'CD8' 'CD8_E' 'Tumor_P' 'TV' 'kde_Tumor' 'CD8_logit' 'Q12' 'Q23' };
     parameters = setdiff(parameters, [exclude_parameters]);
     parameters = [ parameters; 'T_0'];
 else
@@ -43,7 +44,7 @@ PI=getPIData('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/
     stateVar,groups_subset,observables,'zeroAction','omit','mergePhenotypes',true);
 PI.variableUnits={'Volume [mL]' 'Logit []'};
 
-[sim,u]=initializePI(model,parameters,observables,PI,doses, '');
+[sim,u]=initializePI(model,parameters,observables,PI,doses, 'MOC1');
 normIndx = [];
 initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1});
 % Get initial values
@@ -51,19 +52,24 @@ x_0 = getInitialValues([PI.data(:).Group], initialStruct);
 close all
 %% Optimization setup
 % Hierarchical structure
-H = getHierarchicalStruct(parameters(1:end-1),'n_sigma', length(observables), 'n_rand', 1, 'n_indiv', length(u));
+H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
+    'rand_indx', 1, 'n_indiv', length(u),'cell_indx', 12);
 try
-    sigmaNames=arrayfun(@(x)strjoin({'Omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
-    sigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);
+    cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),H.CellParams,'UniformOutput',false)';
+    indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
+    SigmaNames = [cellSigmaNames; indivSigmaNames];
+    SigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'sigma', x}, '_'),...
+        observables,'UniformOutput', false);
 catch
-    sigmaNames= cellfun(@(x) strjoin({'b', x}, '_'),observables','UniformOutput', false);
+    SigmaNames= cellfun(@(x) strjoin({'b', x}, '_'),observables','UniformOutput', false);
 end
 % Generating PI
 sigma_prior= [ repelem(1,length(H.PopulationParams), 1);...
+     repelem(1, length([H.CellParams(:).Index]),1);
      repelem(1, length([H.IndividualParams(:).Index]),1);...
     repelem(0.1, length(H.SigmaParams),1)];
 PI.par = getParamStruct2(sim,H,size(PI.data,1),repelem(0.5,length(H.SigmaParams),1),...
-    sigmaNames,'Sigma', sigma_prior);
+    SigmaNames,'Sigma', sigma_prior);
 finalValues =log([PI.par(:).startValue]);
 
 % Residuals function

@@ -13,7 +13,7 @@ cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.2)
-sensitivity = false;
+sensitivity = true;
 %% load data and previous results
 stateVar={'Tumor' 'CD8_logit' 'CD107a_logit' 'DC_Rel' 'GMDSC_Rel'...
     'Tumor_PDL1_Rel'};
@@ -27,13 +27,14 @@ if sensitivity
     % Define parameters to estimate
     parameters=name(value>0);
     exclude_parameters = {'CD107a' 'CD8' 'K_D_antiPDL1' 'K_D_antiCTLA4'...
-        'Total_Cell_Count' 'vol_Tcell' 'vol_Tumor', 'T_0' 'CD107a_logit' 'CD8_logit' 'k_LN'};
+        'Total_Cell_Count' 'vol_Tcell' 'vol_Tumor', 'T_0' 'CD107a_logit'...
+        'CD8_logit' 'k_LN' 'ka'};
     parameters = setdiff(parameters, exclude_parameters);
     parameters = [ parameters; 'T_0'];
 else
     parameters = load(strjoin({cd,'parameters_hat_2.mat'},'/'));
     parameters = parameters.parameters_hat;
-    parameters = [ parameters; 'T_0'];
+    parameters = ['E_0'; parameters; 'T_0'];
 
 end
 % Define outputs% Define outputs
@@ -58,10 +59,10 @@ normIndx = 4:6;
 initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1});
 % Get initial values
 x_0 = getInitialValues([PI.data(:).Group], initialStruct);
-
+close all
 %% Optimization setup
 % Hierarchical structure
-H = getHierarchicalStruct(parameters(1:end-1),'n_sigma', length(observables), 'n_rand', 5, 'n_indiv', length(u));
+H = getHierarchicalStruct(parameters(1:end-1),'n_sigma', length(observables), 'n_rand', 1, 'n_indiv', length(u));
 try
     sigmaNames=arrayfun(@(x)strjoin({'Omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
     sigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);

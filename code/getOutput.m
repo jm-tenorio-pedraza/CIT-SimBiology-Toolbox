@@ -46,7 +46,7 @@ simOutput=arrayfun(@(x)x.simOutput(ismember(x.simTime,x.dataTime),:),PI.data,...
 [PI.data(1:length(simOutput)).('y_hat')]=simOutput{:,:};
 
 % Get lower and upper boudaries
-sigma = p(setdiff(H.SigmaParams, [H.IndividualParams(:).OmegaIndex]));
+sigma = p(setdiff(H.SigmaParams, [H.CellParams(:).OmegaIndex H.IndividualParams(:).OmegaIndex]));
 
 
 lb = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),1-par.prob,3),...
