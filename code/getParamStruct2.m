@@ -34,8 +34,8 @@ param=[simFun.Parameters.Value(H.PopulationParams)];       %
 
     % Min            Max                Start           % Mu             % Sigma
 p=[ param*1e-5       param*1e5           param           param 
-    param_cell*.01   param_cell*100      param_cell      param_cell
-    param_indiv*.01  param_indiv*100     param_indiv     param_indiv     
+    param_cell*.01   param_cell*100      ones(size(param_cell))      ones(size(param_cell))
+    param_indiv*.01  param_indiv*100     ones(size(param_indiv))     ones(size(param_indiv))     
     sigmaParams*.01  sigmaParams*100     sigmaParams     sigmaParams];
 
 if length(inputs.Sigma)<2

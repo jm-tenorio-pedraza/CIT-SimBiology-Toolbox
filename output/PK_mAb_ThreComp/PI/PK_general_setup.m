@@ -8,7 +8,7 @@ cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_T
 sensitivity = false;
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/PK_mAb_ThreeComp.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/ThreeComp.sbproj');
 % Extract model
 model=out.m1;
 cs=model.getconfigset;
@@ -47,7 +47,6 @@ dose = {'Blood.Dose_antiPDL1'};
 sim=createSimFunction(model,parameters,observables, dose,variant,...
     'UseParallel', false);
 normIndx = [];
-initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1});
 % Get initial values
 x_0 =[PI.data(:).dose]';
 
@@ -73,7 +72,7 @@ PI.par = getParamStruct2(sim,H,size(PI.data,1),repelem(0.5,length(H.SigmaParams)
  finalValues =log([PI.par(:).startValue]);
 
 % Residuals function
-residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,144,u,1:.1:144),PI,...
+residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,144,u,PI.tspan),PI,...
     @(x)getPhi2(x,H,length(u),'initialValue',x_0),(@(x)getCovariance(x,H)),normIndx);
 
 % Log-ikelihood function
@@ -81,12 +80,12 @@ likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
 prior_fun=@(p)(createPriorDistribution3(exp(p),PI,H,'type','uniform'));
 
 % Residuals 
-residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,144,u,1:.1:144),PI,...
+residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,144,u,PI.tspan),PI,...
     @(x)getPhi2(x,H,length(u),'initialValue',x_0),exp(finalValues(end-length(observables)+1:end)),normIndx);
 
 %% Save results
-save('PI_PK.mat', 'PI')
-load(strjoin({cd 'PI_PK.mat'},'/'))
+save('PI_PK_CE.mat', 'PI')
+load(strjoin({cd 'PI_PK_CE.mat'},'/'))
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/parameters_hat.mat','parameters_hat')
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
