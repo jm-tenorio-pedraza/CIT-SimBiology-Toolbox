@@ -3,7 +3,7 @@ p=inputParser;
 p.addParameter('n_sigma',1,@isnumeric);
 p.addParameter('rand_indx',0,@isnumeric);
 p.addParameter('n_indiv',1,@isnumeric);
-p.addParameter('cell_indx',1,@isnumeric);
+p.addParameter('cell_indx',[],@isnumeric);
 p.parse(varargin{:})
 p=p.Results;
 
@@ -14,9 +14,13 @@ n_rand = length(rand_indx);
 n_cell = length(cell_indx);
 n_indiv = size(PI.data,1);
 n_sigma=p.n_sigma;
-
+try
 cell_groups = cellfun(@(x)x(1:find(x=='_',1)-1),[PI.data(:).Group],...
     'UniformOutput',false);
+catch
+    cell_groups = cellfun(@(x)x(1:find(x=='_',1)-1),{PI.data(:).Group},...
+    'UniformOutput',false);
+end
 celltypes = unique(cell_groups);                                                % Extract the cell types in the dataset
 n_celltypes = length(celltypes);
 %% Basic Hierarchical structure
@@ -52,7 +56,7 @@ catch
     CellOmegaIndex ={};                                                    % If there are no individual parameters    
 end
 
-[H.CellParams(rand_indx).OmegaIndex] = CellOmegaIndex{:,:};                % Add omega indexes of cell to H
+[H.CellParams(cell_indx).OmegaIndex] = CellOmegaIndex{:,:};                % Add omega indexes of cell to H
 
 %% Add individual parameter indexes if available
 [H.IndividualParams(1:n_rand).EtaIndex] = IndivEtaIndex{:,:};

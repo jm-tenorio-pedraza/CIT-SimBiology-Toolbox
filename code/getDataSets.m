@@ -27,7 +27,7 @@ dataValue = cellfun(@(x)nan(size(x,1),nVar),data,'UniformOutput',false);    % Al
 PI = [];                                                                    % Create PI structure
 [PI.data(1:length(groups)).Name] = groups{:,:};                                 % Add one group entry to the PI structure for each considered condition in each dataset
 
-[PI.data(1:length(groups)).Group] = groups{:,:};                                 % Add one group entry to the PI structure for each considered condition in each dataset
+[PI.data(1:end).Group] = groups{:};                                 % Add one group entry to the PI structure for each considered condition in each dataset
 
 for i=1:length(data)
     data_i = data{i};

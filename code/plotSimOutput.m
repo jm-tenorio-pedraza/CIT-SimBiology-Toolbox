@@ -46,6 +46,6 @@ end
     if std(log10(PI.data(i).simOutput(:,colIndx)))>1
         set(gca,'YScale','log')
     end
-%        set(gca,'YScale','log')
+        set(gca,'YScale','log')
 
 end

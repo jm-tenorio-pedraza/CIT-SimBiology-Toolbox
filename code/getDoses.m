@@ -13,4 +13,7 @@ dose = cellfun(@(x)str2double(strrep(x,'_mgkg', ''))*p.normFactor,dose,'UniformO
 doses = arrayfun(@(x) table(0, [x.dose],...
     0, 'VariableNames', {'Time' 'Amount' 'Rate'}),...
     PI.data,'UniformOutput',false);
+for i = 1:length(doses)
+    doses{i}.Properties.VariableUnits= {'hour' 'microgram' 'microgram/second'};
+end
 return

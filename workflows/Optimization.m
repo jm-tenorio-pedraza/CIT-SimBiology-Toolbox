@@ -29,7 +29,7 @@ finalValues([H.PopulationParams H.CellParams.Index H.IndividualParams.Index])=ph
 %% Global optimisation
 while delta >1e-2
 % Nelder-Mead
-%  [finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
+  [finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 
 % Simulated annealing
 [p_hat, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
@@ -47,7 +47,7 @@ finalValues([H.PopulationParams H.CellParams.Index H.IndividualParams.Index])=ph
 
 % [finalValues, fval_fminunc,~,~,grad,hessian] = fminunc(obj_fun,finalValues,options_fminsearch);
 fval_fminunc = obj_fun(finalValues);
-delta = abs(fval_fminsearch - fval_fminunc);
+delta = abs(fval_anneal - fval_fminunc);
 end
 
 %% 

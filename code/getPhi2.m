@@ -21,11 +21,13 @@ end
 if size(p,1)>size(p,2)
     p=p';
 end
-p_indiv=arrayfun(@(x)p(x.EtaIndex)*p(x.Index),H.IndividualParams,'UniformOutput',false);  % Obtain indexes for each individually-varying parameter
+p_indiv=arrayfun(@(x)p(x.EtaIndex).*p(x.Index),H.IndividualParams,'UniformOutput',false);  % Obtain indexes for each individually-varying parameter
 p_indiv=cell2mat(p_indiv')';                                              % Convert the ind indexes into a matrix
-p_cell=arrayfun(@(x)H.CellIndx*(p(x.Index)*p(x.EtaIndex))',H.CellParams,'UniformOutput',false);         % Obtain indexes for each individually-varying parameter
+try
+p_cell=arrayfun(@(x)H.CellIndx*(p(x.Index).*p(x.EtaIndex))',H.CellParams,'UniformOutput',false);         % Obtain indexes for each individually-varying parameter
 p_cell=cell2mat(p_cell')';                                                % Convert the ind indexes into a matrix
-
+catch
+end
 
 if size(p_indiv,2)>=size(p_indiv,1)
         p_indiv=p_indiv';
