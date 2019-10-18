@@ -49,6 +49,7 @@ end
 
 % Parameter names
 try
+    if ~isempty(H.CellParams(1).name)
     paramNames=[simFun.Parameters.Name(H.PopulationParams);...
         repelem({(H.CellParams(1:end).name)}',length(H.CellParams(1).Index),1);
         repelem({(H.IndividualParams(1:end).name)}',n_sim,1);...
@@ -57,6 +58,15 @@ try
         H.CellParams','UniformOutput', false);
     paramNames([H.IndividualParams.EtaIndex])=arrayfun(@(x)strjoin({'eta' x.name},'_'),...
         H.IndividualParams','UniformOutput', false);
+    else
+         paramNames=[simFun.Parameters.Name(H.PopulationParams);...
+        repelem({(H.IndividualParams(1:end).name)}',n_sim,1);...
+        sigmaNames];
+   
+    paramNames([H.IndividualParams.EtaIndex])=arrayfun(@(x)strjoin({'eta' x.name},'_'),...
+        H.IndividualParams','UniformOutput', false);
+    end
+    
 catch
     disp('Parameter array will be built using population params only')
     paramNames=[simFun.Parameters.Name(setdiff(H.PopulationParams, [H.IndividualParams.EtaIndex]));...

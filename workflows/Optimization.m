@@ -57,7 +57,7 @@ end
     @(p)getPhi2(p,H,length(u),x_0),normIndx,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(finalValues),...
+PI=getOutput(PI,@(p)sim(p,100,u,1:1:PI.tspan(end)),exp(finalValues),...
     @(p)getPhi2(p,H,length(u),'initialValue',x_0), normIndx,H);
  
       

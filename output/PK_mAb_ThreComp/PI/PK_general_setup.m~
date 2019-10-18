@@ -23,14 +23,9 @@ MODEL = 'ThreeComp_CE';
     parameters=name(value>0);
 exclude_parameters = {'k12' 'k21' 'k23' 'k32' 'ID_g_Tumor'...
         'T2B'  'ID_g_Blood' 'ka_Tumor' 'ka_IP', 'ID','ke_Central'};
-if strcmp(MODEL, 'ThreeComp_CE')
-    exclude_parameters = [exclude_parameters, {'ke_Peripheral'}, {'ke_Tumor'}];
-elseif strcmp(MODEL, 'ThreeComp_CE_TE')
-        exclude_parameters = [exclude_parameters, {'ke_Peripheral'}];
-end
 
 parameters = setdiff(parameters, [exclude_parameters]);
-parameters = ['Blood'; 'Tumor';'ke_Central';parameters; 'Peripheral'; 'ID'];
+parameters = ['Blood'; 'Tumor';'ke_Central';parameters; 'IP'; 'ID'];
 % Define outputs
 observables={'ID_g_Blood' 'Blood.antiPDL1' 'ID_g_Tumor' 'Tumor.antiPDL1' 'T2B'};
 stateVar={'Tumor.antiPDL1' 'Tumor_to_Blood' 'Blood.antiPDL1'};
@@ -53,16 +48,12 @@ x_0 =[PI.data(:).dose]';
 
 %% Optimization setup
 % Hierarchical structure
-H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 1:2, 'n_indiv', length(u));
+H = getHierarchicalStruct(parameters(1:end-1),'n_sigma', length(observables), 'n_rand', 2, 'n_indiv', length(u));
 try
-    sigmaNames=arrayfun(@(x)strjoin({'Omega', x.name}, '_'),...
-        H.IndividualParams,'UniformOutput',false)';
-    sigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) ...
-        strjoin({'sigma', x}, '_'),observables,'UniformOutput', false);
+    sigmaNames=arrayfun(@(x)strjoin({'Omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
+    sigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'b', x}, '_'),observables,'UniformOutput', false);
 catch
-    sigmaNames= cellfun(@(x) strjoin({'sigma', x}, '_'),observables',...
-        'UniformOutput', false);
+    sigmaNames= cellfun(@(x) strjoin({'b', x}, '_'),observables','UniformOutput', false);
 end
 % Generating PI
 sigma_prior= [ repelem(1,length(H.PopulationParams), 1);...

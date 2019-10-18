@@ -58,6 +58,10 @@ end
 
 [PI,doses] = getDoses(PI);
 doses = doses';
+for i=1:length(doses)
+    doses{i}.Properties.VariableUnits = {'hour' 'milligram' 'milligram/second'};
+end
+
 [PI.data(1:end).doses] = doses{:,:};
 
 PI.stateVar = varNames;
