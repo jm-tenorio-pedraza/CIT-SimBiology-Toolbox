@@ -50,25 +50,31 @@ fval_fminunc = obj_fun(finalValues);
 delta = abs(fval_anneal - fval_fminunc);
 end
 
-%% 
+%% SAEM
 [params, logL] = saem(finalValues, residuals_func, prior_fun,H,PI,...
     'm', 5e3,'StepSize',0.1,'MinFunc', 'lsqnonlin','OutputFn',...
     @(x)getOutput(PI,@(p)sim(p,100,u,1:100),exp(x),...
     @(p)getPhi2(p,H,length(u),x_0),normIndx,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,100,u,1:1:100),exp(finalValues),...
+PI=getOutput(PI,@(p)sim(p,100,u,1:1:PI.tspan(end)),exp(finalValues),...
     @(p)getPhi2(p,H,length(u),'initialValue',x_0), normIndx,H);
  
-      
-% Plotting tumor volume
+ finalValue=num2cell(exp(finalValues'));
+[PI.par(1:end).finalValue]=finalValue{:,:};
+     
+%% Plotting output
 for i=1:length(observables)
 plotSimOutput(PI,i)
-legend(observables(i))
+legend(observables(i),'Location', 'best')
 end
 
-finalValue=num2cell(exp(finalValues'));
-[PI.par(1:end).finalValue]=finalValue{:,:};
+%% Plotting errors
+for i=1:length(observables)
+plotError(exp(finalValues(setdiff(H.SigmaParams,...
+    [H.IndividualParams.OmegaIndex, H.CellParams.OmegaIndex]))),PI,i)
+legend(observables(i),'Location', 'best')
+end
 
 %% Create variant object
 MOC1_optimized = createVariant(PI,H,'MOC1_optimized');

@@ -1,4 +1,4 @@
-function plotSimOutput(PI,colIndx)
+function plotError(sigma,PI,colIndx)
 
 n_sim=size(PI.data,1);
 n_col=ceil(sqrt(n_sim));
@@ -14,18 +14,16 @@ figure
 for i=1:n_sim
     subplot(n_row,n_col,i)
     hold on
-    sim=plot(PI.data(i).simTime, PI.data(i).simOutput(:,colIndx));
-    dat=plot(PI.data(i).dataTime, PI.data(i).dataValue(:,colIndx));
-try
-    X = [PI.data(i).simTime; PI.data(i).simTime(end:-1:1)];
-    Y = [PI.data(i).ub(:,colIndx); PI.data(i).lb(end:-1:1,colIndx)];
-    nanindx = isnan(Y);
-    error = patch('XData', X(~nanindx),...
-        'YData',Y(~nanindx));
-   
-catch
-    error = [];
-end
+    if ~all(isnan(PI.data(i).dataValue(:,colIndx)))
+    dat=plot(PI.data(i).dataTime, PI.data(i).dataValue(:,colIndx) - ...
+        PI.data(i).y_hat(:,colIndx));
+    else
+        continue
+    end
+    zeroPlot = plot(PI.data(i).dataTime, zeros(size(PI.data(i).dataTime)));
+    ub = plot(PI.data(i).dataTime, ones(size(PI.data(i).dataTime)),'--k');
+    lb = plot(PI.data(i).dataTime, -ones(size(PI.data(i).dataTime)),'--k');
+
     title(PI.data(i).Name)
     
     col_i=treatment_colors(ismember(treatments,PI.data(i).Group),:);
@@ -35,9 +33,8 @@ end
     dat.MarkerEdgeColor=col_i;
 
     dat.Marker='d';
-     error.LineStyle = 'none';
-    error.FaceColor = col_i;
-    error.FaceAlpha = 0.2;
+     zeroPlot.LineStyle = 'none';
+    
     
     ylabel(PI.variableUnits(colIndx))
 
@@ -46,6 +43,6 @@ end
     if std(log10(PI.data(i).simOutput(:,colIndx)))>1
         set(gca,'YScale','log')
     end
-        set(gca,'YScale','log')
+       %set(gca,'YScale','log')
 
 end
