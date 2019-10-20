@@ -76,7 +76,9 @@ for t = 2:T
    
     for i = 1:N                                             % Create proposals for individual parameters
         a = R(i, draw(1:D(t,i), i));                        % Calculate step size and update only those columns in A
-        b = R(i, draw(D(t,i)+1:2*D(t,i),i));                % Extract vectors a and b whose entries are indexes not equal to i 
+
+        b = R(i, draw(D(t,i)+1:2*D(t,i),i));                % Extract vectors a and b whose entries are indexes not equal to i
+       
         A = find(z((t-1)*N+i,:) < CR(id(i)));               % Derive subset A with selected dimensions to be updated
         d_star = numel(A);                                  % How many dimensions sampled?
         
@@ -85,11 +87,11 @@ for t = 2:T
          
         gamma_d = stepSize/sqrt(2*D(t,i)*d_star);           % Calculate jump rate
         g=randsample([gamma_d 1], 1, true, [1-p_g p_g]);    % Select gamma: 80/20 mix [default 1]
-        dX(i,A) = c_star*randn(1, d_star) + ...
+          dX(i,A) = c_star*randn(1, d_star) + ...             
             (1+lambda(t,i))*g*sum(X(a,A)-X(b,A),1);         % Compute ith jump diff. evol.
-        J(id(i)) = J(id(i)) + sum((dX(i, 1:d)./std_X).^2);          % Update jump distance crossover idx
-        n_id(id(i)) = n_id(id(i)) + 1;                              % How many times idx crossover used
-        
+       
+          J(id(i)) = J(id(i)) + sum((dX(i, 1:d)./std_X).^2);      % Update jump distance crossover idx
+        n_id(id(i)) = n_id(id(i)) + 1;                          % How many times idx crossover used
     end
     
                                        % Compute ith proposal for the individual parameters
@@ -115,7 +117,8 @@ for t = 2:T
     parfor k=1:N
         [X(k,:), p_X(k,1), accept_i]= mcmcstep(X(k,:),...
             Xp(k,:), p_X(k,1), likelihood, prior,...
-            U_pop(t,k), accept_pop(k));     
+            U_pop(t,k), accept_pop(k));
+        
         if accept_i > accept_pop(k)                             % MH criterion for the population parameters
             accept_pop(k) = accept_pop(k) + 1;
         else
@@ -124,7 +127,9 @@ for t = 2:T
     end
     
     totcount = N*(t);
-   
+    J(id(i)) = J(id(i)) + sum((dX(i, 1:d)./std_X).^2);          % Update jump distance crossover idx
+    n_id(id(i)) = n_id(id(i)) + 1;                              % How many times idx crossover used
+    
     if ~isempty(H.IndividualParams)
         accept = mean([sum(accept_pop),sum(accept_ind)])/totcount;
     else
