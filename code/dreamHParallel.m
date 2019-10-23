@@ -38,7 +38,6 @@ p_g = p.p_g;
 stepSize=p.StepSize;
 posterior = @(x)likelihood(x) + prior(x);
 x=nan(d,N,T); p_x = nan(T,N);                               % Preallocate chains and density
-Xp = nan(N,d);
 R = nan(N,N-1); p_X = nan(N,1);
 
 [J,n_id] = deal(zeros(1,n_CR));                             % Variables selection prob. crossover
@@ -51,8 +50,8 @@ x(1:d, 1:N, 1) = X'; p_x(1,1:N) = p_X';                     % Store initial stat
 
 H = p.H;
 try
-    ind_index = [H.IndividualParams(:).Index];
-    param_index = setdiff(1:d, H.IndividualParams.Index);
+    ind_index = [H.CellParams(:).Index H.IndividualParams(:).Index];
+    param_index = setdiff(1:d, ind_index);
 catch
     param_index = 1:d;
 end
@@ -72,7 +71,7 @@ for t = 2:T
     dX = zeros(N,d);                                        % Set N jump vectors to zero
     std_X = std(X);                                         % Compute std each dimension
     Xp = X;
-    id = randsample(1:n_CR, N, true, pCR)';                  % Select index of crossover value
+    id = randsample(1:n_CR, N, true, pCR);                  % Select index of crossover value
    
     for i = 1:N                                             % Create proposals for individual parameters
         a = R(i, draw(1:D(t,i), i));                        % Calculate step size and update only those columns in A
@@ -85,11 +84,10 @@ for t = 2:T
          
         gamma_d = stepSize/sqrt(2*D(t,i)*d_star);           % Calculate jump rate
         g=randsample([gamma_d 1], 1, true, [1-p_g p_g]);    % Select gamma: 80/20 mix [default 1]
+       
         dX(i,A) = c_star*randn(1, d_star) + ...
             (1+lambda(t,i))*g*sum(X(a,A)-X(b,A),1);         % Compute ith jump diff. evol.
-        J(id(i)) = J(id(i)) + sum((dX(i, 1:d)./std_X).^2);          % Update jump distance crossover idx
-        n_id(id(i)) = n_id(id(i)) + 1;                              % How many times idx crossover used
-        
+       
     end
     
                                        % Compute ith proposal for the individual parameters
@@ -133,8 +131,11 @@ for t = 2:T
     progress((t-1)/T,mean(X)',...
        accept)       % Print out progress status
     
-    x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                    % Append current X and density
-    
+   x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                    % Append current X and density
+   for i=1:N
+   J(id(i)) = J(id(i)) + sum((dX(i,:)./std_X).^2);  % Update jump distance crossover idx
+   n_id(id(i)) = n_id(id(i)) + 1;
+   end
     if BurnIn>t*N
         if (sum(J)>0), pCR = J./n_id;
             pCR = pCR/sum(pCR); end                             % update selection prob. crossover

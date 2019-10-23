@@ -50,7 +50,8 @@ x(1:d, 1:N, 1) = X'; p_x(1,1:N) = p_X';                     % Store initial stat
 
 H = p.H;
 try
-    param_index = setdiff(1:d, H.IndividualParams.Index);
+ ind_index = [H.CellParams(:).Index H.IndividualParams(:).Index];
+    param_index = setdiff(1:d, ind_index);
 catch
     param_index = 1:d;
 end
@@ -64,8 +65,8 @@ lambda = unifrnd(-c, c, T,N);                               % Draw N lambda valu
 
 accept_pop = 0;
 accept_ind = 0;
+
 for t = 2:T
-    
     [~, draw] = sort(rand(N-1,N));                          % Permute [1, ..., N-1] N times
     dX = zeros(N,d);                                        % Set N jump vectors to zero
     std_X = std(X);                                         % Compute std each dimension
@@ -84,8 +85,7 @@ for t = 2:T
         gamma_d = stepSize/sqrt(2*D(t,i)*d_star);           % Calculate jump rate
         g=randsample([gamma_d 1], 1, true, [1-p_g p_g]);    % Select gamma: 80/20 mix [default 1]
         
-        % Calculate step size and update only those columns in A
-        dX(i,A) = c_star*randn(1, d_star) + ...             
+        dX(i,A) = c_star*randn(1, d_star) + ...             % Calculate step size and update only those columns in A
             (1+lambda(t,i))*g*sum(X(a,A)-X(b,A),1);         % Compute ith jump diff. evol.
         
         % Check if there are individual parameters to estimate
