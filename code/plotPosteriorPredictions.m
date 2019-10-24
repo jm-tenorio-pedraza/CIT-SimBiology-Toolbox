@@ -3,11 +3,17 @@ if nargin<2
     error('GWMCMC:toofewinputs','AMCMC requires atleast 2 inputs.')
 end
 p=inputParser;
-p.addParameter('simTime',0:1:100);
+p.addParameter('simTime',PI.tspan);
 p.parse(varargin{:});
 p=p.Results;
+n_sim=size(PI.data,1);
+treatments=([PI.CI(:).Group]);
 
-treatments=unique([PI.CI(:).Group]);
+if length(treatments)~=n_sim
+    treatments = unique({PI.data(:).Group});
+else
+    treatments = unique(treatments);
+end
 treatment_colors=linspecer(length(treatments));
 
 for i=1:length(outputs)
@@ -60,16 +66,16 @@ for i=1:length(outputs)
         dat.Marker='d';
         
         title(PI.CI(j).Name,'interpreter','none')
-        ylabel(PI.variableUnits(i))
-        xlabel('Time [days]')
+        ylabel(PI.variableUnits(i),'interpreter', 'none')
+        xlabel('Time [hr]')
         grid on
         hold on
-        if max(m_data)/min(m_data)>1e3
+        if max(m_data)/min(m_data)>1e1
             set(gca,'YScale','log')
         else
         end
     end
-    legend(output_i)
+    legend(output_i, 'interpreter', 'none')
 
 end
 end

@@ -56,11 +56,11 @@ simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),u,PI.tspan),x,...
 tic
 PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observablesPlot);
 toc
-PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
-plotPosteriorPredictions(PI,observables)
+PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),H);
+plotPosteriorPredictions(PI,observablesPlot)
 
 %% Save results
 save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_x')
 
-save('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI/DREAM_MCMC_logP2.mat', 'p_x')
+save(strjoin({cd '/PI_PK_CE.mat'},''), 'PI')
