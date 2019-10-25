@@ -15,7 +15,7 @@ tic
 toc
 
 tic
-[x2, p_x2,accept2,pCR2] = dreamHParallel(w0,likelihood_fun,prior_fun,...
+[x2, p_x2,accept2,pCR2] = dreamH(x(:,:,end)',likelihood_fun,prior_fun,...
     size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
     1.38,'H', h);
 toc
@@ -33,9 +33,13 @@ plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name})
 getGelmanRubinStatistic(x_a,{PI.par(:).name})
 %% Plotting results
 
-postSamples =x_a(:,:,ceil(size(x_a,3)/2):100:ceil(1e6/13));
-logP_thinned = logP(ceil(size(x_a,3)/2):100:end,:);
-plotMCMCDiagnostics(postSamples,logP_thinned,'name', {PI.par(:).name},'model', 'CIM');
+postSamples =x(:,:,ceil(size(x,3)/5):200:2e4);
+logP_thinned = p_x(ceil(size(x,3)/5):200:2e4,:);
+plotMCMCDiagnostics(postSamples,logP_thinned,'name', {PI.par(:).name},'model', 'PK model (ThreeComp)');
+
+plotMCMCDiagnostics(postSamples([H.PopulationParams],:,:),logP_thinned,...
+    'name', {PI.par([H.PopulationParams]).name},'model', 'PK model (ThreeComp)');
+
 postSamples=postSamples(:,:)';
 
 % Population Parameters
@@ -47,14 +51,16 @@ plotBivariateMarginals_2(exp(postSamples(:,[H.IndividualParams.EtaIndex...
 % Sigma parameters
 plotBivariateMarginals_2(exp(postSamples(:, H.SigmaParams)),'names', {PI.par(H.SigmaParams).name})
 %% Posterior predictions
-simFun=@(x)getOutput(PI,@(p)sim(p,100,u,1:1:100),x,...
-    @(p)getPhi2(p,H,length(u)),normIndx, 1:100);
+simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),u,PI.tspan),x,...
+    @(p)getPhi2(p,H,length(u),'initialValue',x_0),normIndx, H);
 tic
-PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observables);
+PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observablesPlot);
 toc
-PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
-plotPosteriorPredictions(PI,observables)
+PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),H);
+plotPosteriorPredictions(PI,observablesPlot)
 
 %% Save results
-save('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI/DREAM_MCMC_p2.mat', 'x')
-save('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI/DREAM_MCMC_logP2.mat', 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_x')
+
+save(strjoin({cd '/PI_PK_CE.mat'},''), 'PI')

@@ -3,7 +3,7 @@ if nargin<2
     error('GWMCMC:toofewinputs','AMCMC requires atleast 2 inputs.')
 end
 p=inputParser;
-p.addParameter('simTime',1:1:100);
+p.addParameter('simTime',PI.tspan);
 p.parse(varargin{:});
 p=p.Results;
 
@@ -23,7 +23,7 @@ for i=1:size(params,1)
     
     for j=1:length(outputs)
          output_j=char(outputs(j));
-         out_j=arrayfun(@(x)x.simOutput(:,j)',PI_i.data,'UniformOutput',false);
+         out_j=arrayfun(@(x)x.yOutput(:,j)',PI_i.data,'UniformOutput',false);
          for k=1:length(PI.output)
              PI.output(k).(output_j)(i,:)=out_j{k,:};
          end

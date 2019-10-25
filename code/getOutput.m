@@ -31,7 +31,7 @@ catch
 
     [PI.data(1:length(T)).('simTime')]=T{:,:};
     [PI.data(1:length(T)).('simValue')]=Y{:,:};
-        [PI.data(1:length(T)).('y_hat')]=Y_data{:,:};
+    [PI.data(1:length(T)).('y_hat')]=Y_data{:,:};
 
 end
 % Normalizing
@@ -48,10 +48,10 @@ dataOutput=arrayfun(@(x)x.y_hat./repmat([ones(1,nVar-length(normIndx)) x.y_hat(e
 
 
 % Input into data array
-[PI.data(1:length(dataOutput)).('y_hat')]=dataOutput{:,:};
+[PI.data(1:length(dataOutput)).('yOutput')]=dataOutput{:,:};
 
 % Match observed time points
-dataOutput=arrayfun(@(x)x.y_hat(ismember(PI.tspan,x.dataTime),:),PI.data,...
+dataOutput=arrayfun(@(x)x.yOutput(ismember(PI.tspan,x.dataTime),:),PI.data,...
     'UniformOutput',false);
 [PI.data(1:length(dataOutput)).('y_hat')]=dataOutput{:,:};
 
