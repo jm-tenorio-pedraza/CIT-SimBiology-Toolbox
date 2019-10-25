@@ -47,9 +47,9 @@ end
         set(gca,'YScale','log')
     end
 %        set(gca,'YScale','log')
-%        try
+       try
 %        ylim([min(PI.data(i).dataValue(:,colIndx)) max(PI.data(i).dataValue(:,colIndx))])
-%        catch
-%        end
+       catch
+       end
 
 end

@@ -2,7 +2,7 @@
 %% Objective function
 
 % Obj function
-obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
+obj_fun=@(x)(likelihood_fun(x)*(-1));
 tic
 obj_fun((finalValues))
 toc

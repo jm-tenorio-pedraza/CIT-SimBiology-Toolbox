@@ -25,14 +25,17 @@ p_indiv=arrayfun(@(x)p(x.EtaIndex)*p(x.Index),H.IndividualParams,'UniformOutput'
 p_indiv=cell2mat(p_indiv')';                                              % Convert the ind indexes into a matrix
 try
 p_cell=arrayfun(@(x)H.CellIndx*(p(x.Index)*p(x.EtaIndex))',H.CellParams,'UniformOutput',false);         % Obtain indexes for each individually-varying parameter
-p_cell=cell2mat(p_cell')';                                                % Convert the ind indexes into a matrix
+p_cell=cell2mat(p_cell);                                                % Convert the ind indexes into a matrix
 catch
+    p_cell = [];
 end
 
 if size(p_indiv,2)>=size(p_indiv,1)
         p_indiv=p_indiv';
 end
-
+if size(p_cell,2)>=size(p_cell,1)
+        p_cell=p_cell';
+end
 
 cellEtaIndx = [H.CellParams.EtaIndex];
 indivEtaIndx = [H.IndividualParams.EtaIndex];

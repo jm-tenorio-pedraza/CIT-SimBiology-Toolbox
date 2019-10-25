@@ -5,7 +5,7 @@ clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/PI')
-sensitivity = true;
+sensitivity = false;
 
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kuznetsov.sbproj');
@@ -23,7 +23,8 @@ if sensitivity
     parameters=name(value>0);
     % Define parameters to exclude from SA
     exclude_parameters = {'k12' 'k21' 'K_D_antiPDL1' 'k23' 'k32' 'vol_Tumor'...
-        'T_0'  'CD8' 'CD8_E' 'Tumor_P' 'TV' 'kde_Tumor' 'CD8_logit' 'Q12' 'Q23' };
+        'T_0'  'CD8' 'CD8_E' 'Tumor_P' 'TV' 'kde_Tumor' 'CD8_logit' 'Q12' 'Q23' ...
+        'ka_Central' 'ke_Central_antiCTLA4' 'ke_Central_antiPDL1'};
     parameters = setdiff(parameters, [exclude_parameters]);
     parameters = [ parameters; 'T_0'];
 else
@@ -39,7 +40,7 @@ stateVar={'Tumor' 'CD8_logit'};
 groups_subset = {'MOC1_Control' 'MOC1_antiPDL1' 'MOC1_Control_Mean'...
     'MOC1_antiCTLA4' 'MOC1_antiCTLA4_antiPDL1' 'MOC2_Control' 'MOC2_Control_Mean'...
     'MOC2_antiPDL1' 'MOC2_antiCTLA4'};
-doses = {'Dose_antiPDL1' 'Dose_antiCTLA4'};
+doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
 PI=getPIData('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
     stateVar,groups_subset,observables,'zeroAction','omit','mergePhenotypes',true);
 PI.variableUnits={'Volume [mL]' 'Logit []'};
@@ -53,7 +54,7 @@ close all
 %% Optimization setup
 % Hierarchical structure
 H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 1, 'n_indiv', length(u),'cell_indx', 12);
+    'rand_indx', 1, 'n_indiv', length(u),'cell_indx', [10 12 2 5 8 9 11 13]);
 try
     cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),H.CellParams,'UniformOutput',false)';
     indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
@@ -70,8 +71,12 @@ sigma_prior= [ repelem(1,length(H.PopulationParams), 1);...
     repelem(0.1, length(H.SigmaParams),1)];
 PI.par = getParamStruct2(sim,H,size(PI.data,1),repelem(0.5,length(H.SigmaParams),1),...
     SigmaNames,'Sigma', sigma_prior);
-finalValues =log([PI.par(:).startValue]);
+try
+    finalValues =log([PI.par(:).finalValue]);
+catch
+    finalValues =log([PI.par(:).startValue]);
 
+end
 % Residuals function
 residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,100,u,1:1:100),PI,...
     @(x)getPhi2(x,H,size(PI.data,1),'initialValue',x_0),(@(x)getCovariance(x,H)),normIndx);

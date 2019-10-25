@@ -29,7 +29,7 @@ H.PopulationParams = 1:length(params);                                      % Cr
 [H.CellParams(1:n_cell).name] = params{cell_indx};
 CellIndex=mat2cell(reshape(length(params)+1:length(params)...               % Create indexes for each parameter varying at the cell level
     +n_cell*(n_celltypes),...                                                             % starting at the end of the population params
-    [],n_rand)',ones(n_rand,1));
+    [],n_cell)',ones(n_cell,1));
 
 IndivIndex=mat2cell(reshape(length(params)+1+n_cell*n_celltypes:length(params)+...
     n_cell*(n_celltypes)+n_indiv*n_rand,...                                               % Create indexes of individually varying parameters 
@@ -56,7 +56,7 @@ catch
     CellOmegaIndex ={};                                                    % If there are no individual parameters    
 end
 
-[H.CellParams(cell_indx).OmegaIndex] = CellOmegaIndex{:,:};                % Add omega indexes of cell to H
+[H.CellParams(1:n_cell).OmegaIndex] = CellOmegaIndex{:,:};                % Add omega indexes of cell to H
 
 %% Add individual parameter indexes if available
 [H.IndividualParams(1:n_rand).EtaIndex] = IndivEtaIndex{:,:};

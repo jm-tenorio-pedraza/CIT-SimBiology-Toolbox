@@ -20,9 +20,9 @@ for i=1:n_sim
     else
         continue
     end
-    zeroPlot = plot(PI.data(i).dataTime, zeros(size(PI.data(i).dataTime)));
-    ub = plot(PI.data(i).dataTime, ones(size(PI.data(i).dataTime)),'--k');
-    lb = plot(PI.data(i).dataTime, -ones(size(PI.data(i).dataTime)),'--k');
+    zeroPlot = plot(PI.data(i).dataTime, zeros(size(PI.data(i).dataTime)),'-k');
+    ub = plot(PI.data(i).dataTime, ones(size(PI.data(i).dataTime))*0.2,'--k');
+    lb = plot(PI.data(i).dataTime, -ones(size(PI.data(i).dataTime))*0.2,'--k');
 
     title(PI.data(i).Name)
     
@@ -40,9 +40,10 @@ for i=1:n_sim
 
     
     % Change axis if there is large variability in output
-    if std(log10(PI.data(i).simOutput(:,colIndx)))>1
-        set(gca,'YScale','log')
-    end
+%     if std(log10(PI.data(i).simOutput(:,colIndx)))>1
+%         set(gca,'YScale','log')
+%     end
        %set(gca,'YScale','log')
-
+% ylim([-1 1])
 end
+return
