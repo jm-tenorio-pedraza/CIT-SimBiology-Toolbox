@@ -74,7 +74,7 @@ catch
 end
 
 
-[H.IndividualParams(rand_indx).OmegaIndex] = IndivOmegaIndex{:,:};          % Add omega indexes to H
+[H.IndividualParams(1:n_rand).OmegaIndex] = IndivOmegaIndex{:,:};          % Add omega indexes to H
 
 
 
