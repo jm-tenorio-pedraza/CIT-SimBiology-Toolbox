@@ -64,4 +64,5 @@ plotPosteriorPredictions(PI,observablesPlot)
 save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_x')
 
-save(strjoin({cd '/PI_PK_CE.mat'},''), 'PI')
+load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))
