@@ -9,17 +9,17 @@ sim=createSimFunction(sim_model,parameters,observables, doses,MOC1,...
     'UseParallel', false);
 
 % Create cell of doses
-antiPDL1=table([7 12 17]', [0.0013 0.0013 0.0013]', [0 0 0]',...
+antiPDL1=table([7 12 17]', [0.2 0.2 0.2]', [0 0 0]',...
     'VariableNames',{'Time' 'Amount' 'Rate'});
-antiPDL1.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+antiPDL1.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
 
-antiCTLA4=table([7 12 17]', [0.00065 0.00065 0.00065]', [0 0 0]',...
+antiCTLA4=table([7 12 17]', [0.1 0.1 0.1]', [0 0 0]',...
     'VariableNames',{'Time' 'Amount' 'Rate'});
-antiCTLA4.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+antiCTLA4.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
 
 control=table([7 12 17]', [0 0 0]', [0 0 0]',...
     'VariableNames',{'Time' 'Amount' 'Rate'});
-control.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+control.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
 u=repelem({NaN},size(PI.data,1),length(doses));
 dose = cellfun(@(x) regexp(x,'_','split'),doses,'UniformOutput',false); 
 dose = [dose{:,:}];
@@ -62,7 +62,7 @@ for i=1:size(u,1)
 
     legend(dose)
     title(PI.data(i).Group,'Interpreter', 'none')
-    ylim([0 0.002])
+    ylim([0 1])
 end
 return
 

@@ -5,7 +5,7 @@ clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/PI')
-sensitivity = false;
+sensitivity = true;
 
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kuznetsov.sbproj');
@@ -24,14 +24,14 @@ if sensitivity
     % Define parameters to exclude from SA
     exclude_parameters = {'k12' 'k21' 'K_D_antiPDL1' 'k23' 'k32' 'vol_Tumor'...
         'T_0'  'CD8' 'CD8_E' 'Tumor_P' 'TV' 'kde_Tumor' 'CD8_logit' 'Q12' 'Q23' ...
-        'ka_Central' 'ke_Central_antiCTLA4' 'ke_Central_antiPDL1'};
+        'ka_Central' 'ke_Central_antiCTLA4' 'ke_Central_antiPDL1' 'E_0'};
     parameters = setdiff(parameters, [exclude_parameters]);
     parameters = [ parameters; 'T_0'];
 else
     % Define parameters to estimate
     parameters = load(strjoin({cd 'parameters_hat_2.mat'},'/'));
     parameters = parameters.parameters_hat;
-    parameters = ['E_0';parameters; 'T_0'];
+    parameters = [parameters; 'T_0'];
 %     parameters = [{'kpro_Tumor'}; setdiff(parameters,'kpro_Tumor','stable')];
 end
 % Define outputs
@@ -42,7 +42,7 @@ groups_subset = {'MOC1_Control' 'MOC1_antiPDL1' 'MOC1_Control_Mean'...
     'MOC2_antiPDL1' 'MOC2_antiCTLA4'};
 doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
 PI=getPIData('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
-    stateVar,groups_subset,observables,'zeroAction','omit','mergePhenotypes',true);
+    stateVar,groups_subset,observables,'zeroAction','input','mergePhenotypes',true);
 PI.variableUnits={'Volume [mL]' 'Logit []'};
 
 [sim,u]=initializePI(model,parameters,observables,PI,doses, 'MOC1');
@@ -50,11 +50,11 @@ normIndx = [];
 initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1});
 % Get initial values
 x_0 = getInitialValues([PI.data(:).Group], initialStruct);
-close all
+% close all
 %% Optimization setup
 % Hierarchical structure
 H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 1, 'n_indiv', length(u),'cell_indx', [10 12 2 5 8 9 11 13]);
+    'rand_indx',12 , 'n_indiv', length(u),'cell_indx', [11]);
 try
     cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),H.CellParams,'UniformOutput',false)';
     indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
@@ -65,11 +65,19 @@ catch
     SigmaNames= cellfun(@(x) strjoin({'b', x}, '_'),observables','UniformOutput', false);
 end
 % Generating PI
+alpha = [repelem(0.01, length([H.CellParams(:).OmegaIndex]),1);...
+    repelem(0.01, length([H.IndividualParams(:).OmegaIndex]),1);...
+    repelem(0.01, length(setdiff(H.SigmaParams, [H.CellParams(:).OmegaIndex ...
+    H.IndividualParams(:).OmegaIndex])),1)];
+beta = [repelem(0.1, length([H.CellParams(:).OmegaIndex]),1);...
+    repelem(0.1, length([H.IndividualParams(:).OmegaIndex]),1);...
+    repelem(0.01, length(setdiff(H.SigmaParams, [H.CellParams(:).OmegaIndex ...
+    H.IndividualParams(:).OmegaIndex])),1)];
 sigma_prior= [ repelem(1,length(H.PopulationParams), 1);...
-     repelem(1, length([H.CellParams(:).Index]),1);
+    repelem(1, length([H.CellParams(:).Index]),1);
      repelem(1, length([H.IndividualParams(:).Index]),1);...
-    repelem(0.1, length(H.SigmaParams),1)];
-PI.par = getParamStruct2(sim,H,size(PI.data,1),repelem(0.5,length(H.SigmaParams),1),...
+    alpha];
+PI.par = getParamStruct2(sim,H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior);
 try
     finalValues =log([PI.par(:).finalValue]);
