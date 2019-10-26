@@ -33,6 +33,7 @@ parameters = setdiff(parameters, [exclude_parameters]);
 parameters = ['Blood'; 'Tumor';'ke_Central';parameters; 'ID'];
 % Define outputs
 observables={'ID_g_Blood' 'Blood.antiPDL1' 'ID_g_Tumor' 'Tumor.antiPDL1' 'T2B'};
+observablesPlot = {'ID_g_Blood' 'Blood_antiPDL1' 'ID_g_Tumor' 'Tumor_antiPDL1' 'T2B'};
 stateVar={'Tumor.antiPDL1' 'Tumor_to_Blood' 'Blood.antiPDL1'};
 
 dataset_file_ext = {'/Users/migueltenorio/Documents/Data/Nedrow_2017_1.xlsx'...
@@ -86,7 +87,10 @@ prior_fun=@(p)(createPriorDistribution3(exp(p),PI,H,'type','uniform'));
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),u,PI.tspan),PI,...
     @(x)getPhi2(x,H,length(u),'initialValue',x_0),exp(finalValues(end-length(observables)+1:end)),normIndx);
-
+paramNames = ['\eta_{Blood}' '\eta_{Tumor}' 'ke_{Central}' 'Q23'...
+    {PI.par([H.IndividualParams(:).Index]).name}, '\omega_{Blood}',...
+    '\omega_{Tumor}', '\sigma_{IDg.Blood}' '\sigma_{Blood.antiPDL1}'...
+    '\sigma_{IDg.Tumor}' '\sigma_{Tumor.antiPDL1}' '\sigma_{T2B}'];
 %% Save results
 save('PI_PK_CE.mat', 'PI')
 load(strjoin({cd 'PI_PK_CE.mat'},'/'))

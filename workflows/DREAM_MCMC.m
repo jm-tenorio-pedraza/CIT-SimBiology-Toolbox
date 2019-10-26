@@ -1,5 +1,5 @@
 %% DREAM MCMC
-N = 32;
+N = 29;
 finalValues = log([PI.par(:).finalValue]);
 X0 =[ (finalValues); randn(100,length(finalValues))*0.1 + finalValues];
 logL=rowfun(obj_fun,table(X0));
@@ -33,21 +33,22 @@ plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name})
 getGelmanRubinStatistic(x_a,{PI.par(:).name})
 %% Plotting results
 
-postSamples =x(:,:,ceil(size(x,3)/5):200:2e4);
-logP_thinned = p_x(ceil(size(x,3)/5):200:2e4,:);
-plotMCMCDiagnostics(postSamples,logP_thinned,'name', {PI.par(:).name},'model', 'PK model (ThreeComp)');
+postSamples =x(:,:,ceil(size(x,3)/5):300:end);
+logP_thinned = p_x(ceil(size(x,3)/5):300:end,:);
+plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
+    {PI.par(:).name},'model', 'PK model (TwoComp)');
 
 plotMCMCDiagnostics(postSamples([H.PopulationParams],:,:),logP_thinned,...
-    'name', {PI.par([H.PopulationParams]).name},'model', 'PK model (ThreeComp)');
+    'name', {PI.par([H.PopulationParams]).name},'model', 'PK model (TwoComp)');
 
 postSamples=postSamples(:,:)';
 
 % Population Parameters
-plotBivariateMarginals_2(exp(postSamples(:,H.PopulationParams)),'names',{PI.par(H.PopulationParams).name})
+plotBivariateMarginals_2(exp(postSamples(:,[H.PopulationParams H.SigmaParams])),...
+    'names',paramNames([H.PopulationParams H.SigmaParams]))
 % Individual and population parameters
-plotBivariateMarginals_2(exp(postSamples(:,[H.IndividualParams.EtaIndex...
-    H.IndividualParams.OmegaIndex H.IndividualParams.Index])),'names', {PI.par([H.IndividualParams.EtaIndex...
-    H.IndividualParams.OmegaIndex H.IndividualParams.Index]).name})
+plotBivariateMarginals_2(exp(postSamples(:, [H.IndividualParams.Index])),...
+    'names',paramNames([H.IndividualParams.Index]))
 % Sigma parameters
 plotBivariateMarginals_2(exp(postSamples(:, H.SigmaParams)),'names', {PI.par(H.SigmaParams).name})
 %% Posterior predictions
@@ -63,4 +64,5 @@ plotPosteriorPredictions(PI,observablesPlot)
 save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_x')
 
-save(strjoin({cd '/PI_PK_CE.mat'},''), 'PI')
+load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))
