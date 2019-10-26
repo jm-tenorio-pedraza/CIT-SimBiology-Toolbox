@@ -44,6 +44,7 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,144,u,1:.1:144),PI,...
 finalValues=p_hat;
 
 finalValues([H.PopulationParams H.CellParams.Index H.IndividualParams.Index])=phat;
+finalValues([H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), H.IndividualParams);
 
 % [finalValues, fval_fminunc,~,~,grad,hessian] = fminunc(obj_fun,finalValues,options_fminsearch);
 fval_fminunc = obj_fun(finalValues);
