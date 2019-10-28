@@ -1,4 +1,8 @@
-function [sim,u]=initializePI(sim_model,parameters,observables,PI,doses,variant)
+function [sim,u]=initializePI(sim_model,parameters,observables,PI,doses,variant,varargin)
+par = inputParser;
+par.addParameter('doseUnits', 'g')
+par.parse(varargin{:})
+par=par.Results;
 
 variants=getvariant(sim_model);
 
@@ -7,19 +11,33 @@ MOC1=variants(strcmp(get(variants,'Name'), variant));
 % Create simFunction object
 sim=createSimFunction(sim_model,parameters,observables, doses,MOC1,...
     'UseParallel', false);
-
+if strcmp(par.doseUnits, 'g')
 % Create cell of doses
-antiPDL1=table([7 12 17]', [0.2 0.2 0.2]', [0 0 0]',...
+antiPDL1=table([7 12 17]', [0.2 0.2 0.2]', [0.2 0.2 0.2]'/60,...
     'VariableNames',{'Time' 'Amount' 'Rate'});
 antiPDL1.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
 
-antiCTLA4=table([7 12 17]', [0.1 0.1 0.1]', [0 0 0]',...
+antiCTLA4=table([7 12 17]', [0.1 0.1 0.1]', [0.1 0.1 0.1]'/60,...
     'VariableNames',{'Time' 'Amount' 'Rate'});
 antiCTLA4.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
 
 control=table([7 12 17]', [0 0 0]', [0 0 0]',...
     'VariableNames',{'Time' 'Amount' 'Rate'});
 control.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
+else
+antiPDL1=table([7 12 17]', [0.0013  0.0013  0.0013]', [0.0013  0.0013  0.0013]'/60,...
+    'VariableNames',{'Time' 'Amount' 'Rate'});
+antiPDL1.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+
+antiCTLA4=table([7 12 17]', [6.6667e-4 6.6667e-4 6.6667e-4]', [6.6667e-4 6.6667e-4 6.6667e-4]'/60,...
+    'VariableNames',{'Time' 'Amount' 'Rate'});
+antiCTLA4.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+
+control=table([7 12 17]', [0 0 0]', [0 0 0]',...
+    'VariableNames',{'Time' 'Amount' 'Rate'});
+control.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+end    
+
 u=repelem({NaN},size(PI.data,1),length(doses));
 dose = cellfun(@(x) regexp(x,'_','split'),doses,'UniformOutput',false); 
 dose = [dose{:,:}];
