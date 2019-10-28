@@ -16,7 +16,7 @@ try
 simdata=simFun(phi);
 catch ME
     if strcmp(ME.identifier,'SimBiology:SimFunction:SomeSimulationsFailed')
-        residuals = 1e7;
+        residuals = 1e9;
         return  
     end
 end
@@ -36,7 +36,7 @@ try
 % simOutput=arrayfun(@(x)interp1(x.simTime,x.simValue,x.dataTime),PI.data,...
 %     'UniformOutput',false);
 catch
-    residuals=1e7;
+    residuals=1e9;
     return
 end
 % Normalizing to final value for DCm, ISC and PDL1
@@ -50,8 +50,8 @@ simOutput=cellfun(@(x)x./([ones(1,nVar-length(normIndx)) x(end,normIndx)]),simOu
 residuals=getErrors(PI,sigma);
 
 if (length(residuals)~= PI.n_data)
-    residuals=1e7;
+    residuals=1e9;
 elseif any([isinf(residuals), ~isreal(residuals)])
-    residuals=1e7;
+    residuals=1e9;
 end
 return

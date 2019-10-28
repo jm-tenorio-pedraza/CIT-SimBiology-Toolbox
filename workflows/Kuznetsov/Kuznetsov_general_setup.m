@@ -86,7 +86,7 @@ catch
 
 end
 % Residuals function
-residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,100,u,1:1:100),PI,...
+residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,PI.tspan(end),u,PI.tspan),PI,...
     @(x)getPhi2(x,H,size(PI.data,1),'initialValue',x_0),(@(x)getCovariance(x,H)),normIndx);
 
 % Log-ikelihood function
@@ -94,7 +94,7 @@ likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
 prior_fun=@(p)(createPriorDistribution3(exp(p),PI,H,'type','uniform'));
 
 % Residuals 
-residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,100,u,1:1:100),PI,...
+residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),u,PI.tspan),PI,...
     @(x)getPhi2(x,H,length(u),'initialValue',x_0),exp(finalValues(end-length(observables)+1:end)),normIndx);
 
 %% Save results
