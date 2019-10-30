@@ -1,6 +1,7 @@
 %% DREAM MCMC
-N = 29;
 finalValues = log([PI.par(:).finalValue]);
+N = length(finalValues);
+
 X0 =[ (finalValues); randn(100,length(finalValues))*0.1 + finalValues];
 logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
