@@ -22,13 +22,13 @@ try
 simdata=simFun(phi);
 catch ME
     if strcmp(ME.identifier,'SimBiology:SimFunction:SomeSimulationsFailed')
-        residuals = 1e7;
+        residuals = 1e9;
         return  
     end
 end
- tspan = unique(cat(1,PI.data(:).dataTime));
+ 
 % Obtain simulation output at pre-designated time points
-simdata=resample(simdata,tspan);
+simdata=resample(simdata,PI.tspan);
 [T,Y,~]=getdata(simdata);
 
 % Incorporate simulations into data structure array
@@ -69,9 +69,9 @@ residuals=[error{:,:}];
 
 
 if (length(residuals)~= PI.n_data)
-    residuals=repelem(1e2, 1,PI.n_data);
+    residuals=repelem(1e5, 1,PI.n_data);
 elseif any([isinf(residuals), ~isreal(residuals)])
-    residuals=repelem(1e2, 1,PI.n_data);
+    residuals=repelem(1e5, 1,PI.n_data);
 end
 
 if strcmp(par.output, 'residuals')
