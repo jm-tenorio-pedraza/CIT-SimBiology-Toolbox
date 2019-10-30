@@ -29,14 +29,14 @@ finalValues([H.PopulationParams H.CellParams.Index H.IndividualParams.Index])=ph
 %% Global optimisation
 while delta >1e-4
 % Nelder-Mead
- [finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
+% [finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 
 % Simulated annealing
 [p_hat, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
 
 % Local optimization
 % Residuals 
-residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,144,u,1:.1:144),PI,...
+residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),u,PI.tspan),PI,...
     @(x)getPhi2(x,H,length(u),'initialvalue',x_0),exp(p_hat(setdiff([H.SigmaParams],...
     [H.CellParams(:).OmegaIndex H.IndividualParams(:).OmegaIndex]))),normIndx);
 [phat, ~] = lsqnonlin(residuals_fn,(p_hat([H.PopulationParams...
@@ -45,6 +45,7 @@ finalValues=p_hat;
 
 finalValues([H.PopulationParams H.CellParams.Index H.IndividualParams.Index])=phat;
 finalValues([H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), H.IndividualParams);
+finalValues([H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), H.CellParams);
 
 % [finalValues, fval_fminunc,~,~,grad,hessian] = fminunc(obj_fun,finalValues,options_fminsearch);
 fval_fminunc = obj_fun(finalValues);
@@ -58,7 +59,7 @@ end
     @(p)getPhi2(p,H,length(u),x_0),normIndx,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,100,u,1:1:PI.tspan(end)),exp(finalValues),...
+PI=getOutput(PI,@(p)sim(p,PI.tspan(end),u,PI.tspan),exp(finalValues),...
     @(p)getPhi2(p,H,length(u),'initialValue',x_0), normIndx,H);
  
      

@@ -3,12 +3,10 @@
 clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-addpath(genpath('/Users/migueltenorio/Documents/GitHub/MATLAB_pcode_DREAM_V3.0/diagnostics'))
-
 cd('/Users/migueltenorio/Documents/MATLAB/SimBiology/CIM/output/PI')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_2.sbproj');
 % Extract model
 model=out.m1;
 cs=model.getconfigset;

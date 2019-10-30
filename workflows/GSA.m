@@ -1,13 +1,13 @@
 %% GSA
-time = 1:100;
+time = 1:1:PI.tspan(end);
 inputs = sim.Parameters.Value(1:end-1)';
 % inputs = [PI.par(H.PopulationParams).finalValue];
 inputs = [repelem(inputs,size(x_0,1),1) x_0];
-[group, indx] = unique([PI.data(:).Group]);
+[group, indx] = unique([PI.data(:).Group], 'stable');
 u_subset = u(indx,:);
 inputs = inputs(indx,:);
 % Get sensitivity matrix
-sensmatrix = getSensitivities(inputs, PI,@(p)sim(p,100,u_subset,1:1:100),...
+sensmatrix = getSensitivities(inputs, PI,@(p)sim(p,PI.tspan(end),u_subset,1:1:PI.tspan),...
     parameters, observables,time,'initialValue', true,'uniqueGroups',true);
 
 % Get SVD
@@ -22,12 +22,12 @@ title('Singular values of sensitivity matrix')
 ylabel('Log_{10} \sigma_i / max \sigma_i')
 %% Get SHM
 F = max(abs(V),[],2)'.*diag(S)'.*abs(U);
-s=shmPlot2(F,groups_subset(indx),time, observables,'tau',0.1);
+s=shmPlot2(F,group,time, observables,'tau',0.1);
 
 %% Get PSS
 pcs = V*S;
 pcs = (pcs/max(max(abs(pcs))));
-pc = plotPSS(pcs,4,parameters(1:end-1),'threshold',-1.5);
+pc = plotPSS(pcs,6,parameters(1:end-1),'threshold',-1);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');
