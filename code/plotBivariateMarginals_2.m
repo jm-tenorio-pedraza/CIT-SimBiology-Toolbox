@@ -28,29 +28,34 @@ for i=1:p
 
 %            coor_ij=corr(posterior(:,[i j]));
 %            text(
+% Assign labels to outer margins
            if j==1
              ylab=ylabel(param.names(i),'Fontsize',10,...
                 'Fontweight','normal','Interpreter','tex');
             ylab.Rotation=30;
             ylab.HorizontalAlignment = 'right';
+            if i==p
+            else
             ax.XTickLabels ={};
+            end
 
-           elseif i==p
-             xlab=xlabel(param.names(j),'Fontsize',10,...
+           elseif i==p 
+            xlab=xlabel(param.names(j),'Fontsize',10,...
                 'Fontweight','normal','Interpreter','tex');
             xlab.Rotation=30;
             xlab.VerticalAlignment = 'top';
+           if j==1
            else
-                ax.XTickLabels ={};
                 ax.YTickLabels ={};
            end
-             if j==1&&i==p
-             xlab=xlabel(param.names(j),'Fontsize',10,...
-                 'Fontweight','normal','Interpreter','tex');
-             xlab.Rotation=30;
-             xlab.VerticalAlignment = 'top';
-                         
-             end
+           else
+               ax.YTickLabels ={};
+               ax.XTickLabels ={};
+
+           end
+           
+         
+           
         elseif i==j
            
             subplot(p,p, (i-1)*p+j)
@@ -59,9 +64,15 @@ for i=1:p
             p_max=max(h.Values);
             m=mean(posterior(:,i));
             sigma=std(posterior(:,i));
-          
+            if i==1&&j==1
                 ax.XTickLabels ={};
+
+            elseif i==p&&j==p
                 ax.YTickLabels ={};
+            else
+                 ax.YTickLabels ={};
+                  ax.XTickLabels ={};
+            end
             if p<11
 %             text(m,p_max,{strjoin({'\mu = ' num2str(m)},'') strjoin({'\sigma = ' num2str(sigma)},'') })
 %             legend({strjoin({'\mu = ' num2str(m)},'') strjoin({'\sigma = ' num2str(sigma)},'') },'Location','best')

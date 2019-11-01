@@ -25,6 +25,8 @@ lb = log([PI.par([H.PopulationParams H.CellParams.Index H.IndividualParams.Index
     H.CellParams.Index H.IndividualParams.Index])), lb,ub, options_fminsearch);
 
 finalValues([H.PopulationParams H.CellParams.Index H.IndividualParams.Index])=phat;
+finalValues([H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), H.IndividualParams);
+finalValues([H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), H.CellParams);
 
 %% Global optimisation
 while delta >1e-4
