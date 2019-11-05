@@ -55,12 +55,13 @@ x_0 = getInitialValues([PI.data(:).Group], initialStruct);
 %% Optimization setup
 % Hierarchical structure
 H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx',1 , 'n_indiv', length(u),'cell_indx', []);
-SigmaNames=
+    'rand_indx',1 , 'n_indiv', length(u),'cell_indx', 2);
+SigmaNames=[];
 try
     cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),H.CellParams,'UniformOutput',false)';
     SigmaNames = [SigmaNames;cellSigmaNames];
-    
+    indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
+    SigmaNames = [SigmaNames;indivSigmaNames];
 catch
     try
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';

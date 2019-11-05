@@ -48,7 +48,7 @@ postSamples=postSamples(:,:)';
 plotBivariateMarginals_2((postSamples(:,[H.PopulationParams H.SigmaParams])),...
     'names',paramNames([H.PopulationParams H.SigmaParams]))
 % Individual and population parameters
-plotBivariateMarginals_2(exp(postSamples(:, [H.CellParams.Index H.IndividualParams.Index])),...
+plotBivariateMarginals_2((postSamples(:, [H.CellParams.Index H.IndividualParams.Index])),...
     'names',paramNames([H.CellParams.Index H.IndividualParams.Index]))
 % Sigma parameters
 plotBivariateMarginals_2(exp(postSamples(:, H.SigmaParams)),'names', {PI.par(H.SigmaParams).name})
@@ -62,8 +62,8 @@ PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),H);
 plotPosteriorPredictions(PI,observablesPlot)
 
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x_3.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x_3.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x_4.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''), 'p_x')
 
 load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))

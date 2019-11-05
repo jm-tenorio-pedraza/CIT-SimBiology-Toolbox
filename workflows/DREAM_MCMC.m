@@ -62,8 +62,8 @@ PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),H);
 plotPosteriorPredictions(PI,observablesPlot)
 
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x_3.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x_3.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x_4.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''), 'p_x')
 
 load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))
