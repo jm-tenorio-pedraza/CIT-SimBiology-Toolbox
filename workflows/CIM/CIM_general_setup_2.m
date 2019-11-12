@@ -24,15 +24,15 @@ if sensitivity
     value = value(I);
      % Define parameters to estimate
     parameters=name(value>0);
-    exclude_parameters = {'Avogadro' 'omega' 'vol_Tumor' 'CD25_0' 'CTLA4_CD8_0'...
-        'CTLA4_Treg_0' 'KD_CD25' 'KD_antiCTLA4' 'KD_antiPDL1' 'koff_CD25' 'koff_antiCTLA4' ...
+    exclude_parameters = {'Avogadro' 'omega' 'vol_Tumor' 'CTLA4_CD8_0'...
+         'KD_antiCTLA4' 'KD_antiPDL1' 'koff_CD25' 'koff_antiCTLA4' ...
         'koff_antiPDL1' 'CD107a' 'CD8_E' 'CD8_N' 'CD4Foxp3' 'Q23' ...
         'PDL1_Immune_0' 'PDL1_Tumor_0' 'k23' 'k32' 'ka'...
         'ks_IFNg' 'Tumor_P' 'kdeg_CTLA4' 'kdeg_PDL1'...
-        'K_IFNg' 'f1' 'f2' 'f3' 'T_0'};
+        'K_IFNg' 'f1' 'f2' 'f3' 'T_0' 'kdep'};
     uncertain_parameters = {'kin_DC' 'kin_MDSC'...
         'ks_PDL1_Immune' 'ks_PDL1_Tumor'};
-    parameters = setdiff(parameters, [exclude_parameters uncertain_parameters ]);
+    parameters = setdiff(parameters, [exclude_parameters ]);
     parameters = [parameters; 'T_0'];
 else
     parameters = load(strjoin({cd,'parameters_hat_2.mat'},'/'));
@@ -57,7 +57,7 @@ PI.variableUnits={'Volume [mL]' 'Logit []' 'Logit []'  'Logit []' ...
     'Relative units []' 'Relative units []'};
 
 % Get simulation function
-[sim,u]=initializePI(model,parameters,observables,PI,doses, 'MOC1', 'doseUnits', 'mole');
+[sim,u]=initializePI(model,parameters,observables,PI,doses, '', 'doseUnits', 'mole');
 close all
 
 
@@ -69,7 +69,7 @@ close all
 %% Optimization setup
 % Hierarchical structure
 H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 23, 'cell_indx', 24, 'n_indiv', length(u));
+    'rand_indx', 1, 'cell_indx', 2, 'n_indiv', length(u));
 try
     cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),H.CellParams,'UniformOutput',false)';
     indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
