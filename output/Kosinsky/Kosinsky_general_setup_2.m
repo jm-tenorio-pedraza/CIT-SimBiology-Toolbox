@@ -13,7 +13,7 @@ cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.2)
-sensitivity = true;
+sensitivity = false;
 %% load data and previous results
 stateVar={'Tumor' 'CD8_logit' 'CD107a_logit' 'DC_Rel' 'GMDSC_Rel'...
     'Tumor_PDL1_Rel'};
@@ -34,7 +34,8 @@ if sensitivity
 else
     parameters = load(strjoin({cd,'parameters_hat_2.mat'},'/'));
     parameters = parameters.parameters_hat;
-    parameters = [parameters; 'T_0'];
+    parameters = setdiff(parameters, 'kel_Effector');
+    parameters = [parameters; 'kin_max';'T_0'];
 
 end
 % Define outputs% Define outputs
@@ -105,9 +106,14 @@ prior_fun=@(p)(createPriorDistribution3(exp(p),PI,H,'type','uniform'));
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),u,PI.tspan),PI,...
     @(x)getPhi2(x,H,length(u),'initialValue',x_0),exp(finalValues(end-length(observables)+1:end)),normIndx);
-
+paramNames = ['\eta_{kpro_{Naive}}' '\eta_{kpro_{Tumor}}' 'kel_{Effector}' 'kdif'...
+    {PI.par([H.CellParams(:).Index H.IndividualParams(:).Index]).name}, '\lambda_{kpro_{Tumor}}',...
+    '\omega_{kpro_{Naive}}', '\sigma_{TV}'  '\sigma_{CD8}' '\sigma_{CD107a}'...
+    '\sigma_{DC}' '\sigma_{ISC}' '\sigma_{PDL1}'];
 %% Save results
 save('PI_Kosinsky_3.mat', 'PI')
+load(strjoin({cd 'PI_Kosinsky_3.mat'},'/'))
+
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
 

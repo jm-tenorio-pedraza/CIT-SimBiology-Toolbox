@@ -5,7 +5,7 @@ clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/PI')
-sensitivity = true;
+sensitivity = false;
 
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kuznetsov.sbproj');
@@ -31,6 +31,7 @@ else
     % Define parameters to estimate
     parameters = load(strjoin({cd 'parameters_hat_2.mat'},'/'));
     parameters = parameters.parameters_hat;
+    parameters = setdiff(parameters, 'kel_Effector','stable');
     parameters = [parameters; 'T_0'];
 %     parameters = [{'kpro_Tumor'}; setdiff(parameters,'kpro_Tumor','stable')];
 end
@@ -54,16 +55,23 @@ x_0 = getInitialValues([PI.data(:).Group], initialStruct);
 %% Optimization setup
 % Hierarchical structure
 H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx',1 , 'n_indiv', length(u),'cell_indx', 4);
+    'rand_indx',1 , 'n_indiv', length(u),'cell_indx', 3);
+SigmaNames=[];
 try
     cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),H.CellParams,'UniformOutput',false)';
+    SigmaNames = [SigmaNames;cellSigmaNames];
     indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
-    SigmaNames = [cellSigmaNames; indivSigmaNames];
-    SigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'sigma', x}, '_'),...
-        observables,'UniformOutput', false);
+    SigmaNames = [SigmaNames;indivSigmaNames];
 catch
-    SigmaNames= cellfun(@(x) strjoin({'b', x}, '_'),observables','UniformOutput', false);
+    try
+        indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),H.IndividualParams,'UniformOutput',false)';
+        SigmaNames = [SigmaNames;indivSigmaNames];
+    catch
+    end
+    
 end
+SigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'sigma', x}, '_'),...
+        observables,'UniformOutput', false);
 % Generating PI
 alpha = [repelem(0.01, length([H.CellParams(:).OmegaIndex]),1);...
     repelem(0.01, length([H.IndividualParams(:).OmegaIndex]),1);...
@@ -96,10 +104,13 @@ prior_fun=@(p)(createPriorDistribution3(exp(p),PI,H,'type','uniform'));
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),u,PI.tspan),PI,...
     @(x)getPhi2(x,H,length(u),'initialValue',x_0),exp(finalValues(end-length(observables)+1:end)),normIndx);
-
+paramNames = ['\eta_{kin_{max}}' 'kill_{max}'...
+    '\eta_{kpro_{Tumor}}' 'f2'...
+    {PI.par([H.CellParams(:).Index H.IndividualParams(:).Index]).name}, '\lambda_{kin_{max}}',...
+    '\omega_{kpro_{Tumor}}', '\sigma_{TV}'  '\sigma_{CD8}'];
 %% Save results
-save('PI_Kuznetsov_3.mat', 'PI')
-load(strjoin({cd 'PI_Kuznetsov_3.mat'},'/'))
+save('PI_Kuznetsov_4.mat', 'PI')
+load(strjoin({cd 'PI_Kuznetsov_4.mat'},'/'))
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/parameters_hat.mat','parameters_hat')
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
