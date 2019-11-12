@@ -35,6 +35,10 @@ for i=1:p
             ylab.Rotation=30;
             ylab.HorizontalAlignment = 'right';
             if i==p
+                xlab=xlabel(param.names(j),'Fontsize',10,...
+                'Fontweight','normal','Interpreter','tex');
+            xlab.Rotation=30;
+            xlab.VerticalAlignment = 'top';
             else
             ax.XTickLabels ={};
             end
@@ -66,12 +70,20 @@ for i=1:p
             sigma=std(posterior(:,i));
             if i==1&&j==1
                 ax.XTickLabels ={};
+             ylab=ylabel(param.names(i),'Fontsize',10,...
+                'Fontweight','normal','Interpreter','tex');
+            ylab.Rotation=30;
+            ylab.HorizontalAlignment = 'right';
 
             elseif i==p&&j==p
-                ax.YTickLabels ={};
+%                 ax.YTickLabels ={};
+                ylabel('pdf','Fontsize',5,'Fontweight','normal')
+
             else
-                 ax.YTickLabels ={};
+%                  ax.YTickLabels ={};
                   ax.XTickLabels ={};
+                 ylabel('pdf','Fontsize',5,'Fontweight','normal')
+
             end
             if p<11
 %             text(m,p_max,{strjoin({'\mu = ' num2str(m)},'') strjoin({'\sigma = ' num2str(sigma)},'') })
@@ -89,7 +101,6 @@ for i=1:p
                 ylab.Rotation=30;
                 ylab.HorizontalAlignment = 'right';
              end
-             ylabel('pdf','Fontsize',5,'Fontweight','normal')
 
         else
         end

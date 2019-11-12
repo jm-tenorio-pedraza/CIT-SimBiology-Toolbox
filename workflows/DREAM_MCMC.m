@@ -30,14 +30,14 @@ x_mat=x(:,:)';
 %% Diagnostics
 plotMCMCDiagnostics(x_a(:,:,1:ceil(1e6/13)), logP(1:ceil(1e6/13),:),'name',...
     {PI.par(:).name},'model', ' Kosinsky','plots', 'trace')
-plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name})
+plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name},'model', 'Kosinsky')
 getGelmanRubinStatistic(x_a,{PI.par(:).name})
 %% Plotting results
 
-postSamples =x(:,:,ceil(size(x,3)/5):300:end);
-logP_thinned = p_x(ceil(size(x,3)/5):300:end,:);
+postSamples =x(:,:,2e4:300:end);
+logP_thinned = p_x(2e4:300:end,:);
 plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
-    {PI.par(:).name},'model', 'PK model (TwoComp)');
+    {PI.par(:).name},'model', 'Kosinsky');
 
 plotMCMCDiagnostics(postSamples([H.PopulationParams],:,:),logP_thinned,...
     'name', {PI.par([H.PopulationParams]).name},'model', 'PK model (TwoComp)');
@@ -56,14 +56,14 @@ plotBivariateMarginals_2(exp(postSamples(:, H.SigmaParams)),'names', {PI.par(H.S
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),u,PI.tspan),x,...
     @(p)getPhi2(p,H,length(u),'initialValue',x_0),normIndx, H);
 tic
-PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observablesPlot);
+PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observables);
 toc
-PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),H);
-plotPosteriorPredictions(PI,observablesPlot)
+PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
+plotPosteriorPredictions(PI,observables)
 
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x_4.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x_3.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x_3.mat'},''), 'p_x')
 
-load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
-load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))
+load(strjoin({cd '/DREAM_MCMC_x_4.mat'},''))
+load(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''))
