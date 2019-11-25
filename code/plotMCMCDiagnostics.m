@@ -6,6 +6,7 @@ p=inputParser;
 p.addParameter('model','',@ischar);
 p.addParameter('name',{});
 p.addParameter('plots',{'trace' 'autocorr' 'corr'});
+p.addParameter('interpreter','none');
 
 if sum(imag(logP)>0)>0
     imag_indx=sum(imag(logP)>0);
@@ -40,7 +41,7 @@ figure
 h=plot(-logP);
 xlabel('MCMC step')
 ylabel('Negative Log-Likelihood')
-title(strjoin({'Log-posterior density trace plot of',p.model},' '), 'interpreter', 'none')
+title(strjoin({'Log-posterior density trace plot of',p.model},' '), 'interpreter', p.interpreter)
 set(gca, 'YScale', 'log')
 colors = linspecer(size(logP,2));
 for i=1:size(logP,2)
@@ -48,7 +49,7 @@ for i=1:size(logP,2)
 end
 % Param traceplot
 figure('Renderer', 'painters', 'Position', [10 10 1500 600])
-plotTrace(params,'names', p.name,'ESS',ESS)
+plotTrace(params,'names', p.name,'ESS',ESS,'interpreter', p.interpreter)
 end
 % Autocorrelation
 if ismember('autocorr', p.plots)
@@ -66,7 +67,7 @@ for i=1:length(ESS)
     ylim([-1 1])
     tau = cumsum(C(:,i));
     indx = find(tau*5<(1:length(tau))');
-    title(p.name{i},'Interpreter', 'none')
+    title(p.name{i},'Interpreter', p.interpreter)
     try
     legend (strjoin({'\tau =' num2str(1+2*sum(C(1:indx(1),i)))},' '))
     catch
@@ -79,6 +80,6 @@ end
 % Correlation matrix
 if ismember('corr', p.plots)
 figure('Renderer', 'painters', 'Position', [10 10 1500 600])
-plotCorrMat(phat, p.name, 'model', p.model)
+plotCorrMat(phat, p.name, 'model', p.model,'interpreter', p.interpreter)
 end
 end

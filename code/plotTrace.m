@@ -7,6 +7,7 @@ p.addParameter('type','individual');
 p.addParameter('steps',1:1:size(p_hat,1));
 p.addParameter('names',{});
 p.addParameter('ESS',[]);
+p.addParameter('interpreter','none');
 
 p.parse(varargin{:});
 p=p.Results;
@@ -40,7 +41,7 @@ if strcmp(p.type,'joint')
     for i=1:n_p
          plot(p.steps,p_hat(:,i));
          xlabel('MCMC step')
-         text(p.steps(end), p_hat(end,i),p.names(i), 'interpreter', 'none', 'FontSize', 8)
+         text(p.steps(end), p_hat(end,i),p.names(i), 'interpreter', p.interpreter, 'FontSize', 8)
     end
 elseif strcmp(p.type, 'individual')
     for i=1:n_p
@@ -48,7 +49,7 @@ elseif strcmp(p.type, 'individual')
 
          plot(p.steps,p_hat(:,i));
          try
-         title(p.names(i), 'interpreter', 'none')
+         title(p.names(i), 'interpreter',p.interpreter)
          catch
          end
          xlabel('MCMC step')
@@ -86,8 +87,7 @@ end
 %             ylim([min_y max_y])
 
             try
-            title(p.names(i), 'interpreter', 'none')
-            catch
+            title(p.names(i), 'interpreter', p.interpreter)
             end
             xlabel('MCMC step')
             %ylim([min_y max_y])

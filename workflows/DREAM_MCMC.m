@@ -34,10 +34,10 @@ plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name},'model', 'Kosinsky')
 getGelmanRubinStatistic(x_a,{PI.par(:).name})
 %% Plotting results
 
-postSamples =x(:,:,2e4:300:end);
-logP_thinned = p_x(2e4:300:end,:);
+postSamples =x(:,:,ceil(size(x,3)/5):300:2e4);
+logP_thinned = p_x(ceil(size(x,3)/5):300:2e4,:);
 plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
-    {PI.par(:).name},'model', 'Kosinsky');
+    paramNames,'model', 'PK model (ThreeComp)','interpreter', 'tex');
 
 plotMCMCDiagnostics(postSamples([H.PopulationParams],:,:),logP_thinned,...
     'name', {PI.par([H.PopulationParams]).name},'model', 'PK model (TwoComp)');
@@ -45,9 +45,9 @@ plotMCMCDiagnostics(postSamples([H.PopulationParams],:,:),logP_thinned,...
 postSamples=postSamples(:,:)';
 
 % Population Parameters
-plotBivariateMarginals_2((postSamples(:,[H.PopulationParams H.SigmaParams])),...
+plotBivariateMarginals_2(exp(postSamples(:,[H.PopulationParams H.SigmaParams])),...
     'names',paramNames([H.PopulationParams H.SigmaParams]))
-% Individual and population parameters
+% Individual parameters
 plotBivariateMarginals_2((postSamples(:, [H.CellParams.Index H.IndividualParams.Index])),...
     'names',paramNames([H.CellParams.Index H.IndividualParams.Index]))
 % Sigma parameters
@@ -62,8 +62,8 @@ PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
 plotPosteriorPredictions(PI,observables)
 
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x_3.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x_3.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x_5.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x_5.mat'},''), 'p_x')
 
-load(strjoin({cd '/DREAM_MCMC_x_4.mat'},''))
-load(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''))
+load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))

@@ -5,6 +5,8 @@ end
 p=inputParser;
 p.addParameter('model','MOC1');
 p.addParameter('type','spearman');
+p.addParameter('interpreter','none');
+
 p.parse(varargin{:});
 p=p.Results;
 
@@ -18,10 +20,10 @@ end
 n_var = size(p_hat_corr,1);
 imagesc(p_hat_corr, [-1 1])
 set(gca, 'XTick', 1:n_var,'YTick', 1:n_var); % center x-axis and y-axis ticks on bins
-set(gca, 'XTickLabel',Names, 'TickLabelInterpreter', 'none','XTickLabelRotation', 45); % set x-axis labels
+set(gca, 'XTickLabel',Names, 'TickLabelInterpreter', p.interpreter,'XTickLabelRotation', 45); % set x-axis labels
 set(gca, 'FontSize', 18); 
 
-set(gca, 'YTickLabel', Names, 'TickLabelInterpreter', 'none'); % set y-axis labels
+set(gca, 'YTickLabel', Names, 'TickLabelInterpreter', p.interpreter); % set y-axis labels
 title(strjoin({'Correlation matrix for', p.model},' ' ), 'FontSize', 20); % set title
 
 % Defining two-color gradient color map
