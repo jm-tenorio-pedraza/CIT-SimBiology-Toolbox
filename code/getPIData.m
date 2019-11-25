@@ -3,21 +3,25 @@ function PI=getPIData(data_ext,stateVar,groups_subset,observables,varargin)
 p=inputParser;
 p.addParameter('zeroAction', 'input')
 p.addParameter('mergePhenotypes', false)
+p.addParameter('output', 'mean')
+
 p.parse(varargin{:})
 p=p.Results;
+load(data_ext,'PI')
 
-load(data_ext)
 PI.data = PI.data';
 [~,varindx]= (ismember(stateVar,PI.stateVar));
 % varindx = varindx(varindx>0);
 data_subset = arrayfun(@(x) x.dataValue(:,varindx), PI.data, 'UniformOutput', false)';
-
-
+groups = {PI.data(:).Group}';
+dataTime = {PI.data(:).dataTime}';
+names = {PI.data(:).Name}';
 %% 
-groups = unique({PI.data(:).Group});
+unique_groups = unique(groups);
 data = [];
-for i=1:length(groups)
-    group_i = ismember({PI.data(:).Group}, groups(i));
+if strcmp(p.output, 'mean')
+for i=1:length(unique_groups)
+    group_i = ismember(groups, unique_groups(i));
     
     data_i = data_subset(group_i);
     time_i = {PI.data(group_i).dataTime};
@@ -63,26 +67,37 @@ for i=1:length(groups)
     else
     end
     
-    data(i).Name = strjoin({groups{i} 'Progressors'},'_');    
+    data(i).Name = strjoin({unique_groups{i} 'Progressors'},'_');    
     data(i).dataTime = time;
     data(i).dataValue = mat_i_progressors;
-    data(i).Group = groups(i);
-    
-    data(i+length(groups)).Name = strjoin({groups{i} 'Responders'},'_');    
-    data(i+length(groups)).dataTime = time;
-    data(i+length(groups)).dataValue = mat_i_responders;
-    data(i+length(groups)).Group = groups(i);
-    
+    data(i).Group = unique_groups(i);
+    data(i).censoring = 'right';
+    data(i+length(unique_groups)).Name = strjoin({unique_groups{i} 'Responders'},'_');    
+    data(i+length(unique_groups)).dataTime = time;
+    data(i+length(unique_groups)).dataValue = mat_i_responders;
+    data(i+length(unique_groups)).Group = unique_groups(i);
+    data(i+length(unique_groups)).censoring = 'left';
+end
+nanIndx = arrayfun(@(x) all(all(isnan(x.dataValue))), data);
+PI.data = data(:,~nanIndx)';
+PI.data = PI.data(ismember([PI.data(:).Group], groups_subset));
+
+else
+    data = data_subset';
+    nanIndx = cellfun(@(x) (all(isnan(x))), data);
+    PI.data = [];
+    [PI.data(1:length(data(~nanIndx))).Name] = names{~nanIndx,:};
+    [PI.data(1:length(data(~nanIndx))).dataTime] = dataTime{~nanIndx,:};
+    [PI.data(1:length(data(~nanIndx))).dataValue] = data{~nanIndx,:};
+    [PI.data(1:end).Group] = groups{~nanIndx,:};
+    PI.data = PI.data(ismember({PI.data(:).Group}, groups_subset));
+
 end
 
 
-nanIndx = arrayfun(@(x) all(all(isnan(x.dataValue))), data);
-
-PI.data = data(:,~nanIndx)';
 
 %% Change group identity
 
-PI.data = PI.data(ismember([PI.data(:).Group], groups_subset));
 try
 PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).Group = {'MOC1_Control'};
 catch
@@ -131,6 +146,7 @@ if p.mergePhenotypes
         PI.data(end).dataTime = time_i;
         PI.data(end).dataValue = dataset;
         PI.data(end).Group = group_i(i);
+        PI.data(end).censoring = {data(find(indx_i,1)).censoring};
     end
 end
 
@@ -138,7 +154,7 @@ end
 ncol = ceil(sqrt(length(stateVar)));
 nrow = ceil(length(stateVar)/ncol);
 figure;
-colors = table2cell(table(linspecer(size(PI.data,1))));
+colors = table2cell(table(linspecer(length(PI.data))));
 [PI.data(1:end).colors] = colors{:,:};
 for i = 1:length(stateVar)
     subplot(nrow,ncol,i)

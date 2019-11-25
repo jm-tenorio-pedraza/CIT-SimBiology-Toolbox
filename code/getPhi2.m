@@ -50,6 +50,6 @@ try
 catch 
 end
 if ~isempty(par.initialValue)
-    phi(:,end+1) = par.initialValue;
+    phi(:,end+1:end+size(par.initialValue,2)) = par.initialValue;
 else
 end

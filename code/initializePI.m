@@ -1,13 +1,17 @@
 function [sim,u]=initializePI(sim_model,parameters,observables,PI,doses,variant,varargin)
 par = inputParser;
 par.addParameter('doseUnits', 'g')
+par.addParameter('addVariants',false)
+
 par.parse(varargin{:})
 par=par.Results;
 
 variants=getvariant(sim_model);
-
+if par.addVariants
+    MOC1 = variant;
+else
 MOC1=variants(strcmp(get(variants,'Name'), variant));
-
+end
 % Create simFunction object
 sim=createSimFunction(sim_model,parameters,observables, doses,MOC1,...
     'UseParallel', false);
