@@ -19,35 +19,35 @@ delta = 1;
 
 %% Local optimisation
 
-ub = log([PI.par([H.PopulationParams H.CellParams.Index H.IndividualParams.Index]).maxValue]);
-lb = log([PI.par([H.PopulationParams H.CellParams.Index H.IndividualParams.Index]).minValue]);
-[phat, ~] = lsqnonlin(residuals_fn,(finalValues([H.PopulationParams...
-    H.CellParams.Index H.IndividualParams.Index])), lb,ub, options_fminsearch);
+ub = log([PI.par([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index]).maxValue]);
+lb = log([PI.par([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index]).minValue]);
+[phat, ~] = lsqnonlin(residuals_fn,(finalValues([PI.H.PopulationParams...
+    PI.H.CellParams.Index PI.H.IndividualParams.Index])), lb,ub, options_fminsearch);
 
-finalValues([H.PopulationParams H.CellParams.Index H.IndividualParams.Index])=phat;
-finalValues([H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), H.IndividualParams);
-finalValues([H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), H.CellParams);
+finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index])=phat;
+finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.IndividualParams);
+finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.CellParams);
 
 %% Global optimisation
 while delta >1e-4
 % Nelder-Mead
-% [finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
+ %[finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 
 % Simulated annealing
 [p_hat, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
 
 % Local optimization
 % Residuals 
-residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),u,PI.tspan),PI,...
-    @(x)getPhi2(x,H,length(u),'initialvalue',x_0),exp(p_hat(setdiff([H.SigmaParams],...
-    [H.CellParams(:).OmegaIndex H.IndividualParams(:).OmegaIndex]))),normIndx);
-[phat, ~] = lsqnonlin(residuals_fn,(p_hat([H.PopulationParams...
-    H.CellParams.Index H.IndividualParams.Index])), lb,ub, options_fminsearch);
+residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
+    @(x)getPhi2(x,PI.H,length(PI.u),'initialvalue',PI.x_0),exp(p_hat(setdiff([PI.H.SigmaParams],...
+    [PI.H.CellParams(:).OmegaIndex PI.H.IndividualParams(:).OmegaIndex]))),PI.normIndx);
+[phat, ~] = lsqnonlin(residuals_fn,(p_hat([PI.H.PopulationParams...
+    PI.H.CellParams.Index PI.H.IndividualParams.Index])), lb,ub, options_fminsearch);
 finalValues=p_hat;
 
-finalValues([H.PopulationParams H.CellParams.Index H.IndividualParams.Index])=phat;
-finalValues([H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), H.IndividualParams);
-finalValues([H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), H.CellParams);
+finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index])=phat;
+finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.IndividualParams);
+finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.CellParams);
 
 % [finalValues, fval_fminunc,~,~,grad,hessian] = fminunc(obj_fun,finalValues,options_fminsearch);
 fval_fminunc = obj_fun(finalValues);
@@ -61,8 +61,8 @@ end
     @(p)getPhi2(p,H,length(u),x_0),normIndx,1:100));
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,PI.tspan(end),u,PI.tspan),exp(finalValues),...
-    @(p)getPhi2(p,H,length(u),'initialValue',x_0), normIndx,H);
+PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
+    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H);
  
      
 %% Plotting output
@@ -76,8 +76,8 @@ finalValue=num2cell(exp(finalValues'));
 
 %% Plotting errors
 for i=1:length(observables)
-plotError(exp(finalValues(setdiff(H.SigmaParams,...
-    [H.IndividualParams.OmegaIndex, H.CellParams.OmegaIndex]))),PI,i)
+plotError(exp(finalValues(setdiff(PI.H.SigmaParams,...
+    [PI.H.IndividualParams.OmegaIndex, PI.H.CellParams.OmegaIndex]))),PI,i)
 legend(observables(i),'Location', 'best')
 end
 

@@ -41,7 +41,7 @@ h=plot(-logP);
 xlabel('MCMC step')
 ylabel('Negative Log-Likelihood')
 title(strjoin({'Log-posterior density trace plot of',p.model},' '), 'interpreter', 'none')
-set(gca, 'YScale', 'log')
+% set(gca, 'YScale', 'log')
 colors = linspecer(size(logP,2));
 for i=1:size(logP,2)
     h(i).Color = colors(i,:);

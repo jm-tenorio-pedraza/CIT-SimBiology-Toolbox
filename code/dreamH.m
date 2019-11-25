@@ -132,13 +132,12 @@ for t = 2:T
        accept)       % Print out progress status
     
     x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                % Append current X and density
-    
     if BurnIn>t*N
         if sum(J)>0
             pCR = J./n_id;
-        end
-        pCR = pCR/sum(pCR);                         % update selection prob. crossover
+            pCR = pCR/sum(pCR);                         % update selection prob. crossover
 
+        end
         [X, p_X] = check(X, mean((p_x(ceil(t/2):t,1:N))),p_X);       % Outlier detection and correction
     end
 end

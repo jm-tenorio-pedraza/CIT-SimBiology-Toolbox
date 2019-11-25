@@ -2,9 +2,9 @@
 time = 1:1:PI.tspan(end);
 inputs = sim.Parameters.Value(1:end-1)';
 % inputs = [PI.par(H.PopulationParams).finalValue];
-inputs = [repelem(inputs,size(x_0,1),1) x_0];
+inputs = [repelem(inputs,size(x_0,1),1) x_0(:,1)];
 [group, indx] = unique([PI.data(:).Group], 'stable');
-u_subset = u(indx,:);
+u_subset = PI.u(indx,:);
 inputs = inputs(indx,:);
 % Get sensitivity matrix
 sensmatrix = getSensitivities(inputs, PI,@(p)sim(p,PI.tspan(end),u_subset,1:1:PI.tspan),...

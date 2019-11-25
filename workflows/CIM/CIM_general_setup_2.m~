@@ -35,8 +35,8 @@ if sensitivity
     parameters = setdiff(parameters, exclude_parameters);
     parameters = [parameters; 'T_0'];
 else
-    parameters = {'kpro_Tumor_0'; 'kin_CD8'; 'kdif_max'; 'K_CD8'; 'kill_max'};
-    parameters = [parameters; 'T_0'];
+    parameters = {'kpro_Tumor_0'; 'kin_max'; 'kdif'; 'K_Naive'; 'f3';'kpro_Tumor';'kill_max'};
+    parameters = [parameters 'T_0' 'kpro_Tumor_0' 'kill_max'];
 
 end
 % Define outputs% Define outputs
@@ -62,7 +62,8 @@ variants = getvariant(model);
 PI.normIndx = 7:8;
 initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},'variant', {variants(1); variants(2)});
 % Get initial values
-[PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group], initialStruct);
+[PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group], initialStruct,...
+    'parameters', {'kpro_Tumor_0' 'kill_max'});
 
 % Get simulation function
 [sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
@@ -70,8 +71,8 @@ initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},'varian
 
 %% Optimization setup
 % Hierarchical structure
-PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 2, 'cell_indx',1, 'n_indiv', length(PI.u));
+PI.H = getHierarchicalStruct(parameters(1:end-3),PI,'n_sigma', length(observables),...
+    'rand_indx', 2,  'n_indiv', length(PI.u));
 try
     cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),PI.H.CellParams,'UniformOutput',false)';
     indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';

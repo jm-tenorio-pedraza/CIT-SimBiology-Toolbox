@@ -3,7 +3,8 @@ if nargin<5
     error('getParamStruct:toofewinputs','getParamStruct requires atleast 5 inputs.')
 end
 inputs=inputParser;
-inputs.addParameter('Sigma',3,@isnumeric);
+inputs.addParameter('Sigma',3);
+inputs.addParameter('startSigma',repelem(.1,length(H.SigmaParams),1));
 inputs.parse(varargin{:});
 inputs=inputs.Results;
 
@@ -33,10 +34,10 @@ param=[simFun.Parameters.Value(H.PopulationParams)];       %
 % concatenating all params
 
     % Min            Max                Start           % Mu             % Sigma
-p=[ param*1e-5       param*1e5           param           param 
+p=[ param*1e-1       param*1e1           param           param 
     param_cell*.01   param_cell*100      ones(size(param_cell))      ones(size(param_cell))
     param_indiv*.01  param_indiv*100     ones(size(param_indiv))     ones(size(param_indiv))     
-    sigmaParams*.01  sigmaParams*100     sigmaParams     sigmaParams];
+    sigmaParams*.01  sigmaParams*100     inputs.startSigma     sigmaParams];
 
 if length(inputs.Sigma)<2
     % Sigma

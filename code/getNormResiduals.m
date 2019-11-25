@@ -1,4 +1,4 @@
-function residuals=getNormResiduals(p,simFun,PI,getPhi,getCovariance,normIndx)
+function [residuals,PI]=getNormResiduals(p,simFun,PI,getPhi,getCovariance,normIndx)
 % Calculates normalized residuals with the paramaters (double) input mapping inputFun (handle)
 % simFun (handle), function and the data (table) provided
 nVar=size(PI.data(1).dataValue,2);
