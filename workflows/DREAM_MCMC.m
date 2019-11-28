@@ -11,7 +11,7 @@ w0=X0(I(1:N),:);
 h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun,...
-    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
+    size(w0,1),ceil(5e5/size(w0,1)), length(finalValues), 'BurnIn', 1e5,'StepSize',...
     1.38,'H', h);
 toc
 
@@ -34,10 +34,10 @@ plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name},'model', 'Kosinsky')
 getGelmanRubinStatistic(x_a,{PI.par(:).name})
 %% Plotting results
 
-postSamples =x(:,:,ceil(size(x,3)/5):300:2e4);
-logP_thinned = p_x(ceil(size(x,3)/5):300:2e4,:);
+postSamples =x(:,:,ceil(size(x,3)/5):400:end);
+logP_thinned = p_x(ceil(size(x,3)/5):400:end,:);
 plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
-    paramNames,'model', 'PK model (ThreeComp)','interpreter', 'tex');
+    {PI.par(:).name},'model', 'Kosinsky','interpreter', 'tex');
 
 plotMCMCDiagnostics(postSamples([H.PopulationParams],:,:),logP_thinned,...
     'name', {PI.par([H.PopulationParams]).name},'model', 'PK model (TwoComp)');
@@ -62,8 +62,8 @@ PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
 plotPosteriorPredictions(PI,observables)
 
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x_5.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x_5.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x_4.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''), 'p_x')
 
 load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))
