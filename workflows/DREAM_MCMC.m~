@@ -56,9 +56,9 @@ plotBivariateMarginals_2(exp(postSamples(:, H.SigmaParams)),'names', {PI.par(H.S
 figure
 hold on
 for i=1:length(PI.data)
-    histogram(postSamples(:,PI.H.IndividualParams(1).Index(i)),'FaceColor',PI.data(i).colors)
+    histogram(postSamples(:,PI.H.IndividualParams(1).Index(i)))
 end
-legend({PI.data(:).Name})
+legend({PI.data(:).name})
 %% Posterior predictions
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
@@ -69,8 +69,8 @@ PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
 plotPosteriorPredictions(PI,observables)
 
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x_2.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x_2.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x_3.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x_3.mat'},''), 'p_x')
 
 load(strjoin({cd '/DREAM_MCMC_x_4.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''))

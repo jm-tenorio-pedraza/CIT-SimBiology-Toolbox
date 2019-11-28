@@ -1,6 +1,6 @@
 %% General setup for Kosinsky et al with k_pro as the parameter to vary for each individual
 %% Search paths
-warning off
+warning on
 clear all
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI')
@@ -35,7 +35,8 @@ if sensitivity
     parameters = setdiff(parameters, exclude_parameters);
     parameters = [parameters; 'T_0'];
 else
-    parameters = {'kpro_Tumor_0'; 'kin_CD8'; 'kdif_max'; 'K_CD8'; 'kill_max'};
+    parameters = {'kin_CD8';'K_CD8';'kpro_Tumor_0'; 'kill_max'; 'KDE_Treg';
+        'KDE_MDSC'; 'K_pro'; 'K_el'};
     parameters = [parameters; 'T_0'];
 
 end
@@ -60,18 +61,25 @@ PI.variableUnits={'Volume [mL]' 'Logit []' 'Logit []'  'Logit []' ...
 variants = getvariant(model);
 
 PI.normIndx = 7:8;
-initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},'variant', {variants(1); variants(2)});
+initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},...
+    'variant', {variants(1); variants(2)});
 % Get initial values
-[PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group], initialStruct);
+[PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
+    initialStruct);
 
 % Get simulation function
 [sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
 
-
+% Parameter names for plots
+paramNames = ['\eta_{kin_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'KDE_{Treg}'...
+    'KDE_{MDSC}' 'K_{pro}' 'K_{el}' 'kpro_{Tumor_{MOC1}}' 'kpro_{Tumor_{MOC2}}'...
+    {PI.par([PI.H.IndividualParams(:).Index]).name} '\lambda_{kpro_{Tumor}}'...
+    '\omega_{kin_{CD8}}' '\sigma_{TV}' '\sigma_{CD8}' '\sigma_{CD107a}' '\sigma_{Treg}'...
+    '\sigma_{DC}' '\sigma_{MDSC}' '\sigma_{PDL1_T}' '\sigma_{PDL1_I}'];
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 2, 'cell_indx',1, 'n_indiv', length(PI.u));
+    'rand_indx', 7, 'cell_indx',3, 'n_indiv', length(PI.u));
 try
     cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),PI.H.CellParams,'UniformOutput',false)';
     indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
@@ -119,7 +127,7 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),exp(finalValues(end-length(observables)+1:end)),PI.normIndx);
 
 %% Save results
-save('PI_CIM_2.mat', 'PI')
+save('PI_CIM_1.mat', 'PI')
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
 
