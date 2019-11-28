@@ -79,7 +79,7 @@ paramNames = ['\eta_{kin_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'KDE_{Treg}'
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 7, 'cell_indx',3, 'n_indiv', length(PI.u));
+    'rand_indx', 2, 'cell_indx',3, 'n_indiv', length(PI.u));
 try
     cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),PI.H.CellParams,'UniformOutput',false)';
     indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
@@ -128,6 +128,8 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
 
 %% Save results
 save('PI_CIM_1.mat', 'PI')
+load(strjoin({cd 'PI_CIM_1.mat'},'/'))
+
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
 

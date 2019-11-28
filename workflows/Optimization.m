@@ -38,18 +38,18 @@ while delta >1e-4
 
 % Local optimization
 % Residuals 
-residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
-    @(x)getPhi2(x,PI.H,length(PI.u),'initialvalue',PI.x_0),exp(p_hat(setdiff([PI.H.SigmaParams],...
-    [PI.H.CellParams(:).OmegaIndex PI.H.IndividualParams(:).OmegaIndex]))),PI.normIndx);
-[phat, ~] = lsqnonlin(residuals_fn,(p_hat([PI.H.PopulationParams...
-    PI.H.CellParams.Index PI.H.IndividualParams.Index])), lb,ub, options_fminsearch);
-finalValues=p_hat;
+% residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
+%     @(x)getPhi2(x,PI.H,length(PI.u),'initialvalue',PI.x_0),exp(p_hat(setdiff([PI.H.SigmaParams],...
+%     [PI.H.CellParams(:).OmegaIndex PI.H.IndividualParams(:).OmegaIndex]))),PI.normIndx);
+% [phat, ~] = lsqnonlin(residuals_fn,(p_hat([PI.H.PopulationParams...
+%     PI.H.CellParams.Index PI.H.IndividualParams.Index])), lb,ub, options_fminsearch);
+ finalValues=p_hat;
+% 
+% finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index])=phat;
+% finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.IndividualParams);
+% finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.CellParams);
 
-finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index])=phat;
-finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.IndividualParams);
-finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.CellParams);
-
-% [finalValues, fval_fminunc,~,~,grad,hessian] = fminunc(obj_fun,finalValues,options_fminsearch);
+[finalValues, fval_fminunc] = fminunc(obj_fun,finalValues,options_fminsearch);
 fval_fminunc = obj_fun(finalValues);
 delta = abs(fval_anneal - fval_fminunc);
 end
