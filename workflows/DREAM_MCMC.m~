@@ -58,7 +58,7 @@ figure
 hold on
 for i=1:length(PI.data)
     histogram(exp(postSamples(:,PI.H.IndividualParams(1).Index(i))),...
-        'FaceColor',PI.data(i).colors,'FaceAlpha', 0.5, 'Normalization', 'probability')
+        'FaceColor',PI.data(i).colors,'FaceAlpha', 0.2, 'Normalization', 'probability')
 end
 legend({PI.data(:).Name},'interpreter', 'none')
 ylabel('prob')
@@ -73,8 +73,8 @@ PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
 plotPosteriorPredictions(PI,observables)
 
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x_1.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x_1.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x_2.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x_2.mat'},''), 'p_x')
 
 load(strjoin({cd '/DREAM_MCMC_x_4.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''))
