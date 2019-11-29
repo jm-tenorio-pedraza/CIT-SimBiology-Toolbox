@@ -127,7 +127,7 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),exp(finalValues(end-length(observables)+1:end)),PI.normIndx);
 
 %% Save results
-save('PI_CIM_1.mat', 'PI')
+save('PI_CIM_2d.mat', 'PI')
 load(strjoin({cd 'PI_CIM_1.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
