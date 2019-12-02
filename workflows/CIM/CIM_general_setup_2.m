@@ -35,8 +35,8 @@ if sensitivity
     parameters = setdiff(parameters, exclude_parameters);
     parameters = [parameters; 'T_0'];
 else
-    parameters = {'kin_CD8';'K_CD8';'kpro_Tumor_0'; 'kill_max'; 'KDE_Treg';
-        'KDE_MDSC'; 'K_pro'; 'K_el'};
+    parameters = {'K_CD8';'K_pro'; 'KDE_MDSC';'KDE_Treg';'K_el'; 'kin_CD8';....
+        'kill_max';'kpro_Tumor_0'; 'K_DC'};
     parameters = [parameters; 'T_0'];
 
 end
@@ -70,16 +70,10 @@ initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},...
 % Get simulation function
 [sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
 
-% Parameter names for plots
-paramNames = ['\eta_{kin_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'KDE_{Treg}'...
-    'KDE_{MDSC}' 'K_{pro}' 'K_{el}' 'kpro_{Tumor_{MOC1}}' 'kpro_{Tumor_{MOC2}}'...
-    {PI.par([PI.H.IndividualParams(:).Index]).name} '\lambda_{kpro_{Tumor}}'...
-    '\omega_{kin_{CD8}}' '\sigma_{TV}' '\sigma_{CD8}' '\sigma_{CD107a}' '\sigma_{Treg}'...
-    '\sigma_{DC}' '\sigma_{MDSC}' '\sigma_{PDL1_T}' '\sigma_{PDL1_I}'];
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 2, 'cell_indx',3, 'n_indiv', length(PI.u));
+    'rand_indx', 1, 'cell_indx',8, 'n_indiv', length(PI.u));
 try
     cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),PI.H.CellParams,'UniformOutput',false)';
     indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
@@ -125,9 +119,15 @@ prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type','uniform'));
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),exp(finalValues(end-length(observables)+1:end)),PI.normIndx);
+% Parameter names for plots
+paramNames = ['\eta_{kin_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'KDE_{Treg}'...
+    'KDE_{MDSC}' 'K_{pro}' 'K_{el}' 'kpro_{Tumor_{MOC1}}' 'kpro_{Tumor_{MOC2}}'...
+    {PI.par([PI.H.IndividualParams(:).Index]).name} '\lambda_{kpro_{Tumor}}'...
+    '\omega_{kin_{CD8}}' '\sigma_{TV}' '\sigma_{CD8}' '\sigma_{CD107a}' '\sigma_{Treg}'...
+    '\sigma_{DC}' '\sigma_{MDSC}' '\sigma_{PDL1_T}' '\sigma_{PDL1_I}'];
 
 %% Save results
-save('PI_CIM_2d.mat', 'PI')
+save('PI_CIM_1.mat', 'PI')
 load(strjoin({cd 'PI_CIM_1.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))

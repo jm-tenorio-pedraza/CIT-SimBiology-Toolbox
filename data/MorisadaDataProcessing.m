@@ -75,6 +75,19 @@ group = cellfun(@(x) x(1:regexp(x,'_\d*$')-1),{simBioData.Name},'UniformOutput',
 [simBioData(1:end).Group]=group{:,:};
 PI.data = simBioData;
 PI.stateVar = {'Tumor' 'CD8' 'Treg' 'GMDSC' 'DC' 'Myeloid_PDL1_Rel' 'Tumor_PDL1_Rel' 'GMDSC_Rel' 'DC_Rel'};
+
+%% Adding logit-transforms
+stateVar = {'CD8' 'Treg' 'GMDSC' 'DC'};
+[arrayindx,stateindx] = ismember(stateVar,PI.stateVar);
+stateindx = stateindx(stateindx~=0);
+logit_transforms = arrayfun(@(x) x.dataValue(:,stateindx)./(100-x.dataValue(:,stateindx)),...
+    PI.data,'UniformOutput', false);
+for i=1:length(logit_transforms)
+    PI.data(i).dataValue(:,length(PI.stateVar)+1:length(PI.stateVar)+length(stateindx)) = logit_transforms{1,i};
+end
+PI.stateVar = [PI.stateVar {'CD8_logit' 'Treg_logit' 'GMDSC_logit' 'DC_logit'}];
+%%
+
 % Save output
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Morisada_Data.mat', 'simBioData')
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Morisada.mat', 'PI')

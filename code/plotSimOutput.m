@@ -26,7 +26,7 @@ try
 catch
     error = [];
 end
-    title(PI.data(i).Name)
+    title(PI.data(i).Name,'interpreter', 'none')
     
     col_i=treatment_colors(ismember(treatments,PI.data(i).Group),:);
     sim.Color=col_i;
@@ -48,8 +48,8 @@ end
     end
 %        set(gca,'YScale','log')
        try
-%        ylim([min(PI.data(i).dataValue(:,colIndx)) max(PI.data(i).dataValue(:,colIndx))])
+       ylim([min(PI.data(i).dataValue(:,colIndx)) max(PI.data(i).dataValue(:,colIndx))])
        catch
        end
-
+% ylim([1e-4, 10])
 end

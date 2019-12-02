@@ -49,9 +49,9 @@ while delta >1e-4
 % finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.IndividualParams);
 % finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.CellParams);
 
-% [finalValues, fval_fminunc] = fminunc(obj_fun,finalValues,options_fminsearch);
+[finalValues, fval_fminunc] = fminunc(obj_fun,finalValues,options_fminsearch);
 % fval_fminunc = obj_fun(finalValues);
-delta = abs(fval_anneal - fval_fminsearch);
+delta = abs(fval_anneal - fval_fminunc);
 end
 
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            %% SAEM

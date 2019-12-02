@@ -10,7 +10,8 @@ p=p.Results;
 load(data_ext,'PI')
 
 PI.data = PI.data';
-[~,varindx]= (ismember(stateVar,PI.stateVar));
+[stateindx,varindx]= (ismember(stateVar, PI.stateVar));
+varindx = varindx(varindx~=0);
 % varindx = varindx(varindx>0);
 data_subset = arrayfun(@(x) x.dataValue(:,varindx), PI.data, 'UniformOutput', false)';
 groups = {PI.data(:).Group}';
@@ -27,11 +28,11 @@ for i=1:length(unique_groups)
     time_i = {PI.data(group_i).dataTime};
     time = cellfun(@(x) length(x),time_i, 'UniformOutput',true);
     time = time_i{max(time)==time};
-    mat_i_responders = NaN(length(time),length(observables));
-    mat_i_progressors = NaN(length(time),length(observables));
+    mat_i_responders = NaN(length(time),length(varindx));
+    mat_i_progressors = NaN(length(time),length(varindx));
     group_i = {};
 
-    for j=1:length(observables)
+    for j=1:length(varindx)
             datavar_j = cellfun(@(x) x(:,j),data_i, 'UniformOutput',false);
             
             % Matrix with each individual in the columns and the time
@@ -151,17 +152,18 @@ if p.mergePhenotypes
 end
 
 %% Plot data
-ncol = ceil(sqrt(length(stateVar)));
-nrow = ceil(length(stateVar)/ncol);
+ncol = ceil(sqrt(length(varindx)));
+nrow = ceil(length(varindx)/ncol);
 figure;
 colors = table2cell(table(linspecer(length(PI.data))));
 [PI.data(1:end).colors] = colors{:,:};
-for i = 1:length(stateVar)
+for i = 1:length(varindx)
     subplot(nrow,ncol,i)
     hold on
     arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i),'Color',x.colors,'Marker','*'),PI.data)
     legend({PI.data(:).Name},'Interpreter', 'none')
-    title(stateVar(i))
+    indx = find(stateindx,i);
+    title(stateVar(indx(i)))
     set(gca,'YScale', 'log')
 end
 PI.tspan = unique(cat(1,PI.data(:).dataTime));
