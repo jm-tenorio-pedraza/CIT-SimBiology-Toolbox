@@ -59,10 +59,14 @@ hold on
 for i=1:length(PI.data)
     histogram(exp(postSamples(:,PI.H.IndividualParams(1).Index(i))),...
         'FaceColor',PI.data(i).colors,'FaceAlpha', 0.5, 'Normalization', 'probability')
+    
 end
+% histogram(exp(postSamples(:,PI.H.IndividualParams(1).EtaIndex)),...
+%     'FaceColor',PI.data(i).colors,'FaceAlpha', 0.5, 'Normalization', 'probability')
 legend({PI.data(:).Name},'interpreter', 'none')
 ylabel('prob')
-xlabel('logU')
+xlabel('Deviations wrt mean parameter')
+title('Inter-individual variation in K_{CD8}')
 %% Posterior predictions
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
