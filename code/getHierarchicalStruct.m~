@@ -59,19 +59,22 @@ try
 catch
     CellOmegaIndex ={};                                                    % If there are no individual parameters    
 end
-H.SigmaParams = [CellOmegaIndex{:,:}];                                 % Add omega indexes to vector of variance indexes
-[H.CellParams(1:n_cell).OmegaIndex] = CellOmegaIndex{:,:};          % Add omega indexes to H
+
+[H.CellParams(1:n_cell).OmegaIndex] = CellOmegaIndex{:,:};                % Add omega indexes of cell to H
+H.SigmaParams = [H.SigmaParams [CellOmegaIndex{:,:}]];                                       % Add noise variance indexes to the vector of variance indexes
 
 %% Add individual parameter indexes if available
 [H.IndividualParams(1:n_rand).EtaIndex] = IndivEtaIndex{:,:};
 try
     IndivOmegaIndex = mat2cell(reshape(IndivIndex{end,end}(end)+1+n_cell:...       % Create indexes for the variance parameters of
-        IndivIndex{end,end}(end)+n_rand+n_cell,n_rand,[]),ones(n_rand,1));         % individually-varying params starting at the end of                                                                       
+        IndivIndex{end,end}(end)+n_rand+n_cell,n_rand,[]),ones(n_rand,1));         % individually-varying params starting at the end of
+                                                                            % the individual params
+                                                                            
     H.SigmaParams = [H.SigmaParams [IndivOmegaIndex{:,:}]];                                       % Add noise variance indexes to the vector of variance indexes
     H.SigmaParams = [H.SigmaParams H.SigmaParams(end)+1:H.SigmaParams(end)+n_sigma];
 catch
     IndivOmegaIndex ={};                                                    % If there are no individual parameters
-    H.SigmaParams=[H.SigmaParams H.SigmaParams(end)+1:H.SigmaParams(end)+n_sigma];
+    H.SigmaParams = length(params)+1:length(params)+n_sigma;
     
 end
 

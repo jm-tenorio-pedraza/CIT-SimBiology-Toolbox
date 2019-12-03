@@ -52,16 +52,11 @@ if strcmp(p.output, 'mean')                                                 % pr
                     end
                 end
             end
-            if p.crossValidation
-                mat_i_responders = NaN(length(time),length(observables));               % create NaN matrix with K rows and M columns for non-responders and responders
-                mat_i_progressors = NaN(length(time),length(observables));
-                
-            else
-                mat_i_responders(:,j) = mean(mat_j(:, ismember(group_i,...          % assing time course to either the responders or non-responders matrix
+               mat_i_responders(:,j) = mean(mat_j(:, ismember(group_i,...          % assing time course to either the responders or non-responders matrix
                     'Responder')),2,'omitnan');
                 mat_i_progressors(:,j) = mean(mat_j(:, ismember(group_i,...
                     'Progressor')),2,'omitnan');
-            end
+            
             
         end
         
@@ -99,10 +94,7 @@ else
     [PI.data(1:length(data(~nanIndx))).dataValue] = data{~nanIndx,:};
     [PI.data(1:end).Group] = groups{~nanIndx,:};
     PI.data = PI.data(ismember({PI.data(:).Group}, groups_subset));
-    if p.crossValidation                                                    % Check if cross-validtation is to be performed for individual time courses
-        
-    else
-    end
+    
 end
 
 
