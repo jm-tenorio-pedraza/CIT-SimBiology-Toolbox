@@ -1,0 +1,27 @@
+%% Generate cross-validation datasets from original data
+MetaPI = getPICrossValData('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
+    stateVar,groups_subset,observables,'zeroAction', 'omit','mergePhenotypes', true);
+
+%% Add fields to each PI structure
+tv = arrayfun(@(x) x.dataValue(~isnan(x.dataValue(:,1)),1),PI.data,'UniformOutput',false);
+
+variableUnits={'Volume [mL]' 'Logit []' 'Logit []'  'Logit []' ...
+     'Logit [t]'   'Logit []' ...
+    'Relative units []' 'Relative units []'};
+PI.normIndx = 7:8;
+% Get initial values
+[PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
+    initialStruct);
+
+% Get simulation function
+[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
+
+PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
+    'rand_indx', 2, 'cell_indx',3, 'n_indiv', length(PI.u));
+
+for l=1:length(MetaPI)
+    [MetaPI(l).PI.data(1:end).TV] = tv{:,:};
+    MetaPI(l).PI
+end
+%% Loop for optimization
+
