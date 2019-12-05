@@ -10,8 +10,8 @@ out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Tool
 % Extract model
 model=out.m1;
 cs=model.getconfigset;
-set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
-set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
+set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-11);
+set(cs.SolverOptions, 'RelativeTolerance', 1.0e-8);
 set(cs, 'MaximumWallClock', 0.25)
 sensitivity = false;
 %% load data and previous results
@@ -35,9 +35,9 @@ if sensitivity
     parameters = setdiff(parameters, exclude_parameters);
     parameters = [parameters; 'T_0'];
 else
-    parameters = {'kin_CD8';'K_CD8';'kpro_Tumor_0'; 'kill_max'; 'KDE_Treg';
-        'KDE_MDSC'; 'K_pro'; 'K_el'; 'K_DC'; 'kin_Treg' ;'K_Treg'; 'kdif_max';
-        'K_IFNg'; 'kin_MDSC'};
+    parameters = {'kin_CD8';'K_CD8'; 'KDE_Treg';
+        'KDE_MDSC'; 'K_pro'; 'kpro_Tumor_0'; 'kill_max'; 'K_el'; 'K_DC'; 'kin_Treg' ;'K_Treg'; 'kdif_max';
+        'K_IFNg';'kin_DC'; 'kin_MDSC';'K_MDSC'};
     parameters = [parameters; 'T_0'];
 
 end
@@ -51,11 +51,9 @@ stateVar={'Tumor' 'CD8_logit' 'CD107a_logit' 'Treg_logit' 'DC_logit' 'GMDSC_logi
 doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
 %% Obtain data, simulation function and dose table
 
-PI=getPIData('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
-    stateVar,groups_subset,observables,'zeroAction', 'omit','mergePhenotypes', true);
-
-tv = arrayfun(@(x) x.dataValue(~isnan(x.dataValue(:,1)),1),PI.data,'UniformOutput',false);
-[PI.data(1:end).TV] = tv{:,:};
+PI=getPIData2('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
+    stateVar,groups_subset,observables,'zeroAction', 'omit','mergePhenotypes',...
+    true,'output', 'mean','maxIIV', false);
 PI.variableUnits={'Volume [mL]' 'Logit []' 'Logit []'  'Logit []' ...
      'Logit [t]'   'Logit []' ...
     'Relative units []' 'Relative units []'};
@@ -74,7 +72,7 @@ initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},...
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [], 'cell_indx',[3 4], 'n_indiv', length(PI.u));
+    'rand_indx', 2, 'cell_indx',[6 7], 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
 else
@@ -85,9 +83,14 @@ if ~isempty(PI.H.CellParams(1).Index)
 else
     cellSigmaNames = [];
 end
+try
 SigmaNames = [cellSigmaNames; indivSigmaNames];
 SigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'sigma', x}, '_'),...
     observables','UniformOutput', false);
+catch
+    SigmaNames=cellfun(@(x) strjoin({'sigma', x}, '_'),...
+    observables','UniformOutput', false);
+end
 % Generating PI
 alpha = [repelem(0.01, length([PI.H.CellParams(:).OmegaIndex]),1);...
     repelem(0.01, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
@@ -126,7 +129,7 @@ paramNames = ['kin_{CD8}' '\eta_{K_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'K
 
 %% Save results
 save('PI_CIM.mat', 'PI')
-load(strjoin({cd 'PI_CIM_1.mat'},'/'))
+load(strjoin({cd 'PI_CIM.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))

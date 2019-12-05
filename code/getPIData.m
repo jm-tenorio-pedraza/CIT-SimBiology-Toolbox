@@ -4,7 +4,7 @@ p=inputParser;
 p.addParameter('zeroAction', 'input')
 p.addParameter('mergePhenotypes', false)
 p.addParameter('output', 'mean')
-p.addParameter('crossvalidation', false)
+p.addParameter('maxIIV', false)
 p.parse(varargin{:})
 p=p.Results;
 
@@ -94,6 +94,10 @@ else
     [PI.data(1:length(data(~nanIndx))).dataValue] = data{~nanIndx,:};
     [PI.data(1:end).Group] = groups{~nanIndx,:};
     PI.data = PI.data(ismember({PI.data(:).Group}, groups_subset));
+    if p.maxIIV
+        
+        
+    end
     
 end
 

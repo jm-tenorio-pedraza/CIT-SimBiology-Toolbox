@@ -71,8 +71,12 @@ try
     H.SigmaParams = [H.SigmaParams H.SigmaParams(end)+1:H.SigmaParams(end)+n_sigma];
 catch
     IndivOmegaIndex ={};                                                    % If there are no individual parameters
+    try
     H.SigmaParams=[H.SigmaParams H.SigmaParams(end)+1:H.SigmaParams(end)+n_sigma];
-    
+    catch
+            H.SigmaParams=length(params)+1:length(params)+n_sigma;
+
+    end
 end
 
 

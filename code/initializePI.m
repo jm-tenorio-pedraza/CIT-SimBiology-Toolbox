@@ -84,7 +84,7 @@ for i=1:size(u,1)
 
     legend(dose)
     title(PI.data(i).Group,'Interpreter', 'none')
-    ylim([0 1])
+%     ylim([0 1])
 end
 return
 
