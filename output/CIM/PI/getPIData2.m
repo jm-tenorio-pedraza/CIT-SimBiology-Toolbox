@@ -53,7 +53,7 @@ for i=1:length(unique_groups)                                               % Fo
                 if k==1
                     phenotype_i = repelem({'nan'}, n_indiv,1);
                 end
-                finalTV = datavar_j{:,k}(end)>0.01 |...                        % if the final observed time point is = 0 or all of the observations are NaN
+                finalTV = datavar_j{:,k}(end)>0.001 |...                        % if the final observed time point is = 0 or all of the observations are NaN
                     all(isnan(datavar_j{:,k}));
                 switch finalTV
                     case 1
@@ -173,7 +173,7 @@ try
     PI.data(ismember({PI.data(:).Group}, 'MOC1_Control_Mean')).use ...
         = {'train'};
     end
-    PI.data(ismember({PI.data(:).Group}, 'MOC1_Control_Mean')).Group ...
+    PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).Group ...
         = {'MOC1_Control'};
 catch
 end
@@ -183,7 +183,7 @@ try
     PI.data(ismember({PI.data(:).Group}, 'MOC2_Control_Mean')).use ...
         = {'train'};
     end
-    PI.data(ismember({PI.data(:).Group}, 'MOC2_Control_Mean')).Group ...
+    PI.data(ismember([PI.data(:).Group], 'MOC2_Control_Mean')).Group ...
         = {'MOC2_Control'};
 catch
 end

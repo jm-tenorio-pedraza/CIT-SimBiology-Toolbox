@@ -10,8 +10,8 @@ out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Tool
 % Extract model
 model=out.m1;
 cs=model.getconfigset;
-set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-11);
-set(cs.SolverOptions, 'RelativeTolerance', 1.0e-8);
+set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
+set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.25)
 sensitivity = false;
 %% load data and previous results
@@ -36,8 +36,8 @@ if sensitivity
     parameters = [parameters; 'T_0'];
 else
     parameters = {'kin_CD8';'K_CD8'; 'KDE_Treg';
-        'KDE_MDSC'; 'K_pro'; 'kpro_Tumor_0'; 'kill_max'; 'K_el'; 'K_DC'; 'kin_Treg' ;'K_Treg'; 'kdif_max';
-        'K_IFNg';'kin_DC'; 'kin_MDSC';'K_MDSC'};
+        'KDE_MDSC'; 'K_pro'; 'kpro_Tumor_0'; 'kill_max'; 'K_el'; 'K_DC';
+        'kin_Treg' ; 'K_IFNg';'K_MDSC'};
     parameters = [parameters; 'T_0'];
 
 end
@@ -128,7 +128,7 @@ paramNames = ['kin_{CD8}' '\eta_{K_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'K
     '\sigma_{DC}' '\sigma_{MDSC}' '\sigma_{PDL1_T}' '\sigma_{PDL1_I}'];
 
 %% Save results
-save('PI_CIM.mat', 'PI')
+save('PI_CIM_1.mat', 'PI')
 load(strjoin({cd 'PI_CIM.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
