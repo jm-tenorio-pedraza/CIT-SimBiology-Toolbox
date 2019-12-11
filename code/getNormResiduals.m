@@ -1,6 +1,10 @@
-function [residuals,PI]=getNormResiduals(p,simFun,PI,getPhi,getCovariance,normIndx)
+function [residuals,PI]=getNormResiduals(p,simFun,PI,getPhi,getCovariance,normIndx,varargin)
 % Calculates normalized residuals with the paramaters (double) input mapping inputFun (handle)
 % simFun (handle), function and the data (table) provided
+par=inputParser;
+par.addParameter('log',true);
+par.parse(varargin{:})
+par=par.Results;
 nVar=size(PI.data(1).dataValue,2);
 if size(p,1)>size(p,2)
     p=p';
@@ -47,7 +51,7 @@ simOutput=cellfun(@(x)x./([ones(1,nVar-length(normIndx)) x(end,normIndx)]),simOu
 [PI.data(1:length(simOutput)).('y_hat')]=simOutput{:,:};
 
 % Errors of log-transformed data
-residuals=getErrors(PI,sigma);
+residuals=getErrors(PI,sigma,'log',par.log);
 
 if (length(residuals)~= PI.n_data)
     residuals=1e9;

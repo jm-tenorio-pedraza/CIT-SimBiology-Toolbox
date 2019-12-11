@@ -5,6 +5,8 @@ function residuals = getResiduals(p,simFun,PI,getPhi,sigma,normIndx,varargin)
 
 par=inputParser;
 par.addParameter('addSigma',false)
+par.addParameter('log',true)
+
 par.addParameter('output','residuals')
 par.parse(varargin{:});
 par=par.Results;
@@ -53,16 +55,20 @@ simOutput=cellfun(@(x)x./repmat([ones(1,nVar-length(normIndx)) x(end,normIndx)],
 [PI.data(1:length(simOutput)).('y_hat')]=simOutput{:,:};
 
 % Errors of log-transformed data
+if par.log
 if par.addSigma
     error=arrayfun(@(x)reshape((log(x.y_hat)-log(x.dataValue)).^2./...% squared residuals
     ((2*sigma.^2))+...% normalized by their variance
     (log(sigma*sqrt(pi*2))),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
-
 else
 error=arrayfun(@(x)reshape((log(x.y_hat)-log(x.dataValue))./...% squared residuals
     (sqrt(2)*(sigma)),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
 end
+else
+    error=arrayfun(@(x)reshape(((x.y_hat)-(x.dataValue))./...% squared residuals
+    (sqrt(2)*(sigma)),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
 
+end
 error=cellfun(@(x)x(~isnan(x)),error,'UniformOutput',false);
 [PI.data(1:end).residuals] = error{:,:};
 residuals=[error{:,:}];

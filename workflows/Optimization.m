@@ -38,25 +38,23 @@ while delta >1e-4
 
 % Local optimization
 % Residuals 
+residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
+    @(x)getPhi2(x,PI.H,length(PI.u),'initialvalue',PI.x_0),exp(p_hat(setdiff([PI.H.SigmaParams],...
+    [PI.H.CellParams(:).OmegaIndex PI.H.IndividualParams(:).OmegaIndex]))),PI.normIndx);
 
-% residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
-%     @(x)getPhi2(x,PI.H,length(PI.u),'initialvalue',PI.x_0),exp(p_hat(setdiff([PI.H.SigmaParams],...
-%     [PI.H.CellParams(:).OmegaIndex PI.H.IndividualParams(:).OmegaIndex]))),PI.normIndx);
-% 
-% [phat, ~] = lsqnonlin(residuals_fn,(p_hat([PI.H.PopulationParams...
-%     PI.H.CellParams.Index PI.H.IndividualParams.Index])), lb,ub, options_fminsearch);
+[phat, ~] = lsqnonlin(residuals_fn,(p_hat([PI.H.PopulationParams...
+    PI.H.CellParams.Index PI.H.IndividualParams.Index])), lb,ub, options_fminsearch);
  finalValues=p_hat;
 
-% % finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index])=phat;
-% % finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.IndividualParams);
-% % finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.CellParams);
+finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.IndividualParams);
+finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.CellParams);
 
 % % [finalValues, fval_fminunc] = fminunc(obj_fun,finalValues,options_fminsearch);
 % fval_fminunc = obj_fun(finalValues);
 delta = abs(fval_anneal - fval_fminsearch);
 end
 
-%% SAEM
+ %% SAEM                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          %% SAEM
 residuals_fx = @(x,sigma) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),...
     sigma,PI.normIndx);
@@ -65,7 +63,6 @@ residuals_fx = @(x,sigma) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.ts
     'm', 4e3,'StepSize',2.38^2,'MinFunc', 'lsqnonlin','OutputFn',...
     @(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(x),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H));
-
 %% Simulation output
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H);
