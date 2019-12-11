@@ -67,12 +67,12 @@ initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},...
     initialStruct);
 
 % Get simulation function
-[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
+[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1_Optimized','doseUnits', 'mole');
 
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 2, 'cell_indx',[6 7], 'n_indiv', length(PI.u));
+    'rand_indx', 2, 'cell_indx',[6 7 9 12], 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
 else
@@ -115,7 +115,7 @@ end
 
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
-prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type','uniform'));
+prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/uniform'}));
 
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
@@ -129,7 +129,7 @@ paramNames = ['kin_{CD8}' '\eta_{K_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'K
 
 %% Save results
 save('PI_CIM_1.mat', 'PI')
-load(strjoin({cd 'PI_CIM.mat'},'/'))
+load(strjoin({cd 'PI_CIM_1.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))

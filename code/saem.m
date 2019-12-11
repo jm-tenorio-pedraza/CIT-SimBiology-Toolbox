@@ -19,6 +19,8 @@ p.addParameter('MinFunc', 1)
 p.addParameter('OutputFn', [])
 p.addParameter('SimFn', [])
 p.addParameter('BurnIn',0.5)
+p.addParameter('Thinning',50)
+
 
 p.parse(varargin{:});
 p=p.Results;
@@ -31,7 +33,7 @@ gamma = p.gamma;
 i = 1;
 min_fx = p.MinFunc;
 burnIn = p.BurnIn;
-
+thin=p.Thinning;
 random_indx = arrayfun(@(x) x.Index, H.CellParams, 'UniformOutput',false);  % Identify vector parameter indexes of cellular parameters
 random_indx(end+1:end+length(H.IndividualParams)) = arrayfun(@(x) x.Index,...% Identify vector parameter indexes of individual parameters
     H.IndividualParams, 'UniformOutput', false);
@@ -63,10 +65,10 @@ while errTol>p.delta
     
     [randeffects, logP, ~] = mcmc_mh(curr_p([random_indx{:,:}]),...         % Metropolis-Hastings MCMC
         E_likelihood, E_prior, m,'StepSize',p.StepSize/...
-        (length([random_indx{:,:}])));
+        (length([random_indx{:,:}])),'BurnIn', burnIn);
     
-    q_k = mean(logP((burnIn*m)+1:end));                                     % Calculate the mean log-posterior likelihood and the expected value
-    E_Z = mean(randeffects(burnIn*m+1:end,:));
+    q_k = mean(logP((burnIn*m)+1:thin:end));                                     % Calculate the mean log-posterior likelihood and the expected value
+    E_Z = mean(randeffects(burnIn*m+1:thin:end,:));
     
     if ~isempty(H.SigmaParams)                                              % Integrate over the sigmas
         E_prior = @(x) prior([curr_p([H.PopulationParams]) E_Z x]);
@@ -77,10 +79,11 @@ while errTol>p.delta
         
         E_likelihood = (@(x)sum(getErrors(PI,exp(x(sigma_index))))*(-1));
         [sigma, logP_sigma, ~] = mcmc_mh(curr_p(H.SigmaParams),...
-            E_likelihood, E_prior, m,'StepSize', p.StepSize/length(H.SigmaParams));
+            E_likelihood, E_prior, m,'StepSize', p.StepSize/length(H.SigmaParams),...
+            'BurnIn', burnIn);
         
-        E_sigma = mean(sigma(burnIn*m+1:end,:));
-        q_sigma = mean(logP_sigma(burnIn*m+1:end));
+        E_sigma = mean(sigma(burnIn*m+1:thin:end,:));
+        q_sigma = mean(logP_sigma(burnIn*m+1:thin:end));
          
          q_k = q_sigma;
     end
@@ -130,8 +133,11 @@ while errTol>p.delta
     end
     % Updating new values
     curr_p(fixed_indx) = fixedeffects;
-    errTol = abs(-logL - q_hat);
-    q_prev = -logL;
+    
+    q_hat = q_prev + gamma*(logL - q_prev);
+
+    errTol = abs(q_hat -q_prev);
+    q_prev = q_hat;
     i = i+1;
     gamma = gamma/i;
 end
