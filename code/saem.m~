@@ -65,7 +65,7 @@ while errTol>p.delta
         E_likelihood, E_prior, m,'StepSize',p.StepSize/...
         (length([random_indx{:,:}])));
     
-    q_k = mean(logP((burnIn*m)+1:end));                                     % Calculate the mean log-posterior likelihood and the expected value
+    q_k = mean(logP((burnIn*m)+1:end));                                     % Calculate the mean log-posterior likelihood and the e
     E_Z = mean(randeffects(burnIn*m+1:end,:));
     
     if ~isempty(H.SigmaParams)                                              % Integrate over the sigmas

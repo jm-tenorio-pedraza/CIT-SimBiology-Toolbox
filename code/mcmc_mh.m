@@ -28,13 +28,13 @@ U=log(rand(p.BurnIn+n_samples*p.Thinning,1));
 % Generating multivariate normal proposals
 proposals=mvnrnd(zeros(1,n_params),prop_sigma,p.BurnIn+n_samples*p.Thinning);
 logP=NaN(n_params,1);
-
+burnIn = p.BurnIn*n_samples;
 
 accept=0;
 %% Burn In step
 datestr(clock)
 disp('Starting burn-in phase')
-    for i=1:p.BurnIn
+    for i=1:burnIn
         % Propose new sample
         prop_p=curr_p+proposals(i,:);
         % Evaluate with prior
@@ -53,8 +53,8 @@ disp('Starting burn-in phase')
             else
             end
             params(i,:)=curr_p;
-             if mod(i,p.BurnIn/20)==0
-                perc=i/(p.BurnIn+n_samples*p.Thinning);
+             if mod(i,p.burnIn/20)==0
+                perc=i/(n_samples*p.Thinning);
                 fprintf('%.1f percent completed',perc*100)
                 acceptInter = accept/(i)*100;
                 fprintf('%.1f percent accepted',acceptInter);
@@ -78,7 +78,7 @@ for i=1:n_samples
             if (prop_L)<=-1e7
                 continue;
             else
-                r=prop_L-(curr_L)+(sum(prop_p)-sum(curr_p));
+                r=prop_L-(curr_L);
                 if U(indx)<=min(r,0)
                     curr_L=prop_L;
                     curr_p=prop_p;
@@ -90,13 +90,18 @@ for i=1:n_samples
     params(i,:)=curr_p;
     logP(i)=curr_L;
     if mod(i,partition)==0      
-        perc=(p.BurnIn+i*p.Thinning)/(p.BurnIn+n_samples*p.Thinning);
+        perc=(p.BurnIn+i*p.Thinning)/(n_samples*p.Thinning);
         fprintf('%.1f percent completed\n',perc*100)
         acceptInter = accept/(i*p.Thinning+p.BurnIn)*100;
+        if acceptInter<20
+            proposals=proposals*0.1;
+        elseif acceptInter>50
+            proposals = proposals*10;
+        end
         fprintf('%.1f percent accepted\n',acceptInter);
         display(datestr(clock))
 
     end
 end
-accept = accept/(n_samples*p.Thinning+p.BurnIn)*100; 
+accept = accept/(n_samples*p.Thinning)*100; 
 end
