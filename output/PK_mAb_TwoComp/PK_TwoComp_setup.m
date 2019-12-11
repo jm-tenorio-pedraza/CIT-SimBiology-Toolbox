@@ -43,15 +43,25 @@ PI.x_0 =[PI.data(:).dose]';
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', 1:2, 'n_indiv', length(PI.u));
-try
-    sigmaNames=arrayfun(@(x)strjoin({'Omega', x.name}, '_'),...
-        H.IndividualParams,'UniformOutput',false)';
-    sigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) ...
-        strjoin({'sigma', x}, '_'),observables,'UniformOutput', false);
-catch
-    sigmaNames= cellfun(@(x) strjoin({'sigma', x}, '_'),observables',...
-        'UniformOutput', false);
+if ~isempty(PI.H.IndividualParams(1).Index)
+        indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
+else
+    indivSigmaNames = [];
 end
+if ~isempty(PI.H.CellParams(1).Index)
+    cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),PI.H.CellParams,'UniformOutput',false)';
+else
+    cellSigmaNames = [];
+end
+try
+SigmaNames = [cellSigmaNames; indivSigmaNames];
+SigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'sigma', x}, '_'),...
+    observables','UniformOutput', false);
+catch
+    SigmaNames=cellfun(@(x) strjoin({'sigma', x}, '_'),...
+    observables','UniformOutput', false);
+end
+
 % Generating PI
 alpha = [repelem(0.01, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
     repelem(0.01, length(setdiff(PI.H.SigmaParams, [PI.H.IndividualParams(:).OmegaIndex])),1)];
@@ -61,7 +71,7 @@ sigma_prior= [ repelem(1,length(PI.H.PopulationParams), 1);...
      repelem(1, length([PI.H.IndividualParams(:).Index]),1);...
     alpha];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
-    sigmaNames,'Sigma', sigma_prior);
+    SigmaNames,'Sigma', sigma_prior);
  finalValues =log([PI.par(:).startValue]);
 
 % Residuals function
@@ -78,7 +88,7 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
     @(x)getPhi2(x,PI.H,length(u),'initialValue',PI.x_0),...
     exp(finalValues(end-length(observables)+1:end)),PI.normIndx,'log', true);
 paramNames = ['\eta_{Blood}' '\eta_{Tumor}' 'CL_{Central}' 'Q23'...
-    {PI.par([H.IndividualParams(:).Index]).name}, '\omega_{Blood}',...
+    {PI.par([PI.H.IndividualParams(:).Index]).name}, '\omega_{Blood}',...
     '\omega_{Tumor}', '\sigma_{IDg.Blood}' '\sigma_{Blood.antiPDL1}'...
     '\sigma_{IDg.Tumor}' '\sigma_{Tumor.antiPDL1}' '\sigma_{T2B}'];
 %% Save results

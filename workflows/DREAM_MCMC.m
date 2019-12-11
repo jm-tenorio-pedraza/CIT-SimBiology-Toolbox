@@ -32,8 +32,8 @@ plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name},'model', 'CIM')
 getGelmanRubinStatistic(x_a,{PI.par(:).name})
 %% Plotting results
 
-postSamples =x(:,:,7e3:3.5e2:end);
-logP_thinned = p_x(7e3:3.5e2:end,:);
+postSamples =x(:,:,ceil(2e5/size(x,1)):4e2:end);
+logP_thinned = p_x(ceil(2e5/size(x,1)):4e2:end,:);
 plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
     {PI.par(:).name},'model', 'CIM');
 
@@ -78,5 +78,5 @@ plotPosteriorPredictions(PI,observablesPlot)
 save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_x')
 
-load(strjoin({cd '/DREAM_MCMC_x_4.mat'},''))
-load(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''))
+load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))
