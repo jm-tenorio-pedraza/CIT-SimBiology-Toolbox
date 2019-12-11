@@ -32,8 +32,8 @@ plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name},'model', 'CIM')
 getGelmanRubinStatistic(x_a,{PI.par(:).name})
 %% Plotting results
 
-postSamples =x(:,:,ceil(2e5/size(x,1)):4e2:end);
-logP_thinned = p_x(ceil(2e5/size(x,1)):4e2:end,:);
+postSamples =x(:,:,ceil(2e5/size(x,1)):6e2:end);
+logP_thinned = p_x(ceil(2e5/size(x,1)):6e2:end,:);
 plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
     {PI.par(:).name},'model', 'CIM');
 
@@ -41,6 +41,7 @@ plotMCMCDiagnostics(postSamples([H.PopulationParams],:,:),logP_thinned,...
     'name', {PI.par([H.PopulationParams]).name},'model', 'PK model (TwoComp)');
 
 postSamples=postSamples(:,:)';
+logP_thinned=reshape(logP_thinned',1,[]);
 %% 
 % Population Parameters
 plotBivariateMarginals_2((postSamples(:,[PI.H.PopulationParams PI.H.SigmaParams])),...
@@ -74,6 +75,9 @@ toc
 PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),H);
 plotPosteriorPredictions(PI,observablesPlot)
 
+%% Posterior credible intervals
+ PI=mcmcCI(PI, exp(postSamples), logP_thinned', 0.95);
+ plotCI(PI, 'TwoComp')
 %% Save results
 save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_x')

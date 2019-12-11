@@ -8,7 +8,7 @@ p.addParameter('method','HPD');
 p.parse(varargin{:});
 p=p.Results;
 
-n_p = size(PI.par,2);
+n_p = size(p_hat,2);
 n_samples= size(p_hat,1);
 p_sorted=sortrows([logP p_hat],1);
 p_sorted=p_sorted(end:-1:1,:);
