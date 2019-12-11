@@ -53,7 +53,7 @@ for i=1:length(unique_groups)                                               % Fo
                 if k==1
                     phenotype_i = repelem({'nan'}, n_indiv,1);
                 end
-                finalTV = datavar_j{:,k}(end)>0.001 |...                        % if the final observed time point is = 0 or all of the observations are NaN
+                finalTV = datavar_j{:,k}(end)>0.01 |...                        % if the final observed time point is = 0 or all of the observations are NaN
                     all(isnan(datavar_j{:,k}));
                 switch finalTV
                     case 1

@@ -33,11 +33,11 @@ param=[simFun.Parameters.Value(H.PopulationParams)];       %
 
 % concatenating all params
 
-    % Min            Max                Start           % Mu             % Sigma
-p=[ 10.^(floor(log10(param*.001)))       10.^(ceil(log10(param*100)))           param           param 
-    10.^(floor(log10(param_cell*.001)))   10.^(ceil(log10(param_cell*100)))      ones(size(param_cell))      ones(size(param_cell))
-    10.^(floor(log10(param_indiv*.001)))  10.^(ceil(log10(param_indiv*100)))     ones(size(param_indiv))     ones(size(param_indiv))     
-    sigmaParams*.01  sigmaParams*100     inputs.startSigma     sigmaParams];
+    % Min                                   Max                                 Start                       % Mu           
+p=[ 10.^(floor(log10(param*.001)))          10.^(ceil(log10(param*100)))        param                       param 
+    10.^(floor(log10(param_cell*.001)))     10.^(ceil(log10(param_cell*100)))   ones(size(param_cell))      ones(size(param_cell))
+    10.^(floor(log10(param_indiv*.001)))    10.^(ceil(log10(param_indiv*100)))  ones(size(param_indiv))     ones(size(param_indiv))     
+    sigmaParams*0.1                           sigmaParams*1000                     inputs.startSigma           sigmaParams];
 
 if length(inputs.Sigma)<2
     % Sigma

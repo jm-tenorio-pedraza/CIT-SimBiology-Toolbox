@@ -17,7 +17,7 @@ if size(p,1)>size(p,2)
     p=p';
 end
 param=inputParser;
-param.addParameter('type', {'uniform' 'normal' 'inverse gamma'});
+param.addParameter('type', 'uniform');
 param.addParameter('IndividualParams',1,@isnumeric);
 param.parse(varargin{:});
 param=param.Results;
@@ -37,11 +37,11 @@ sigma=([PI.par(:).sigma_prior]);
 % Defining prior functions of the parameters and indexes
 norm_prior=@(x,m,s)sum(log((exp(-(x - m).^2. / (2*s.^2))) ./ sqrt(2 * s.^2 * pi)));
 unif_prior=@(x,indx)log((prod(and(x>=lower(indx),x<=upper(indx)))));
+%%jeff_prior = @(x)sum(log(1./(exp(x).^2)));
+lognorm_prior=@(x,m,s)sum(log(exp(-0.5 * ((log(x) - m)./s).^2) ./ (x .* sqrt(2*pi) .* s)));
 invgamma_prior= @(x,a,b)sum(log(b.^a./gamma(a).*x.^(-a-1).*exp(-b./x)));
 % Evaluating handle at indexes:
-distributions = [{'uniform/normal/inverse gamma'};
-    {'normal/normal/inverse gamma'};
-    {'uniform/normal/uniform'}];
+distributions = {'uniform' 'normal' 'inverse gamma'};
 
 probType = find(ismember(distributions, param.type));
 switch probType
@@ -66,12 +66,11 @@ switch probType
             p(x.OmegaIndex)), H.CellParams));
     case 3
     logPrior = unif_prior(p(pop_indx), pop_indx)+...
-            unif_prior((p(sigma_indx)),sigma_indx)+...
+            unif_prior((p(sigma_indx)),sigma_)+...
             + sum(arrayfun(@(x) norm_prior(log(p(x.Index)), zeros(size((p(x.Index)))),...
             p(x.OmegaIndex)), H.IndividualParams))...
             + sum(arrayfun(@(x) norm_prior(log(p(x.Index)), zeros(size(p(x.Index))),...
-            p(x.OmegaIndex)), H.CellParams));
-end
+            p(x.OmegaIndex)), H.CellParams));end
     
 return
 

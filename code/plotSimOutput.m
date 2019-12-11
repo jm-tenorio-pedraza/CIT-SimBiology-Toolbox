@@ -43,12 +43,12 @@ end
 
     
     % Change axis if there is large variability in output
-    if std(log10(PI.data(i).simOutput(:,colIndx)))>1
-        set(gca,'YScale','log')
+    if std(log10(PI.data(i).simOutput(:,colIndx)))>2
+%         set(gca,'YScale','log')
     end
-       set(gca,'YScale','log')
+%        set(gca,'YScale','log')
        try
-%        ylim([min(PI.data(i).dataValue(:,colIndx)) max(PI.data(i).dataValue(:,colIndx))])
+       ylim([min(PI.data(i).dataValue(:,colIndx)) max(PI.data(i).dataValue(:,colIndx))])
        catch
        end
 ylim([1e-2, 100])
