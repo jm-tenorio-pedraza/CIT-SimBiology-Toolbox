@@ -2,7 +2,7 @@
 finalValues = log([PI.par(:).finalValue]);
 N = length(finalValues);
 
-X0 =[ (finalValues); randn(100,length(finalValues))*0.1 + finalValues];
+X0 =[ (finalValues); randn(100,length(finalValues))*0.05 + finalValues];
 logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
 
@@ -11,7 +11,7 @@ w0=X0(I(1:N),:);
 h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun,...
-    size(w0,1),ceil(5e5/size(w0,1)), length(finalValues), 'BurnIn', 1e5,'StepSize',...
+    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
     1.38,'H', h);
 toc
 
@@ -28,14 +28,12 @@ logP=[p_x; p_x2];
 x_mat=x(:,:)';
 
 %% Diagnostics
-plotMCMCDiagnostics(x_a(:,:,1:ceil(1e6/13)), logP(1:ceil(1e6/13),:),'name',...
-    {PI.par(:).name},'model', ' Kosinsky','plots', 'trace')
 plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name},'model', 'CIM')
 getGelmanRubinStatistic(x_a,{PI.par(:).name})
 %% Plotting results
 
-postSamples =x(:,:,4e3:3e2:end);
-logP_thinned = p_x(4e3:3e2:end,:);
+postSamples =x(:,:,7e3:3.5e2:end);
+logP_thinned = p_x(7e3:3.5e2:end,:);
 plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
     {PI.par(:).name},'model', 'CIM');
 
@@ -71,14 +69,14 @@ title('Inter-individual variation in K_{CD8}')
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
 tic
-PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observables);
+PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observablesPlot);
 toc
-PI=getCredibleIntervals(PI,observables, exp(postSamples),H);
-plotPosteriorPredictions(PI,observables)
+PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),H);
+plotPosteriorPredictions(PI,observablesPlot)
 
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x_1.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x_1.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_x')
 
 load(strjoin({cd '/DREAM_MCMC_x_4.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x_4.mat'},''))
