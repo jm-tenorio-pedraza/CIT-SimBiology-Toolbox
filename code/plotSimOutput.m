@@ -51,5 +51,5 @@ end
        ylim([min(PI.data(i).dataValue(:,colIndx)) max(PI.data(i).dataValue(:,colIndx))])
        catch
        end
-ylim([1e-2, 100])
+% ylim([1e-2, 100])
 end

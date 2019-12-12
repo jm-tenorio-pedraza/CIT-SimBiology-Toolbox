@@ -36,7 +36,7 @@ if sensitivity
     parameters = [parameters; 'T_0'];
 else
     parameters = {'kin_CD8';'K_CD8'; 'KDE_Treg';
-        'KDE_MDSC'; 'K_pro'; 'kpro_Tumor_0'; 'kill_max'; 'K_el'; 'K_DC';
+        'KDE_MDSC';'kpro_Tumor_0'; 'kill_max'; 'K_el'; 'K_DC';
         'kin_Treg' ; 'K_IFNg';'K_MDSC'};
     parameters = [parameters; 'T_0'];
 
@@ -72,7 +72,7 @@ initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},...
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', 2, 'cell_indx',[6 7 9 12], 'n_indiv', length(PI.u));
+    'rand_indx', 2, 'cell_indx',[5 6 8 11], 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
 else
@@ -128,7 +128,7 @@ paramNames = ['kin_{CD8}' '\eta_{K_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'K
     '\sigma_{DC}' '\sigma_{MDSC}' '\sigma_{PDL1_T}' '\sigma_{PDL1_I}'];
 
 %% Save results
-save('PI_CIM_1.mat', 'PI')
+save('PI_CIM_2_1.mat', 'PI')
 load(strjoin({cd 'PI_CIM_1.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
