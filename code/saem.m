@@ -19,7 +19,7 @@ p.addParameter('MinFunc', 1)
 p.addParameter('OutputFn', [])
 p.addParameter('SimFn', [])
 p.addParameter('BurnIn',0.5)
-p.addParameter('Thinning',50)
+p.addParameter('Thinning',20)
 
 
 p.parse(varargin{:});
