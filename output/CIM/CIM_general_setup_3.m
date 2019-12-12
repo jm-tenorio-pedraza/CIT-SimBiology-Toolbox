@@ -36,7 +36,7 @@ if sensitivity
     parameters = [parameters; 'T_0'];
 else
     parameters = {'kin_CD8';'K_CD8'; 'KDE_Treg';
-        'KDE_MDSC'; 'kpro_Tumor_0'; 'kill_max'; 'K_el'; 'K_DC';
+        'KDE_MDSC'; 'K_pro';'kpro_Tumor_0'; 'kill_max'; 'K_el'; 'K_DC';
         'kin_Treg' ; 'K_IFNg';'K_MDSC'};
     parameters = [parameters; 'T_0'];
 
