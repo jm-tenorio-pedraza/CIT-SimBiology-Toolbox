@@ -13,10 +13,8 @@ cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.25)
-sensitivity = false;
+sensitivity = true;
 %% load data and previous results
-
-% Create function handle for simulations
 % Define parameters to estimate
 if sensitivity
      [name,I] = sort(get(model.Parameters, 'Name'));
@@ -26,12 +24,12 @@ if sensitivity
     parameters=name(value>0);
     exclude_parameters = {'vol_Tumor' 'CTLA4_CD8_0' 'CTLA4_E'...
         'KD_antiCTLA4' 'KD_antiPDL1' 'koff_antiCTLA4' ...
-        'koff_antiPDL1' 'CD107a' 'CD8_E' 'CD8_N' 'CD4Foxp3' 'GMDSC' 'DC' 'Q23' ...
-        'PDL1_Immune_0' 'PDL1_Tumor_0' 'k23' 'k32' 'ka'...
-        'ks_IFNg' 'TV' 'kdeg_CTLA4' 'kdeg_PDL1'...
-        'K_IFNg' 'f1' 'f2' 'T_0' 'kdep'};
-    uncertain_parameters = {'kin_DC' 'kin_MDSC'...
-        'ks_PDL1_Immune' 'ks_PDL1_Tumor'};
+        'koff_antiPDL1' 'kdeg_antiCTLA4' 'kdeg_antiPDL1'... 
+        'CL_antiCTLA4' 'CL_antiPDL1' 'Q23' 'k23' 'k32' 'ka' ...
+        'CD107a' 'CD8_E' 'CD8_N' 'CD4Foxp3' 'GMDSC' 'DC' 'PDL1_Immune_0'...
+        'PDL1_Tumor_0' 'TV' 'kdeg_CTLA4' 'kdeg_PDL1' 'IAR' 'T_max' ...
+        'K_IFNg' 'f1' 'f2' 'T_0' 'kdep' 'ks_PDL1_Immune' 'ks_PDL1_Tumor'...
+        'kdebp' 'kdep_max' 'kel_Effector'};
     parameters = setdiff(parameters, exclude_parameters);
     parameters = [parameters; 'T_0'];
 else
@@ -67,7 +65,7 @@ initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},...
     initialStruct);
 
 % Get simulation function
-[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1_Optimized','doseUnits', 'mole');
+[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
 
 %% Optimization setup
 % Hierarchical structure

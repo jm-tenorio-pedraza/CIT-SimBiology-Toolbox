@@ -20,6 +20,7 @@ p.addParameter('OutputFn', [])
 p.addParameter('SimFn', [])
 p.addParameter('BurnIn',0.5)
 p.addParameter('Thinning',20)
+p.addParameter('estimateSigma',false)
 
 
 p.parse(varargin{:});
@@ -70,7 +71,7 @@ while errTol>p.delta
     q_k = mean(logP((burnIn*m)+1:thin:end));                                     % Calculate the mean log-posterior likelihood and the expected value
     E_Z = mean(randeffects(burnIn*m+1:thin:end,:));
     
-    if ~isempty(H.SigmaParams)                                              % Integrate over the sigmas
+    if p.estimateSigma                                              % Integrate over the sigmas
         E_prior = @(x) prior([curr_p([H.PopulationParams]) E_Z x]);
         PI = p.OutputFn(curr_p);
         
@@ -86,6 +87,8 @@ while errTol>p.delta
         q_sigma = mean(logP_sigma(burnIn*m+1:thin:end));
          
          q_k = q_sigma;
+         curr_p(H.SigmaParams) = E_sigma;
+
     end
     
        q_hat = q_prev + gamma*(q_k - q_prev);
@@ -93,20 +96,21 @@ while errTol>p.delta
        if q_hat < q_prev
            q_hat = q_prev;
            E_Z = curr_p([H.CellParams(:).Index H.IndividualParams(:).Index]);
-           E_sigma = curr_p([H.SigmaParams]);
 
        end
           curr_p([random_indx{:,:}]) = E_Z;
-          curr_p(H.SigmaParams) = E_sigma;
 
     %% Maximization
-     if ~isempty(H.SigmaParams)
+     if p.estimateSigma
         M_likelihood = @(x) likelihood([x(H.PopulationParams) E_Z, ...
             E_sigma]);
         M_prior = @(x) prior([x(H.PopulationParams) E_Z E_sigma]);
+        p0 = curr_p([H.PopulationParams]);
      else
-        M_likelihood = @(x) likelihood([x(1:length(H.PopulationParams)) E_Z]);
-        M_prior = @(x) prior([x(1:length(H.PopulationParams)) E_Z]);
+        M_likelihood = @(x) likelihood([x(1:length(H.PopulationParams)) E_Z x(length(H.PopulationParams)+1:end)]);
+        M_prior = @(x) prior([x(1:length(H.PopulationParams)) E_Z x(length(H.PopulationParams)+1:end)]);
+        p0 = curr_p([H.PopulationParams H.SigmaParams]);
+        fixed_indx = [H.PopulationParams H.SigmaParams];
      end
      
     if strcmp(min_fx, 'fminunc')
@@ -124,15 +128,15 @@ while errTol>p.delta
     else
         if strcmp(min_fx, 'fminsearch')
         [fixedeffects, logL] = fminsearch(@(x)( (M_likelihood(x)+M_prior(x))*(-1)),...
-            curr_p([H.PopulationParams]),fminunc_options);
+            p0,fminunc_options);
         elseif strcmp(min_fx, 'anneal')
               [fixedeffects, logL] = anneal(@(x)( (M_likelihood(x)+M_prior(x))*(-1)),...
-            curr_p([H.PopulationParams]),anneal_options);
+            p0,anneal_options);
         end
-            
+        curr_p(fixed_indx) = fixedeffects;
+                
     end
     % Updating new values
-    curr_p(fixed_indx) = fixedeffects;
     
     q_hat = q_prev + gamma*(logL - q_prev);
 
