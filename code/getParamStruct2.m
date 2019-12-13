@@ -4,7 +4,9 @@ if nargin<5
 end
 inputs=inputParser;
 inputs.addParameter('Sigma',3);
-inputs.addParameter('startSigma',repelem(.1,length(H.SigmaParams),1));
+inputs.addParameter('startSigma',[repelem(1,length([H.CellParams.OmegaIndex]),1); ...
+    repelem(1, length([H.IndividualParams.OmegaIndex]),1); repelem(.1,length(H.SigmaParams)...
+    -length([H.CellParams.OmegaIndex])-length([H.IndividualParams.OmegaIndex]),1)]);
 inputs.parse(varargin{:});
 inputs=inputs.Results;
 

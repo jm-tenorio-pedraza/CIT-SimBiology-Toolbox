@@ -1,3 +1,7 @@
 
 *.fig
 *.png
+output/CIM/PI/DREAM_MCMC_p_x_1.mat
+output/CIM/PI/DREAM_MCMC_p_x_2.mat
+output/CIM/PI/DREAM_MCMC_x_1.mat
+output/CIM/PI/DREAM_MCMC_x_2.mat

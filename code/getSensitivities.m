@@ -1,4 +1,5 @@
-function [sensmatrix] = getSensitivities(inputs, PI,sim,parameters, observables,time,varargin)
+function [sensmatrix] = getSensitivities(inputs, PI, sim, parameters,...
+    observables, time,varargin)
 %% inputs is a matrix whose rows are the parameters for each one of the conditions in sim
 
 
@@ -9,7 +10,8 @@ p.addParameter('uniqueGroups', false);
 
 p.parse(varargin{:})
 p=p.Results;
-PI.sensitivity = struct('simValue', repelem({nan(length(time),length(observables))},size(inputs,1),1));
+PI.sensitivity = struct('simValue', repelem({nan(length(time),...
+    length(observables))},size(inputs,1),1));
 
 % Simulate model at inputs
 simdata = sim(inputs);               % Simulate model and resample simulation results

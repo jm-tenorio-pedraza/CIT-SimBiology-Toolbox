@@ -12,7 +12,7 @@ cell_indx = p.cell_indx;
 
 n_rand = length(rand_indx);
 n_cell = length(cell_indx);
-n_indiv = size(PI.data,1);
+n_indiv = length(PI.data);
 n_sigma=p.n_sigma;
 try
 cell_groups = cellfun(@(x)x(1:find(x=='_',1)-1),[PI.data(:).Group],...

@@ -30,10 +30,11 @@ catch
     p_cell = [];
 end
 
-if size(p_indiv,2)>=size(p_indiv,1)
+if size(p_indiv,1)<n_sim
         p_indiv=p_indiv';
 end
-if size(p_cell,2)>=size(p_cell,1)
+
+if size(p_cell,1)<length(H.CellParams(1).Index)
         p_cell=p_cell';
 end
 

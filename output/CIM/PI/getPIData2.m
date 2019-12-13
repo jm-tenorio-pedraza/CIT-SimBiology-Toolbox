@@ -161,7 +161,7 @@ PI.data = PI.data;
 nanIndx = arrayfun(@(x) all(all(isnan(x.dataValue))), data);                % Identify and eliminate individuals where all obs are nan
 PI.data = data(:,~nanIndx)';
 try
-PI.data = PI.data(ismember({PI.data(:).Group}, groups_subset));             % Subset data to use only the input groups
+    PI.data = PI.data(ismember({PI.data(:).Group}, groups_subset));             % Subset data to use only the input groups
 catch
     PI.data = PI.data(ismember([PI.data(:).Group], groups_subset));             % Subset data to use only the input groups
 end
@@ -289,5 +289,10 @@ if p.maxIIV
 end
 PI.tspan = unique(cat(1,PI.data(:).dataTime));
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},...
-    'UniformOutput',true));   
+    'UniformOutput',true));
+
+if size(PI.data,1)>size(PI.data,2)
+else
+    PI.data=PI.data';
+end
 return
