@@ -2,7 +2,7 @@
 finalValues = log([PI.par(:).finalValue]);
 N = length(finalValues);
 
-X0 =[ (finalValues); randn(100,length(finalValues))*0.05 + finalValues];
+X0 =[ (finalValues); randn(100,length(finalValues))*0.1 + finalValues];
 logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
 
@@ -11,8 +11,8 @@ w0=X0(I(1:N),:);
 h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun,...
-    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
-    1.38,'H', h);
+    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', ...
+    2e5,'StepSize',1.38,'H', h);
 toc
 
 tic
@@ -28,14 +28,14 @@ logP=[p_x; p_x2];
 x_mat=x(:,:)';
 
 %% Diagnostics
-plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name},'model', 'CIM')
-getGelmanRubinStatistic(x_a,{PI.par(:).name})
+plotMCMCDiagnostics(x, p_x,'name', paramNames,'model',...
+    'PK-Two Compartment Model','interpreter', 'tex')
 %% Plotting results
-
-postSamples =x(:,:,ceil(2e5/size(x,1)):6e2:end);
-logP_thinned = p_x(ceil(2e5/size(x,1)):6e2:end,:);
+indx = ceil(2e5/size(x,1))+1:600:size(x,3);
+postSamples =x(:,:,indx);
+logP_thinned = p_x(indx,:);
 plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
-    {PI.par(:).name},'model', 'CIM');
+    paramNames,'model', 'PK-Two Compartment Model','interpreter','tex');
 
 plotMCMCDiagnostics(postSamples([H.PopulationParams],:,:),logP_thinned,...
     'name', {PI.par([H.PopulationParams]).name},'model', 'PK model (TwoComp)');
@@ -72,7 +72,7 @@ simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
 tic
 PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observablesPlot);
 toc
-PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),H);
+PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),PI.H);
 plotPosteriorPredictions(PI,observablesPlot)
 
 %% Posterior credible intervals
