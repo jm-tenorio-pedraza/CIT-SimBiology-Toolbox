@@ -31,7 +31,7 @@ finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.I
 %% Global optimisation
 while delta >1e-4
 % Nelder-Mead
-[finalValues, fval_fminsearch]=fminsearch(obj_fun,p_hat,options_fminsearch);
+[finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 
 % Simulated annealing
 [p_hat, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
@@ -60,7 +60,7 @@ residuals_fx = @(x,sigma) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.ts
     sigma,PI.normIndx);
 
 [finalValues, logL] = saem(finalValues, residuals_fx,likelihood_fun, prior_fun, PI.H, PI,...
-    'm', 1e4,'StepSize',2.38^2,'MinFunc', 'fminsearch','OutputFn',...
+    'm', 5e3,'StepSize',2.38^2,'MinFunc', 'fminsearch','OutputFn',...
     @(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(x),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H));
 %% Simulation output
