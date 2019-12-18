@@ -5,6 +5,8 @@ end
 param=inputParser;
 param.addParameter('colors', linspecer(1))
 param.addParameter('names', repelem({'p'},size(posterior,2),1))
+param.addParameter('interpreter', 'none')
+
 param.parse(varargin{:})
 param=param.Results;
 p = size(posterior,2);
@@ -31,12 +33,12 @@ for i=1:p
 % Assign labels to outer margins
            if j==1
              ylab=ylabel(param.names(i),'Fontsize',10,...
-                'Fontweight','normal','Interpreter','tex');
+                'Fontweight','normal','Interpreter',param.interpreter);
             ylab.Rotation=30;
             ylab.HorizontalAlignment = 'right';
             if i==p
                 xlab=xlabel(param.names(j),'Fontsize',10,...
-                'Fontweight','normal','Interpreter','tex');
+                'Fontweight','normal','Interpreter',param.interpreter);
             xlab.Rotation=30;
             xlab.VerticalAlignment = 'top';
             else
@@ -45,7 +47,7 @@ for i=1:p
 
            elseif i==p 
             xlab=xlabel(param.names(j),'Fontsize',10,...
-                'Fontweight','normal','Interpreter','tex');
+                'Fontweight','normal','Interpreter',param.interpreter);
             xlab.Rotation=30;
             xlab.VerticalAlignment = 'top';
            if j==1
@@ -71,7 +73,7 @@ for i=1:p
             if i==1&&j==1
                 ax.XTickLabels ={};
              ylab=ylabel(param.names(i),'Fontsize',10,...
-                'Fontweight','normal','Interpreter','tex');
+                'Fontweight','normal','Interpreter',param.interpreter);
             ylab.Rotation=30;
             ylab.HorizontalAlignment = 'right';
 
@@ -91,13 +93,13 @@ for i=1:p
             end
              if i==p || j==p&&i==p
              xlab=xlabel(param.names(j),'Fontsize',10,...
-                 'Fontweight','normal','Interpreter','tex');
+                 'Fontweight','normal','Interpreter',param.interpreter);
              xlab.Rotation=30;
              xlab.VerticalAlignment = 'top';
 
              elseif i == 1 && j==1
                   ylab=ylabel(param.names(i),'Fontsize',10,...
-                'Fontweight','normal','Interpreter','tex');
+                'Fontweight','normal','Interpreter',param.interpreter);
                 ylab.Rotation=30;
                 ylab.HorizontalAlignment = 'right';
              end

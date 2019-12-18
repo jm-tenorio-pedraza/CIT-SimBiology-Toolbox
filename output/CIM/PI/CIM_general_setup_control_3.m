@@ -18,9 +18,9 @@ set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
-parameters = {'kin_CD8';'K_CD8'; 'KDE_Treg'; 'KDE_MDSC';'K_pro'; ...
+parameters = {'kin_CD8'; 'KDE_MDSC';'K_pro'; ...
     'kpro_Tumor_0'; 'kill_max'; 'K_el'; 'K_DC';'kin_Treg' ; 'K_IFNg';...
-    'K_MDSC'; 'kill_Treg';'kin_MDSC';'kin_DC';'ks_PDL1_Immune'};
+    'K_MDSC';'kin_MDSC';'kin_DC';'KDE_Treg';'kill_Treg'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -41,6 +41,7 @@ PI.variableUnits={'Volume [mL]' 'Logit []' 'Logit []'  'Logit []' ...
      'Logit [t]'   'Logit []' ...
     'Relative units []' 'Relative units []'};
 PI.normIndx = 7:8;
+PI.model = 'CIM Control';
 % Get initial values
 [PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
     initialStruct);
@@ -51,7 +52,7 @@ PI.normIndx = 7:8;
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [], 'cell_indx',[6 8 10 12 14], 'n_indiv', length(PI.u));
+    'rand_indx', [], 'cell_indx',[4 5 8 11], 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
 else
@@ -84,7 +85,7 @@ sigma_prior= [ repelem(1,length(PI.H.PopulationParams), 1);...
      repelem(1, length([PI.H.IndividualParams(:).Index]),1);...
     alpha];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
-    SigmaNames,'Sigma', sigma_prior);
+    SigmaNames,'Sigma', sigma_prior, 'ref', 'ones');
 try
     finalValues =log([PI.par(:).finalValue]);
 catch
@@ -94,21 +95,23 @@ end
 
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
-prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma'}));
+prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma/jeffreys'}));
 
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),exp(finalValues(end-length(observables)+1:end)),PI.normIndx);
 % Parameter names for plots
-paramNames = ['kin_{CD8}' '\eta_{K_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'KDE_{Treg}'...
-    'KDE_{MDSC}' 'K_{pro}' 'K_{el}' 'kpro_{Tumor_{MOC1}}' 'kpro_{Tumor_{MOC2}}'...
-    {PI.par([PI.H.IndividualParams(:).Index]).name} '\lambda_{kpro_{Tumor}}'...
-    '\omega_{kin_{CD8}}' '\sigma_{TV}' '\sigma_{CD8}' '\sigma_{CD107a}' '\sigma_{Treg}'...
-    '\sigma_{DC}' '\sigma_{MDSC}' '\sigma_{PDL1_T}' '\sigma_{PDL1_I}'];
+% paramNames = ['kin_{CD8}' '\eta_{K_{CD8}}' '\eta_{kpro_{Tumor}}' 'kill_{max}' 'KDE_{Treg}'...
+%     'KDE_{MDSC}' 'K_{pro}' 'K_{el}' 'kpro_{Tumor_{MOC1}}' 'kpro_{Tumor_{MOC2}}'...
+%     {PI.par([PI.H.IndividualParams(:).Index]).name} '\lambda_{kpro_{Tumor}}'...
+%     '\omega_{kin_{CD8}}' '\sigma_{TV}' '\sigma_{CD8}' '\sigma_{CD107a}' '\sigma_{Treg}'...
+%     '\sigma_{DC}' '\sigma_{MDSC}' '\sigma_{PDL1_T}' '\sigma_{PDL1_I}'];
+paramNames = getParamNames(PI,sim, observables);
+
 
 %% Save results
-save('PI_CIM_Control_3.mat', 'PI')
-load(strjoin({cd 'PI_CIM_1.mat'},'/'))
+save('PI_CIM_Control_3_red2.mat', 'PI')
+load(strjoin({cd 'PI_CIM_Control_3_red1.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
