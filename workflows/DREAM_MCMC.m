@@ -10,9 +10,9 @@ w0=X0(I(1:N),:);
 
 h.IndividualParams=[];
 tic
-[x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun,...
+[x, p_x,accept,pCR] = dream(w0,likelihood_fun,prior_fun,...
     size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', ...
-    2e5,'StepSize',1.38,'H', h);
+    2e5,'StepSize',2.38,'H', h);
 toc
 
 tic
