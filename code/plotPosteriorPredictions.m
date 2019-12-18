@@ -71,7 +71,7 @@ for i=1:length(outputs)
         grid on
         hold on
         if max(m_data)/min(m_data)>1e1
-            set(gca,'YScale','log')
+%             set(gca,'YScale','log')
         else
         end
     end

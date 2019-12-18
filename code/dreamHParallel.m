@@ -140,6 +140,11 @@ for t = 2:T
         if (sum(J)>0), pCR = J./n_id;
             pCR = pCR/sum(pCR); end                             % update selection prob. crossover
         [X, p_X] = check(X, mean((p_x(ceil(t/2):t,1:N))),p_X);  % Outlier detection and correction
+        if accept<0.2
+            stepSize=stepSize*0.9;
+        elseif accept>0.4
+            stepSize=stepSize*1.1;
+        end
     end
 end
 
