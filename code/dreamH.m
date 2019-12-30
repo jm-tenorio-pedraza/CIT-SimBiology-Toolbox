@@ -87,22 +87,23 @@ for t = 2:T
         
         dX(i,A) = c_star*randn(1, d_star) + ...
             (1+lambda(t,i))*g*sum(X(a,A)-X(b,A),1);         % Compute ith jump diff. evol.
-       
-        if ~isempty(H.IndividualParams)                                     % Check if there are individual parameters to estimate
-            Xp(:,ind_index) = Xp(:,ind_index)...                            % Evaluate proposal of new individual parameters
-                + dX(:,ind_index);
-            for k=1:N
-                [X(k,:), p_X(k,1), accept_i]= mcmcstep(X(k,:),...
-                    Xp(k,:), p_X(k,1), likelihood, prior,...
-                    U_ind(t,k), accept_ind(k));                             % Calculate pdf for ith proposal from individual parameters
-                if accept_i > accept_ind(k)                                 % MH criterion
-                    accept_ind(k) = accept_ind(k) + 1;
-                else
-                    dX(k,ind_index) = 0;                                    % Set jump back to 0 for pCR for the individual parameters
-                end
+    end
+    if ~isempty(H.IndividualParams)                                     % Check if there are individual parameters to estimate
+        Xp(:,ind_index) = Xp(:,ind_index)...                            % Evaluate proposal of new individual parameters
+            + dX(:,ind_index);
+        for k=1:N
+            [X(k,:), p_X(k,1), accept_k]= mcmcstep(X(k,:),...
+                Xp(k,:), p_X(k,1), likelihood, prior,...
+                U_ind(t,k), accept_ind(k));                             % Calculate pdf for ith proposal from individual parameters
+            if accept_k > accept_ind(k)                                 % MH criterion
+                accept_ind(k) = accept_ind(k) + 1;
+            else
+                dX(k,ind_index) = 0;                                    % Set jump back to 0 for pCR for the individual parameters
             end
         end
-         Xp(i,param_index) = Xp(i,param_index)...
+    end
+    for i = 1:N
+        Xp(i,param_index) = Xp(i,param_index)...
             + dX(i,param_index);
         
         [X(i,:), p_X(i,1), accept_i]= mcmcstep(X(i,:),...
@@ -116,12 +117,13 @@ for t = 2:T
         J(id(i)) = J(id(i)) + sum((dX(i,:)./std_X).^2);                     % Update jump distance crossover idx
         n_id(id(i)) = n_id(id(i)) + 1;
     end
+    
     totcount = N*(t);
-   if ~isempty(H.IndividualParams)
+    if ~isempty(H.IndividualParams)
         accept = mean([sum(accept_pop),sum(accept_ind)])/totcount;
     else
         accept = sum(accept_pop)/totcount;
-   end
+    end
     
     progress((t-1)/T,mean(X)',...
         accept)                                                 % Print out progress status

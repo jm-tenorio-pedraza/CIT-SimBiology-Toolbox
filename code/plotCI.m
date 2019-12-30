@@ -6,10 +6,12 @@ p=inputParser;
 p.addParameter('method','HPD');
 p.addParameter('confidence','95%');
 p.addParameter('algorithm','MCMC');
+p.addParameter('name', {PI.par(:).name});
+p.addParameter('interpreter', 'none')
 p.parse(varargin{:});
 p=p.Results;
 
-names={PI.par(:).name};
+names=p.name;
 n_par=length(names);
 colors=linspecer(n_par);
 indx=1:n_par;
@@ -31,7 +33,7 @@ for i=1:n_par
     hold on
     
 end
-set(gca,'XScale', 'log','YAxisLocation', 'right','YTick', indx,'YTickLabel', names, 'TickLabelInterpreter', 'tex')
+set(gca,'XScale', 'log','YAxisLocation', 'right','YTick', indx,'YTickLabel', names, 'TickLabelInterpreter', p.interpreter)
 % xlim([1e-16 1e2])
 title(strjoin({p.confidence 'Credible intervals for', model, '(' p.method, ')'},' '))
 

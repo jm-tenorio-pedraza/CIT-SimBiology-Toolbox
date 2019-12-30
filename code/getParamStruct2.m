@@ -7,6 +7,7 @@ inputs.addParameter('Sigma',3);
 inputs.addParameter('startSigma',[repelem(1,length([H.CellParams.OmegaIndex]),1); ...
     repelem(1, length([H.IndividualParams.OmegaIndex]),1); repelem(.1,length(H.SigmaParams)...
     -length([H.CellParams.OmegaIndex])-length([H.IndividualParams.OmegaIndex]),1)]);
+inputs.addParameter('ref', 'params')
 inputs.parse(varargin{:});
 inputs=inputs.Results;
 
@@ -30,15 +31,19 @@ catch
     param_indiv =[];
 end
 % Population params
-param=[simFun.Parameters.Value(H.PopulationParams)];       % 
-
+if strcmp(inputs.ref,'params')
+    ref=[simFun.Parameters.Value(H.PopulationParams)];       % 
+else
+    ref = ones(length(H.PopulationParams),1);
+end
+param = [simFun.Parameters.Value(H.PopulationParams)];       % 
 
 % concatenating all params
 
     % Min                                   Max                                 Start                       % Mu           
-p=[ 10.^(floor(log10(param*.001)))          10.^(ceil(log10(param*100)))        param                       param 
-    10.^(floor(log10(param_cell*.001)))     10.^(ceil(log10(param_cell*100)))   ones(size(param_cell))      ones(size(param_cell))
-    10.^(floor(log10(param_indiv*.001)))    10.^(ceil(log10(param_indiv*100)))  ones(size(param_indiv))     ones(size(param_indiv))     
+p=[ 10.^(floor(log10(ref*1e-6)))          10.^(ceil(log10(ref*1e5)))        param                       param 
+    10.^(floor(log10(param_cell*1e-1)))          10.^(ceil(log10(param_cell*10)))   ones(size(param_cell))      ones(size(param_cell))
+    10.^(floor(log10(param_indiv*1e-1)))    10.^(ceil(log10(param_indiv*10)))  ones(size(param_indiv))     ones(size(param_indiv))     
     sigmaParams*0.1                           sigmaParams*1000                     inputs.startSigma           sigmaParams];
 
 if length(inputs.Sigma)<2

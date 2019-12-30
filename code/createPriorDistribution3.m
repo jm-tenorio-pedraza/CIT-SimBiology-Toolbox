@@ -27,7 +27,8 @@ pop_indx=H.PopulationParams;
 
 % Param indexes of variance params
 sigma_indx=H.SigmaParams; % first indx is error variance of tumor volume , second is error variance of immune cell fractions, the rest are individual params variance
-
+omega_indx = [H.IndividualParams.OmegaIndex];
+psi_indx = [H.CellParams.OmegaIndex];
 % Extracting prior info from PI
 lower=([PI.par(:).minValue]);  
 upper=([PI.par(:).maxValue]);
@@ -38,10 +39,15 @@ sigma=([PI.par(:).sigma_prior]);
 norm_prior=@(x,m,s)sum(log((exp(-(x - m).^2. / (2*s.^2))) ./ sqrt(2 * s.^2 * pi)));
 unif_prior=@(x,indx)log((prod(and(x>=lower(indx),x<=upper(indx)))));
 invgamma_prior= @(x,a,b)sum(log(b.^a./gamma(a).*x.^(-a-1).*exp(-b./x)));
+jeffreys_prior= @(x)sum(log(1./x));
+
 % Evaluating handle at indexes:
-distributions = [{'uniform/normal/inverse gamma'};
-    {'normal/normal/inverse gamma'};
-    {'uniform/normal/uniform'}];
+distributions = [{'uniform/normal/inverse gamma/inverse gamma'};
+    {'normal/normal/inverse gamma/inverse gamma'};
+    {'uniform/normal/uniform/uniform'};
+    {'uniform/normal/jeffreys/jeffreys'};
+    {'uniform/normal/inverse gamma/jeffreys'};
+  ];
 
 probType = find(ismember(distributions, param.type));
 switch probType
@@ -71,6 +77,23 @@ switch probType
             p(x.OmegaIndex)), H.IndividualParams))...
             + sum(arrayfun(@(x) norm_prior(log(p(x.Index)), zeros(size(p(x.Index))),...
             p(x.OmegaIndex)), H.CellParams));
+    case 4
+         logPrior = unif_prior(p(pop_indx), pop_indx)+...
+            jeffreys_prior((p(sigma_indx)).^2)+...
+            + sum(arrayfun(@(x) norm_prior(log(p(x.Index)), zeros(size((p(x.Index)))),...
+            p(x.OmegaIndex)), H.IndividualParams))...
+            + sum(arrayfun(@(x) norm_prior(log(p(x.Index)), zeros(size(p(x.Index))),...
+            p(x.OmegaIndex)), H.CellParams));
+    case 5
+        logPrior = unif_prior(p(pop_indx), pop_indx)+...
+            jeffreys_prior((p(setdiff(sigma_indx, [omega_indx, psi_indx]))).^2)+...
+            invgamma_prior((p([omega_indx, psi_indx])).^2,(mu([omega_indx, psi_indx])),sigma([omega_indx, psi_indx]))+...
+            + sum(arrayfun(@(x) norm_prior(log(p(x.Index)), zeros(size((p(x.Index)))),...
+            p(x.OmegaIndex)), H.IndividualParams))...
+            + sum(arrayfun(@(x) norm_prior(log(p(x.Index)), zeros(size(p(x.Index))),...
+            p(x.OmegaIndex)), H.CellParams));
+  
+        
 end
     
 return
