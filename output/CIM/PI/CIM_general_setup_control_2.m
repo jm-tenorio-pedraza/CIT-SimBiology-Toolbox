@@ -6,7 +6,7 @@ addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_3.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_2.sbproj');
 % Extract model
 model=out.m1;
 variants = getvariant(model);
@@ -18,9 +18,9 @@ set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
-parameters = {'kin_CD8'; 'KDE_MDSC';'K_pro'; ...
-    'kpro_Tumor_0'; 'kill_max'; 'K_el'; 'K_DC';'kin_Treg' ; 'K_IFNg';...
-    'K_MDSC';'kin_MDSC';'kin_DC';'KDE_Treg';'kill_Treg'};
+parameters = {'kin_CD8'; 'KDE_MDSC'; ...
+    'kpro_Tumor_0'; 'kill_max';'K_DC';'kin_Treg' ; 'K_IFNg';...
+    'K_MDSC';'kin_MDSC';'kin_DC';'K_CD8';'K_el';'kill_Treg';'K_pro';'kel_max'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -51,15 +51,16 @@ PI.model = 'CIM Control';
 
 %% Optimization setup
 % Hierarchical structure
+cell_indx = [1:15];
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [], 'cell_indx',[4 5 8 11], 'n_indiv', length(PI.u));
+    'rand_indx', [], 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
 else
     indivSigmaNames = [];
 end
 if ~isempty(PI.H.CellParams(1).Index)
-    cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),PI.H.CellParams,'UniformOutput',false)';
+    cellSigmaNames=arrayfun(@(x)strjoin({'psi', x.name}, '_'),PI.H.CellParams,'UniformOutput',false)';
 else
     cellSigmaNames = [];
 end
@@ -74,11 +75,11 @@ end
 % Generating PI
 alpha = [repelem(0.01, length([PI.H.CellParams(:).OmegaIndex]),1);...
     repelem(0.01, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
-    repelem(0.01, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
+    repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
     PI.H.IndividualParams(:).OmegaIndex])),1)];
 beta = [repelem(0.01, length([PI.H.CellParams(:).OmegaIndex]),1);...
     repelem(0.01, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
-    repelem(0.01, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
+    repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
     PI.H.IndividualParams(:).OmegaIndex])),1)];
 sigma_prior= [ repelem(1,length(PI.H.PopulationParams), 1);...
     repelem(1, length([PI.H.CellParams(:).Index]),1);
@@ -95,7 +96,7 @@ end
 
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
-prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma/jeffreys'}));
+prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma/inverse gamma'}));
 
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
@@ -107,11 +108,20 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
 %     '\omega_{kin_{CD8}}' '\sigma_{TV}' '\sigma_{CD8}' '\sigma_{CD107a}' '\sigma_{Treg}'...
 %     '\sigma_{DC}' '\sigma_{MDSC}' '\sigma_{PDL1_T}' '\sigma_{PDL1_I}'];
 paramNames = getParamNames(PI,sim, observables);
+%% Objective function
+
+% Obj function
+obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
+tic
+obj_fun((finalValues))
+toc
 
 
 %% Save results
-save('PI_CIM_Control_3_red3.mat', 'PI')
-load(strjoin({cd 'PI_CIM_Control_3_red1.mat'},'/'))
+save('PI_CIM_Control_2_full.mat', 'PI')
+save('PI_CIM_Control_2_red.mat', 'PI')
+
+load(strjoin({cd 'PI_CIM_Control_2_red.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))

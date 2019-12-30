@@ -42,11 +42,12 @@ invgamma_prior= @(x,a,b)sum(log(b.^a./gamma(a).*x.^(-a-1).*exp(-b./x)));
 jeffreys_prior= @(x)sum(log(1./x));
 
 % Evaluating handle at indexes:
-distributions = [{'uniform/normal/inverse gamma'};
-    {'normal/normal/inverse gamma'};
-    {'uniform/normal/uniform'};
-    {'uniform/normal/jeffreys'};
-    {'uniform/normal/inverse gamma/jeffreys'}];
+distributions = [{'uniform/normal/inverse gamma/inverse gamma'};
+    {'normal/normal/inverse gamma/inverse gamma'};
+    {'uniform/normal/uniform/uniform'};
+    {'uniform/normal/jeffreys/jeffreys'};
+    {'uniform/normal/inverse gamma/jeffreys'};
+  ];
 
 probType = find(ismember(distributions, param.type));
 switch probType
@@ -91,6 +92,7 @@ switch probType
             p(x.OmegaIndex)), H.IndividualParams))...
             + sum(arrayfun(@(x) norm_prior(log(p(x.Index)), zeros(size(p(x.Index))),...
             p(x.OmegaIndex)), H.CellParams));
+  
         
 end
     
