@@ -79,8 +79,8 @@ plotPosteriorPredictions(PI,observablesPlot)
  PI=mcmcCI(PI, exp(postSamples), logP_thinned', 0.95);
  plotCI(PI, 'TwoComp')
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x2.mat'},''), 'x')
+save(strjoin({cd '/DREAM_MCMC_p_x2.mat'},''), 'p_x')
 
 load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))
