@@ -22,10 +22,6 @@ tic
 toc
 
 
-%% Concatenating chains
-x_a=cat(3,x,x2);
-logP=[p_x; p_x2];
-x_mat=x(:,:)';
 
 %% Diagnostics
 plotMCMCDiagnostics(x, p_x,'name', {PI.par(:).name},'model', PI.model)

@@ -3,10 +3,10 @@
 warning on
 clear all
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI')
+cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM3')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_2.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_3.sbproj');
 % Extract model
 model=out.m1;
 variants = getvariant(model);
@@ -20,7 +20,7 @@ set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
 parameters = {'kin_CD8'; 'KDE_MDSC'; ...
     'kpro_Tumor_0'; 'kill_max';'K_DC';'kin_Treg' ; 'K_IFNg';...
-    'K_MDSC';'kin_MDSC';'kin_DC';'K_CD8';'K_el';'KDE_Treg';'kill_Treg';'K_pro'};
+    'K_MDSC';'kin_MDSC';'kin_DC';'K_CD8';'K_el';'kill_Treg';'K_pro';'kel_max';'KDE_Treg'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -51,7 +51,7 @@ PI.model = 'CIM Control';
 
 %% Optimization setup
 % Hierarchical structure
-cell_indx = [3 8 9];
+cell_indx = [3 4  6 8 9];
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', [], 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
@@ -118,7 +118,7 @@ toc
 
 
 %% Save results
-save('PI_CIM_Control_2_full.mat', 'PI')
+save('PI_CIM_Control_3_full.mat', 'PI')
 save('PI_CIM_Control_2_red.mat', 'PI')
 
 load(strjoin({cd 'PI_CIM_Control_2_red.mat'},'/'))

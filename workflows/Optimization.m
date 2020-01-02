@@ -69,7 +69,7 @@ end
 %%
 finalValue=num2cell(exp(finalValues'));
 [PI.par(1:end).finalValue]=finalValue{:,:};
-plotFit(PI)
+plotFit(PI,'sigma', exp(finalValues(setdiff(PI.H.SigmaParams,[PI.H.IndividualParams.OmegaIndex PI.H.CellParams.OmegaIndex]))))
 %% Plotting errors
 for i=1:length(observables)
 plotError(exp(finalValues(setdiff(PI.H.SigmaParams,...
