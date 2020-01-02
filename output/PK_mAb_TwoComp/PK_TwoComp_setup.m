@@ -36,6 +36,7 @@ dose = {'Blood.antiPDL1'};
 sim=createSimFunction(model,parameters,observables, dose,variant,...
     'UseParallel', false);
 PI.normIndx = [];
+PI.model = 'PK-Two Compartment Model';
 % Get initial values
 PI.x_0 =[PI.data(:).dose]';
 
