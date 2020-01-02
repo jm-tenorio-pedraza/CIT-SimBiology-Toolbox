@@ -64,10 +64,10 @@ catch
 end
 
 % Generating PI
-alpha = [repelem(0.01, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
-    repelem(0.01, length(setdiff(PI.H.SigmaParams, [PI.H.IndividualParams(:).OmegaIndex])),1)];
+alpha = [repelem(0.1, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
+    repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.IndividualParams(:).OmegaIndex])),1)];
 beta = [repelem(0.1, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
-    repelem(0.01, length(setdiff(PI.H.SigmaParams, [PI.H.IndividualParams(:).OmegaIndex])),1)];
+    repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.IndividualParams(:).OmegaIndex])),1)];
 sigma_prior= [ repelem(1,length(PI.H.PopulationParams), 1);...
      repelem(1, length([PI.H.IndividualParams(:).Index]),1);...
     alpha];
@@ -82,7 +82,7 @@ residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,144,PI.u,PI.tspan),PI,...
 
 % Log-ikelihood function
 likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
-prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma'}));
+prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma/inverse gamma'}));
 
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
@@ -92,6 +92,14 @@ paramNames = ['\eta_{Blood}' '\eta_{Tumor}' 'CL_{Central}' 'Q23'...
     {PI.par([PI.H.IndividualParams(:).Index]).name}, '\omega_{Blood}',...
     '\omega_{Tumor}', '\sigma_{IDg.Blood}' '\sigma_{Blood.antiPDL1}'...
     '\sigma_{IDg.Tumor}' '\sigma_{Tumor.antiPDL1}' '\sigma_{T2B}'];
+%% Objective function
+
+% Obj function
+obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
+tic
+obj_fun((finalValues))
+toc
+
 %% Save results
 save('PI_PK_CE.mat', 'PI')
 load(strjoin({cd 'PI_PK_CE.mat'},'/'))
