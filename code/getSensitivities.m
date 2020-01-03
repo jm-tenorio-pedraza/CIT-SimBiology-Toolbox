@@ -23,8 +23,12 @@ catch
     y_i={y_i};                        % for the case when there is only 1 output
     [PI.sensitivity(1:end).simValue] = y_i{:,:};
 end % Add another row to the initial parameter vector 
+groups = [PI.data(:).Group];
+if ischar((groups))
+    groups = {PI.data(:).Group};
+end
 if p.uniqueGroups
-    sensmatrix = NaN(length(observables)*length(time)*length(unique([PI.data(:).Group])), length(parameters)); % allocate spcace to the sensitivity matrix 
+    sensmatrix = NaN(length(observables)*length(time)*length(unique(groups)), length(parameters)); % allocate spcace to the sensitivity matrix 
 else
     sensmatrix = NaN(length(observables)*length(time)*size(PI.data,1), length(parameters)); % allocate spcace to the sensitivity matrix 
 end

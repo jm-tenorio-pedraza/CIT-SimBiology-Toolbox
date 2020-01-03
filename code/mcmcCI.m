@@ -18,12 +18,16 @@ indx=int(indx);
 indx=indx(1);
 for i=1:n_p
     modeHPD = mode(p_hat(:,i));
+        meanHPD = mean(p_hat(:,i));
+
     PI.par(i).posterior_mode=p_sorted(1,i+1);
     if strcmp(p.method, 'symmetric')
         LB=quantile(p_hat(:,i),(1-prob)/2);
         UB=quantile(p_hat(:,i),0.5+prob/2);
 
         PI.par(i).posterior_mode=modeHPD;
+        PI.par(i).posterior_mean=meanHPD;
+
         PI.par(i).LB=LB;
         PI.par(i).UB=UB;
     elseif strcmp(p.method, 'HPD')
