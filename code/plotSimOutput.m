@@ -15,7 +15,12 @@ for i=1:n_sim
     subplot(n_row,n_col,i)
     hold on
     sim=plot(PI.data(i).simTime, PI.data(i).simOutput(:,colIndx));
-    dat=plot(PI.data(i).dataTime, PI.data(i).dataValue(:,colIndx));
+    try
+        dat = errorbar(PI.data(i).dataTime, PI.data(i).dataValue(:,colIndx), PI.data(i).SD(:,colIndx));
+    catch
+        dat=plot(PI.data(i).dataTime, PI.data(i).dataValue(:,colIndx));
+
+    end
 try
     X = [PI.data(i).simTime; PI.data(i).simTime(end:-1:1)];
     Y = [PI.data(i).ub(:,colIndx); PI.data(i).lb(end:-1:1,colIndx)];
@@ -31,11 +36,12 @@ end
     col_i=treatment_colors(ismember(treatments,PI.data(i).Group),:);
     sim.Color=col_i;
     dat.LineStyle='none';
+    dat.Color = col_i;
     dat.MarkerFaceColor=col_i;
     dat.MarkerEdgeColor=col_i;
 
     dat.Marker='d';
-     error.LineStyle = 'none';
+    error.LineStyle = 'none';
     error.FaceColor = col_i;
     error.FaceAlpha = 0.2;
     
@@ -48,7 +54,7 @@ end
     end
 %        set(gca,'YScale','log')
        try
-       ylim([min(PI.data(i).dataValue(:,colIndx)) max(PI.data(i).dataValue(:,colIndx))])
+       ylim(([floor(min(PI.data(i).dataValue(:,colIndx))) ceil(max(PI.data(i).dataValue(:,colIndx)))]))
        catch
        end
 % ylim([1e-2, 100])
