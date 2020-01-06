@@ -253,8 +253,8 @@ else
     colors = table2cell(table(linspecer(length(PI.data))));
     [PI.data(1:end).colors] = colors{:,:};
     marker = repelem({'nan'},length(PI.data),1);
-    marker(ismember([PI.data(1:end).use],{'test'}))= {'*'};
-    marker(ismember([PI.data(1:end).use],{'train'}))= {'d'};
+    marker(ismember({PI.data(1:end).use},{'test'}))= {'*'};
+    marker(ismember({PI.data(1:end).use},{'train'}))= {'d'};
     [PI.data(1:end).marker] = marker{:,:};
 
     for j=1:length(stateVar)
@@ -262,7 +262,7 @@ else
         figure;
 
         for i = 1:length(groups_subset)
-            group_i = ismember([PI.data(:).Group], groups_subset(i));
+            group_i = ismember({PI.data(:).Group}, groups_subset(i));
             data_i = PI.data(group_i);
             
             subplot(nrow,ncol,i)
@@ -284,8 +284,15 @@ end
 tv = arrayfun(@(x) x.dataValue(~isnan(x.dataValue(:,1)),1),PI.data,'UniformOutput',false);
 [PI.data(1:end).TV] = tv{:,:};
 if p.maxIIV
+    try
+           PI.test = PI.data(ismember({PI.data(1:end).use},{'test'}));
+        PI.data = PI.data(ismember({PI.data(1:end).use},{'train'}));
+    
+    catch
+        
     PI.test = PI.data(ismember([PI.data(1:end).use],{'test'}));
     PI.data = PI.data(ismember([PI.data(1:end).use],{'train'}));
+    end
 end
 PI.tspan = unique(cat(1,PI.data(:).dataTime));
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},...

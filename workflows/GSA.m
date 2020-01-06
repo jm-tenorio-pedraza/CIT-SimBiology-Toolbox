@@ -1,15 +1,17 @@
 %% GSA
 time = 1:1:PI.tspan(end);
 % inputs = sim.Parameters.Value(1:end-1)';
-inputs = [PI.par(PI.H.PopulationParams).finalValue];
+%inputs = [PI.par(PI.H.PopulationParams).finalValue];
+inputs = [PI.par(PI.H.PopulationParams).posterior_mean];
+
 variant = reshape([PI.par([PI.H.CellParams.Index]).finalValue],[],length(PI.H.CellParams));
-eta = reshape([PI.par([PI.H.IndividualParams.Index]).finalValue],[],length(PI.H.IndividualParams));
+%eta = reshape([PI.par([PI.H.IndividualParams.Index]).finalValue],[],length(PI.H.IndividualParams));
 
 inputs = [repelem(inputs,size(PI.x_0,1),1) PI.x_0(:,1)];
 inputs(:,[PI.H.CellParams.EtaIndex]) = inputs(:,[PI.H.CellParams.EtaIndex]).*variant;
-inputs(:,[PI.H.IndividualParams.EtaIndex]) = inputs(:,[PI.H.IndividualParams.EtaIndex]).*eta;
-
-[group, indx] = unique({PI.data(:).Group}, 'stable');
+%inputs(:,[PI.H.IndividualParams.EtaIndex]) = inputs(:,[PI.H.IndividualParams.EtaIndex]).*eta;
+group = [PI.data(:).Group];
+[group, indx] = unique(group, 'stable');
 u_subset = PI.u(indx,:);
 inputs = inputs(indx,:);
 % Get sensitivity matrix

@@ -16,20 +16,33 @@ tic
 toc
 
 tic
-[x2, p_x2,accept2,pCR2] = dreamHParallel(x(:,:,end)',likelihood_fun,prior_fun,...
+[x2, p_x2,accept2,pCR2] = dream(x(:,:,end)',likelihood_fun,prior_fun,...
     size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
     1.38,'H', h);
 toc
 
-xa = cat(3,x,x2);
-pa = [p_x;p_x2];
+tic
+[x3, p_x3,accept3,pCR3] = dream(x2(:,:,end)',likelihood_fun,prior_fun,...
+    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
+    1.38,'H', h);
+toc
+
+xa = cat(3,xa,x3);
+p_xa = [p_x;p_x2;p_x3];
 %% Diagnostics
-plotMCMCDiagnostics(xa,pa,'name', paramNames,'model',...
+plotMCMCDiagnostics(xa,p_xa,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
 %% Plotting results
-indx = ceil(2e5/size(x,1))+1:500:size(x,3);
-postSamples =x(:,:,indx);
-logP_thinned = p_x(indx,:);
+delta = 2300;
+indx1 = ceil(2e5/size(x,1)+1):delta:size(x,3);
+indx2 = (size(x,3)+ceil(2e5/size(x2,1))+1):delta:(size(x2,3)+size(x,3));
+indx3 = (indx2(end)+ceil(2e5/size(x3,1))+1):delta:(size(x3,3)+indx2(end));
+
+indx = [indx1 indx2 indx3];
+[mean_w, w_indx] = sort(mean(p_xa(indx,:)));
+
+postSamples =xa(:,w_indx(1:end),indx);
+logP_thinned = p_xa(indx,w_indx(1:end));
 plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
     paramNames,'model', PI.model,'interpreter','tex');
 
@@ -62,8 +75,8 @@ plotPosteriorPredictions(PI,observablesPlot,'output','indiv')
  PI=mcmcCI(PI, exp(postSamples), logP_thinned', 0.95,'method', 'symmetric');
  plotCI(PI, 'TwoComp')
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x2.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x2.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'xa')
+save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_xa')
 
 load(strjoin({cd '/DREAM_MCMC_x2.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x2.mat'},''))

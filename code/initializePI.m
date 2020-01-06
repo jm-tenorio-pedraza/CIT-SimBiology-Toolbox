@@ -46,7 +46,11 @@ u=repelem({NaN},size(PI.data,1),length(doses));
 dose = cellfun(@(x) regexp(x,'_','split'),doses,'UniformOutput',false); 
 dose = [dose{:,:}];
 dose = dose(2:2:end);
-group = cellfun(@(x) regexp(x,'_', 'split'),[PI.data(:).Group]', 'UniformOutput',false);
+group = [PI.data(:).Group]';
+if ischar(group)
+    group = {PI.data(:).Group}';
+end
+group = cellfun(@(x) regexp(x,'_', 'split'),group, 'UniformOutput',false);
 
 for i=1:length(group)
     group_i = group{i,1}(1,2:end);

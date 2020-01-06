@@ -19,7 +19,7 @@ indx=1:n_par;
 figure
 for i=1:n_par
     if strcmp(p.algorithm,'MCMC')
-        central=PI.par(i).posterior_mode;
+        central=PI.par(i).posterior_mean;
     else
         central=PI.par(i).mean_boot;
     end
