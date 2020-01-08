@@ -18,8 +18,8 @@ set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-10);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
-parameters = {'kill_max'; 'kin_CD8'; 'K_MDSC';'K_pro';...
-    'kpro_Tumor_0';'K_DC'};
+parameters = {'kill_max'; 'kpro_Tumor_0';'kin_CD8';'K_pro';...
+    };
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -52,7 +52,7 @@ PI.model = 'CIM Control';
 
 %% Optimization setup
 % Hierarchical structure
-cell_indx = [1 3 5];
+cell_indx = [1 2];
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', [], 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
