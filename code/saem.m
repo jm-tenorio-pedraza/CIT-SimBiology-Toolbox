@@ -95,7 +95,7 @@ while errTol>p.delta
 
        if q_hat < q_prev
            q_hat = q_prev;
-           E_Z = curr_p([H.CellParams(:).Index H.IndividualParams(:).Index]);
+           E_Z = curr_p([random_indx{:,:}]);
 
        end
           curr_p([random_indx{:,:}]) = E_Z;
@@ -124,7 +124,7 @@ while errTol>p.delta
             ]), lb,ub, options_fminsearch);
         fixedeffects = p_hat(H.PopulationParams);
        curr_p(fixed_indx) = fixedeffects;
-       logL = likelihood(curr_p)+prior(curr_p);
+       logL = (likelihood(curr_p)+prior(curr_p))*(-1);
     else
         if strcmp(min_fx, 'fminsearch')
         [fixedeffects, logL] = fminsearch(@(x)( (M_likelihood(x)+M_prior(x))*(-1)),...
@@ -138,7 +138,7 @@ while errTol>p.delta
     end
     % Updating new values
     
-    q_hat = q_prev + gamma*(logL - q_prev);
+    q_hat = q_prev + gamma*(-logL - q_prev);
 
     errTol = abs(q_hat -q_prev);
     q_prev = q_hat;
