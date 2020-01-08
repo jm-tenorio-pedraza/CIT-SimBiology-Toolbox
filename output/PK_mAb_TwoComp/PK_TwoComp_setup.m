@@ -101,7 +101,7 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_CE.mat', 'PI')
+save('PI_PK_CE_red.mat', 'PI')
 load(strjoin({cd 'PI_PK_CE.mat'},'/'))
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/parameters_hat.mat','parameters_hat')
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))

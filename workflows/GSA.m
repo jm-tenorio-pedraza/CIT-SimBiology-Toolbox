@@ -1,8 +1,8 @@
 %% GSA
 time = 1:1:PI.tspan(end);
 % inputs = sim.Parameters.Value(1:end-1)';
-%inputs = [PI.par(PI.H.PopulationParams).finalValue];
-inputs = [PI.par(PI.H.PopulationParams).posterior_mean];
+inputs = [PI.par(PI.H.PopulationParams).finalValue];
+%inputs = [PI.par(PI.H.PopulationParams).posterior_mean];
 
 variant = reshape([PI.par([PI.H.CellParams.Index]).finalValue],[],length(PI.H.CellParams));
 %eta = reshape([PI.par([PI.H.IndividualParams.Index]).finalValue],[],length(PI.H.IndividualParams));
@@ -25,12 +25,12 @@ sensmatrix = getSensitivities(inputs, PI,@(p)sim(p,PI.tspan(end),u_subset,1:1:PI
 plotSensitivities(S)
 %% Get SHM
 F = max(abs(V),[],2)'.*diag(S)'.*abs(U);
-s=shmPlot2(F,group,time, observables,'tau',0.1);
+s=shmPlot2(F,group,time, observables,'tau',0.01);
 
 %% Get PSS
 pcs = V*S;
 pcs = (pcs/max(max(abs(pcs))));
-pc = plotPSS(pcs,4,paramNames(PI.H.PopulationParams),'threshold',-1);
+pc = plotPSS(pcs,5,paramNames(PI.H.PopulationParams),'threshold',-2);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');

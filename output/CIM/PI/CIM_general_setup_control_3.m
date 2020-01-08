@@ -14,8 +14,8 @@ initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1},...
     'variant', {variants(1); variants(2)});
 
 cs=model.getconfigset;
-set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
-set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
+set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
+set(cs.SolverOptions, 'RelativeTolerance', 1.0e-10);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
 parameters = {'kin_CD8'; 'KDE_MDSC';'K_pro'; ...
@@ -52,7 +52,7 @@ PI.model = 'CIM Control';
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [], 'cell_indx',[4 5 8 11], 'n_indiv', length(PI.u));
+    'rand_indx', [], 'cell_indx',[1:14], 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
 else
@@ -74,11 +74,11 @@ end
 % Generating PI
 alpha = [repelem(0.01, length([PI.H.CellParams(:).OmegaIndex]),1);...
     repelem(0.01, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
-    repelem(0.01, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
+    repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
     PI.H.IndividualParams(:).OmegaIndex])),1)];
 beta = [repelem(0.01, length([PI.H.CellParams(:).OmegaIndex]),1);...
     repelem(0.01, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
-    repelem(0.01, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
+    repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
     PI.H.IndividualParams(:).OmegaIndex])),1)];
 sigma_prior= [ repelem(1,length(PI.H.PopulationParams), 1);...
     repelem(1, length([PI.H.CellParams(:).Index]),1);
@@ -108,9 +108,18 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
 %     '\sigma_{DC}' '\sigma_{MDSC}' '\sigma_{PDL1_T}' '\sigma_{PDL1_I}'];
 paramNames = getParamNames(PI,sim, observables);
 
+%% Objective function
+
+% Obj function
+obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
+tic
+obj_fun((finalValues))
+toc
+
+
 
 %% Save results
-save('PI_CIM_Control_3_red3.mat', 'PI')
+save('PI_CIM_Control_3_full.mat', 'PI')
 load(strjoin({cd 'PI_CIM_Control_3_red1.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
