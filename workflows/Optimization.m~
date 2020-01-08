@@ -18,7 +18,7 @@ lb = log([PI.par([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualPar
     PI.H.CellParams.Index PI.H.IndividualParams.Index])), lb,ub, options_fminsearch);
 
 finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index])=phat;
- finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)log(std(finalValues(x.Index))), PI.H.IndividualParams);
+% finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)log(std(finalValues(x.Index))), PI.H.IndividualParams);
 % finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)log(std(finalValues(x.Index))), PI.H.CellParams);
 
 %% Global optimisation
@@ -51,12 +51,11 @@ end
 residuals_fx = @(x,sigma) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),...
     sigma,PI.normIndx);
-tic
+
 [finalValues, logL] = saem(finalValues, residuals_fx,likelihood_fun, prior_fun, PI.H, PI,...
     'm', 1e3,'StepSize',2.38^2,'MinFunc', 'anneal','OutputFn',...
     @(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(x),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H));
-toc
 %% Simulation output
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H);
