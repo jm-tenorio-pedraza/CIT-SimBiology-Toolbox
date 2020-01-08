@@ -18,8 +18,10 @@ set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-12);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
-parameters = {'kill_max'; 'kpro_Tumor_0'; 'kin_CD8'; 'K_pro';...
-    'KDE_MDSC';'KDE_Treg';'K_el'};
+parameters = {'kill_max'; 'kpro_Tumor_0'; 'K_CD8'; 'K_pro';...
+    'KDE_MDSC';'kill_Treg';'K_el'};
+sensitivity_parameters = {};
+
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -43,7 +45,8 @@ PI.model = 'CIM Control';
     initialStruct);
 
 % Get simulation function
-[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
+[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1',...
+    'doseUnits', 'mole', 'parallel', true);
 
 %% Optimization setup
 % Hierarchical structure
@@ -93,7 +96,8 @@ end
 
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
-prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma/inverse gamma'}));
+prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',...
+    {'uniform/normal/uniform/uniform'}));
 
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
@@ -109,10 +113,10 @@ toc
 
 
 %% Save results
-save('PI_CIM_Control_3_full.mat', 'PI')
+save('PI_CIM_ICB_2.mat', 'PI')
 save('PI_CIM_Control_2_red.mat', 'PI')
 
-load(strjoin({cd 'PI_CIM_Control_2_red.mat'},'/'))
+load(strjoin({cd 'PI_CIM_Control_3_red.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))

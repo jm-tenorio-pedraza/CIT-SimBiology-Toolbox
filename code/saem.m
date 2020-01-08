@@ -138,7 +138,7 @@ while errTol>p.delta
     end
     % Updating new values
     
-    q_hat = q_prev + gamma*(logL - q_prev);
+    q_hat = q_prev + gamma*(-logL - q_prev);
 
     errTol = abs(q_hat -q_prev);
     q_prev = q_hat;

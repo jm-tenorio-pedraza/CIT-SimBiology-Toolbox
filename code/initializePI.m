@@ -2,6 +2,7 @@ function [sim,u]=initializePI(sim_model,parameters,observables,PI,doses,variant,
 par = inputParser;
 par.addParameter('doseUnits', 'g')
 par.addParameter('addVariants',false)
+par.addParameter('parallel',false)
 
 par.parse(varargin{:})
 par=par.Results;
@@ -14,7 +15,7 @@ MOC1=variants(strcmp(get(variants,'Name'), variant));
 end
 % Create simFunction object
 sim=createSimFunction(sim_model,parameters,observables, doses,MOC1,...
-    'UseParallel', false);
+    'UseParallel', par.parallel);
 if strcmp(par.doseUnits, 'g')
 % Create cell of doses
 antiPDL1=table([7 12 17]', [0.2 0.2 0.2]', [0.2 0.2 0.2]'/60,...
