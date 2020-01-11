@@ -72,11 +72,11 @@ PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),PI.H);
 plotPosteriorPredictions(PI,observablesPlot,'output','indiv')
 
 %% Posterior credible intervals
- PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
+ PI=mcmcCI(PI, exp(postSamples), logP_thinned', 0.95,'method', 'symmetric');
  plotCI(PI, 'TwoComp')
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'xa')
+save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_xa')
 
 load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))

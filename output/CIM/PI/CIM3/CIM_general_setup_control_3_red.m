@@ -19,7 +19,7 @@ set(cs.SolverOptions, 'RelativeTolerance', 1.0e-10);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
 parameters = {'kill_max'; 'kpro_Tumor_0';'kin_CD8';'K_pro';...
-    };
+    'K_MDSC';'kin_DC'; 'KDE_MDSC';};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
