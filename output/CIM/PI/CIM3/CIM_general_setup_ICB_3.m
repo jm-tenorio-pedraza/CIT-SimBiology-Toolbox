@@ -36,21 +36,21 @@ doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
 
 PI=getPIData2('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
     stateVar,groups_subset,observables,'zeroAction', 'omit','mergePhenotypes',...
-    false,'output', 'individual','maxIIV', true);
+    false,'output', 'mean','maxIIV', true);
 PI.variableUnits={'Volume [mL]'};
 PI.normIndx = [];
 PI.model = 'CIM Control';
 % Get initial values
-[PI.x_0, PI.variants] = getInitialValues({PI.data(:).Group},...
+[PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
     initialStruct);
 
 % Get simulation function
 [sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1',...
-    'doseUnits', 'mole', 'parallel', true);
+    'doseUnits', 'mole', 'parallel', false);
 
 %% Optimization setup
 % Hierarchical structure
-cell_indx = [1 2];
+cell_indx = [1 2 ];
 indiv_indx = [3];
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', indiv_indx, 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
@@ -73,20 +73,22 @@ catch
     observables','UniformOutput', false);
 end
 % Generating PI
-alpha = [repelem(0.01, length([PI.H.CellParams(:).OmegaIndex]),1);...
-    repelem(0.01, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
+alpha = [repelem(0.1, length([PI.H.CellParams(:).OmegaIndex]),1);...
+    repelem(0.1, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
     repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
     PI.H.IndividualParams(:).OmegaIndex])),1)];
-beta = [repelem(0.01, length([PI.H.CellParams(:).OmegaIndex]),1);...
-    repelem(0.01, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
+beta = [repelem(0.1, length([PI.H.CellParams(:).OmegaIndex]),1);...
+    repelem(0.1, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
     repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.CellParams(:).OmegaIndex ...
     PI.H.IndividualParams(:).OmegaIndex])),1)];
 sigma_prior= [ repelem(1,length(PI.H.PopulationParams), 1);...
     repelem(1, length([PI.H.CellParams(:).Index]),1);
      repelem(1, length([PI.H.IndividualParams(:).Index]),1);...
     alpha];
+ub = ([3.0812   4.9427    1e6   14.1364     2.1279  1e6     1e6]');
+lb = ([0.0017   0.0397    1e-6  4.2013      1.4112  1e-6    1e-6]');
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
-    SigmaNames,'Sigma', sigma_prior, 'ref', 'ones');
+    SigmaNames,'Sigma', sigma_prior, 'ref', 'ones', 'LB',lb,'UB', ub);
 try
     finalValues =log([PI.par(:).finalValue]);
 catch
@@ -97,7 +99,7 @@ end
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
 prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',...
-    {'uniform/normal/uniform/uniform'}));
+    {'uniform/normal/inverse gamma/inverse gamma'}));
 
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
@@ -113,10 +115,10 @@ toc
 
 
 %% Save results
-save('PI_CIM_ICB_2.mat', 'PI')
+save('PI_CIM_ICB_6.mat', 'PI')
 save('PI_CIM_Control_2_red.mat', 'PI')
 
-load(strjoin({cd 'PI_CIM_Control_3_red.mat'},'/'))
+load(strjoin({cd 'PI_CIM_ICB_1.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))

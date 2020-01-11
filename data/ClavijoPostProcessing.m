@@ -1,5 +1,5 @@
-addpath(genpath("/Users/migueltenorio/Documents/MATLAB/SimBiology"))
-addpath(genpath("/Users/migueltenorio/Documents/MATLAB/Parameter Identifications/aux functions"))
+addpath(genpath("/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/code"))
+% addpath(genpath("/Users/migueltenorio/Documents/MATLAB/Parameter Identifications/aux functions"))
 %% Import Prism files
 % Clavijo et al, 2017
 % MOC1
@@ -52,23 +52,26 @@ for i = 1:length(simBioData)
     tumorname_indx = ismember(ClavijoTumor_table.Name, name_i);
     tumortime_indx = ismember(time, ClavijoTumor_table.Time(tumorname_indx));
     
-    array_i = NaN(length(time),1+size(Clavijo_Immune,2)-3);
+    array_i = NaN(length(time),size(Clavijo_Immune,2)-2);
     try
        array_i(immunetime_indx,2:end) = Clavijo_Immune{immunename_indx,2:end-2};
     catch
        array_i(tumortime_indx,1) = ClavijoTumor_table{tumorname_indx,2};
-
     end
+    
     try
        array_i(tumortime_indx,1) = ClavijoTumor_table{tumorname_indx,2};
-
     catch
        array_i(immunetime_indx,2:end) = Clavijo_Immune{immunename_indx,2:end-2};
-
     end
+    
     nan_indx = all(isnan(array_i(:,1:end)),2);
     simBioData(i).dataTime = time(~nan_indx,1);
-    simBioData(i).dataValue=array_i(~nan_indx,:);
+    simBioData(i).dataValue = array_i(~nan_indx,[1 2:2:end]);
+    if any(immunename_indx)
+    simBioData(i).SD =array_i(~nan_indx,[1 3:2:end]);
+    end
+
 end
 dataIndx = arrayfun(@(x) ~isempty(x.dataValue), simBioData);
 simBioData= simBioData(dataIndx);

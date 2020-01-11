@@ -115,7 +115,7 @@ while errTol>p.delta
      
     if strcmp(min_fx, 'fminunc')
         [fixedeffects, logL] = fminunc(@(x)( (M_likelihood(x)+M_prior(x))*(-1)),...
-            curr_p([H.PopulationParams]),fminunc_options);
+            p0,fminunc_options);
     elseif strcmp(min_fx, 'lsqnonlin')
 
         residuals_fn = @(x) residuals([x E_Z],exp(curr_p(sigma_indx)));
