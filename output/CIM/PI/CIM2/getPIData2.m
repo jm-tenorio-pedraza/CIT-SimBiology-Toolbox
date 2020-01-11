@@ -20,6 +20,8 @@ data_subset = arrayfun(@(x) x.dataValue(:,varindx), PI.data,...
     'UniformOutput', false)';
 groups = {PI.data(:).Group}';                                               % extract groups cell array
 dataTime = {PI.data(:).dataTime}';                                          % extract vectors of measured time points cell array
+SD_subset = arrayfun(@(x) x.dataValue(:,varindx), PI.data,...
+    'UniformOutput', false)';
 %%
 unique_groups = unique(groups);                                             % identify unique treatment groups
 if strcmp(p.output, 'mean')                                                 % processing for reduced mean model
@@ -35,11 +37,15 @@ for i=1:length(unique_groups)                                               % Fo
     group_i = ismember(groups, unique_groups(i));                           % Identify and select observations belonging to ith group
     data_i = data_subset(group_i);
     time_i = dataTime(group_i);
-    
+%     sd_i = SD(group_i);
     time = cellfun(@(x) length(x),time_i, 'UniformOutput',true);            % Count how many time-resolved data points there are for each individual
     time = time_i{max(time)==time};                                         % Select the largest time end point
-    mat_i_responders = NaN(length(time),length(observables));               % create NaN matrix with K rows and M columns for non-responders and responders
-    mat_i_progressors = NaN(length(time),length(observables));
+    mean_i_responders = NaN(length(time),length(observables));               % create NaN matrix with K rows and M columns for non-responders and responders
+    sd_i_responders = NaN(length(time),length(observables));               % create NaN matrix with K rows and M columns for non-responders and responders
+
+    mean_i_progressors = NaN(length(time),length(observables));
+    sd_i_progressors = NaN(length(time),length(observables));               % create NaN matrix with K rows and M columns for non-responders and responders
+
     n_indiv = length(data_i);
     
     for j=1:length(observables)                                             % For each jth variable do:
@@ -65,10 +71,21 @@ for i=1:length(unique_groups)                                               % Fo
         end
         if strcmp(p.output, 'mean')                                                 % processing for reduced mean model
             
-            mat_i_responders(:,j) = mean(mat_j(:, ismember(phenotype_i,...          % assing time course to either the responders or non-responders matrix
+            mean_i_responders(:,j) = mean(mat_j(:, ismember(phenotype_i,...          % assing time course to either the responders or non-responders matrix
                 {'Responder'})),2,'omitnan');
-            mat_i_progressors(:,j) = mean(mat_j(:, ismember(phenotype_i,...
+            try
+            sd_i_responders(:,j) = std(mat_j(:,ismember(phenotype_i,...
+                {'Responder'})),[],2,'omitnan');
+            catch
+            end
+            mean_i_progressors(:,j) = mean(mat_j(:, ismember(phenotype_i,...
                 {'Progressor'})),2,'omitnan');
+            try
+            sd_i_progressors(:,j) = std(mat_j(:,ismember(phenotype_i,...
+                {'Progressor'})),[],2,'omitnan');
+
+            catch
+            end
         end
     end
     n_progressors = sum(ismember(phenotype_i,{'Progressor'}));
@@ -77,13 +94,16 @@ for i=1:length(unique_groups)                                               % Fo
         
         data(i).Name = strjoin({unique_groups{i} 'Progressors'},'_');           % First rows of data structure contain the progressors
         data(i).dataTime = time;
-        data(i).dataValue = mat_i_progressors;
+        data(i).dataValue = mean_i_progressors;
+        data(i).SD = sd_i_progressors;
+
         data(i).Group = unique_groups(i);
         data(i).censoring = 'right';
         
         data(i+length(unique_groups)).Name = strjoin({unique_groups{i} 'Responders'},'_');
         data(i+length(unique_groups)).dataTime = time;
-        data(i+length(unique_groups)).dataValue = mat_i_responders;
+        data(i+length(unique_groups)).dataValue = mean_i_responders;
+        data(i+length(unique_groups)).SD = sd_i_responders;
         data(i+length(unique_groups)).Group = unique_groups(i);
         data(i+length(unique_groups)).censoring = 'left';
     else
@@ -169,20 +189,24 @@ end
 %% Change group identity
 
 try
-    if p.maxIIV
+    if strcmp(p.output, 'individual')
     PI.data(ismember({PI.data(:).Group}, 'MOC1_Control_Mean')).use ...
         = {'train'};
     end
+     PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).SD ...
+        = SD_subset{ismember([PI.data(:).Group], 'MOC1_Control_Mean'),:};
     PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).Group ...
         = {'MOC1_Control'};
 catch
 end
 
 try
-    if p.maxIIV
+    if strcmp(p.output, 'individual')
     PI.data(ismember({PI.data(:).Group}, 'MOC2_Control_Mean')).use ...
         = {'train'};
     end
+     PI.data(ismember([PI.data(:).Group], 'MOC2_Control_Mean')).SD ...
+        = SD_subset{ismember([PI.data(:).Group], 'MOC2_Control_Mean'),:};
     PI.data(ismember([PI.data(:).Group], 'MOC2_Control_Mean')).Group ...
         = {'MOC2_Control'};
 catch
@@ -198,8 +222,18 @@ dataValue = arrayfun(@(x) x.dataValue(~x.zero_indx,:), PI.data,...          % Su
     'UniformOutput', false);
 dataTime = arrayfun(@(x) x.dataTime(~x.zero_indx,:), PI.data,...
     'UniformOutput', false);
+
 [PI.data(1:end).dataValue] = dataValue{:,:};
 [PI.data(1:end).dataTime] = dataTime{:,:};
+try
+    SD = arrayfun(@(x) x.SD(~x.zero_indx,:), PI.data,...          % Subset out the zero values and their respective time points
+    'UniformOutput', false);
+[PI.data(1:end).SD] = SD{:,:};
+
+
+catch
+end
+
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},...
     'UniformOutput',true));                                                 % Count number of non-nan data
 
@@ -241,11 +275,16 @@ if strcmp(p.output, 'mean')
     for i = 1:length(stateVar)
         subplot(nrow,ncol,i)
         hold on
-        arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i),'Color',...
+        try
+        arrayfun(@(x)errorbar(x.dataTime, x.dataValue(:,i),x.SD(:,i),'Color',...
             x.colors,'Marker','*'),PI.data)
+        catch
+              arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i),'Color',...
+            x.colors,'Marker','*'),PI.data)
+        end
         legend({PI.data(:).Name},'Interpreter', 'none')
         title(stateVar(i))
-        set(gca,'YScale', 'log')
+%         set(gca,'YScale', 'log')
     end
 else
     ncol = ceil(sqrt(length(groups_subset)));
@@ -283,15 +322,15 @@ else
 end
 tv = arrayfun(@(x) x.dataValue(~isnan(x.dataValue(:,1)),1),PI.data,'UniformOutput',false);
 [PI.data(1:end).TV] = tv{:,:};
-if p.maxIIV
+if strcmp(p.output, 'individual')
     try
-           PI.test = PI.data(ismember({PI.data(1:end).use},{'test'}));
+        PI.test = PI.data(ismember({PI.data(1:end).use},{'test'}));
         PI.data = PI.data(ismember({PI.data(1:end).use},{'train'}));
     
     catch
         
-    PI.test = PI.data(ismember([PI.data(1:end).use],{'test'}));
-    PI.data = PI.data(ismember([PI.data(1:end).use],{'train'}));
+        PI.test = PI.data(ismember([PI.data(1:end).use],{'test'}));
+        PI.data = PI.data(ismember([PI.data(1:end).use],{'train'}));
     end
 end
 PI.tspan = unique(cat(1,PI.data(:).dataTime));
