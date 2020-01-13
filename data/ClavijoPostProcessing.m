@@ -1,3 +1,4 @@
+clear all
 addpath(genpath("/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/code"))
 % addpath(genpath("/Users/migueltenorio/Documents/MATLAB/Parameter Identifications/aux functions"))
 %% Import Prism files
