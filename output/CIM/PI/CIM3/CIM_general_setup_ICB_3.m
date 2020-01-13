@@ -51,7 +51,7 @@ PI.model = 'CIM Control';
 %% Optimization setup
 % Hierarchical structure
 cell_indx = [1 2 ];
-indiv_indx = [3];
+indiv_indx = [5];
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', indiv_indx, 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
@@ -115,7 +115,7 @@ toc
 
 
 %% Save results
-save('PI_CIM_ICB_6.mat', 'PI')
+save('PI_CIM_ICB_1.mat', 'PI')
 save('PI_CIM_Control_2_red.mat', 'PI')
 
 load(strjoin({cd 'PI_CIM_ICB_1.mat'},'/'))
