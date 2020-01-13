@@ -194,7 +194,7 @@ try
         = {'train'};
     end
      PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).SD ...
-        = SD_subset{ismember([PI.data(:).Group], 'MOC1_Control_Mean'),:};
+        = SD_subset{:,ismember(groups, 'MOC1_Control_Mean')};
     PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).Group ...
         = {'MOC1_Control'};
 catch
@@ -206,7 +206,7 @@ try
         = {'train'};
     end
      PI.data(ismember([PI.data(:).Group], 'MOC2_Control_Mean')).SD ...
-        = SD_subset{ismember([PI.data(:).Group], 'MOC2_Control_Mean'),:};
+        = SD_subset{:,ismember(groups, 'MOC2_Control_Mean')};
     PI.data(ismember([PI.data(:).Group], 'MOC2_Control_Mean')).Group ...
         = {'MOC2_Control'};
 catch
