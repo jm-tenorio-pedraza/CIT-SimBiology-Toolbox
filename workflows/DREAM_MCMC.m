@@ -17,24 +17,25 @@ toc
 
 
 %% Diagnostics
-plotMCMCDiagnostics(xa,p_xa,'name', paramNames,'model',...
+plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
 %% Plotting results
-delta = 2300;
-indx1 = ceil(2e5/size(x,1)+1):delta:size(x,3);
+delta = 1500;
+indx1 = ceil(4e5/size(x,1)+1):delta:size(x,3);
 indx2 = (size(x,3)+ceil(2e5/size(x2,1))+1):delta:(size(x2,3)+size(x,3));
 indx3 = (indx2(end)+ceil(2e5/size(x3,1))+1):delta:(size(x3,3)+indx2(end));
 
-indx = [indx1 indx2 indx3];
-[mean_w, w_indx] = sort(mean(p_xa(indx,:)));
+indx = [indx1];
+[mean_w, w_indx] = sort(mean(p_x(indx,:)));
 
-postSamples =xa(:,w_indx(1:end),indx);
-logP_thinned = p_xa(indx,w_indx(1:end));
+postSamples =x(:,w_indx(1:end),indx);
+logP_thinned = p_x(indx,w_indx(1:end));
 plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
     paramNames,'model', PI.model,'interpreter','tex');
 
-plotMCMCDiagnostics(postSamples([H.PopulationParams],:,:),logP_thinned,...
-    'name', {PI.par([H.PopulationParams]).name},'model', 'PK model (TwoComp)');
+plotMCMCDiagnostics(postSamples([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
+    logP_thinned,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
+    'model', PI.model, 'interpreter', 'tex');
 
 postSamples=postSamples(:,:)';
 logP_thinned=reshape(logP_thinned',1,[]);
@@ -53,13 +54,13 @@ plotIIVParams(postSamples, PI)
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
 tic
-PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observablesPlot);
+PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observables);
 toc
-PI=getCredibleIntervals(PI,observablesPlot, exp(postSamples),PI.H);
-plotPosteriorPredictions(PI,observablesPlot,'output','indiv')
+PI=getCredibleIntervals(PI,observables, exp(postSamples),PI.H);
+plotPosteriorPredictions(PI,observables,'output','indiv')
 
 %% Posterior credible intervals
- PI=mcmcCI(PI, exp(postSamples), logP_thinned', 0.95,'method', 'symmetric');
+ PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
  plotCI(PI, 'TwoComp')
 %% Save results
 save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'xa')

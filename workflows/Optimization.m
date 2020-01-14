@@ -65,7 +65,6 @@ PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
 %% Plotting output
 for i=1:length(observables)
 plotSimOutput(PI,i)
-legend(observables(i),'Location', 'best')
 end
 %%
 finalValue=num2cell(exp(finalValues'));

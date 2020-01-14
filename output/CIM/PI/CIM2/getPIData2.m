@@ -19,9 +19,10 @@ end
 data_subset = arrayfun(@(x) x.dataValue(:,varindx), PI.data,...
     'UniformOutput', false)';
 groups = {PI.data(:).Group}';                                               % extract groups cell array
-dataTime = {PI.data(:).dataTime}';                                          % extract vectors of measured time points cell array
-SD_subset = arrayfun(@(x) x.dataValue(:,varindx), PI.data,...
-    'UniformOutput', false)';
+dataTime = {PI.data(:).dataTime}';  
+sd_indx = cellfun(@(x)~isempty(x),{PI.data(1:end).SD});% extract vectors of measured time points cell array
+SD_subset = cellfun(@(x) x(:,varindx),{PI.data(sd_indx).SD},'UniformOutput', false);
+
 %%
 unique_groups = unique(groups);                                             % identify unique treatment groups
 if strcmp(p.output, 'mean')                                                 % processing for reduced mean model
@@ -194,7 +195,7 @@ try
         = {'train'};
     end
      PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).SD ...
-        = SD_subset{:,ismember(groups, 'MOC1_Control_Mean')};
+        = SD_subset{ismember(groups(sd_indx), 'MOC1_Control_Mean')};
     PI.data(ismember([PI.data(:).Group], 'MOC1_Control_Mean')).Group ...
         = {'MOC1_Control'};
 catch
@@ -206,7 +207,7 @@ try
         = {'train'};
     end
      PI.data(ismember([PI.data(:).Group], 'MOC2_Control_Mean')).SD ...
-        = SD_subset{:,ismember(groups, 'MOC2_Control_Mean')};
+        = SD_subset{ismember(groups(sd_indx), 'MOC2_Control_Mean')};
     PI.data(ismember([PI.data(:).Group], 'MOC2_Control_Mean')).Group ...
         = {'MOC2_Control'};
 catch
@@ -252,14 +253,18 @@ if p.mergePhenotypes
         time_i = arrayfun(@(x) x.dataTime, data_i, 'UniformOutput', false);
         time_i = unique(cat(1,time_i{:,:}));
         dataset = nan(length(time_i), size(data_i(1).dataValue,2));
+        SD = nan(length(time_i), size(data_i(1).dataValue,2));
+
         for j=1:length(data_i)
             nan_indx = all(isnan(data_i(j).dataValue));
             time_indx = ismember(time_i, data_i(j).dataTime);
             dataset(time_indx,~nan_indx) = data_i(j).dataValue(:,~nan_indx);
+            SD(time_indx,~nan_indx) = data_i(j).SD(:,~nan_indx);
         end
         PI.data(end+1).Name = name_i{1};
         PI.data(end).dataTime = time_i;
         PI.data(end).dataValue = dataset;
+        PI.data(end).SD = SD;
         PI.data(end).Group = group_i(i);
         PI.data(end).censoring = {data(find(indx_i,1)).censoring};
     end
