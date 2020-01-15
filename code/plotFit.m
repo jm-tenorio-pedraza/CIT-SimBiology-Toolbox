@@ -17,7 +17,10 @@ x_lim = ax.XLim;
 y_lim = ax.YLim;
 xl = min([x_lim(1) y_lim(1)]);
 xu = max([x_lim(2) y_lim(2)]);
-rx = ((xl):(xu-xl)/1000:(xu));
+if xl==0
+    xl = 1e-3;
+end
+rx = ((xl):((xu-xl)/1e3):(xu));
 plot(rx,rx,'k')
 plot(rx,rx*10,'--r')
 plot(rx,rx*.1,'--r')
@@ -28,7 +31,7 @@ plot(rx,rx*.1,'--r')
 set(gca,'XScale', 'log', 'YScale', 'log')
 xlabel('Data')
 ylabel('Fitted value')
-title(strjoin({'Model fit to data', PI.model},' '))
+title(strjoin({'Model fit to data (', PI.model, ')'},''))
 
 figure
 hold on

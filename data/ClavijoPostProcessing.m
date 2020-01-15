@@ -1,3 +1,4 @@
+clear all
 addpath(genpath("/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/code"))
 % addpath(genpath("/Users/migueltenorio/Documents/MATLAB/Parameter Identifications/aux functions"))
 %% Import Prism files
@@ -12,7 +13,7 @@ MOC1_names=['Time' MOC1_names{:,:}];
 Clavijo_MOC1_Tumor = importPrismFile("/Users/migueltenorio/Documents/Data/CSV/Clavijo_2017/MOC1 tumors_edit.csv",...
     [2 Inf], MOC1_names,0);
 Clavijo_MOC1_Tumor = Clavijo_MOC1_Tumor(1:39,:);
-Clavijo_Immune = readtable('/Users/migueltenorio/Documents/Data/Clavijo_2017_Immune_SimBio.xlsx');
+Clavijo_Immune = readtable('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Clavijo_2017_Immune_SimBio.xlsx');
 % MOC2
 MOC2_treatment_names={'Control' 'antiLy6G' 'antiPDL1' 'antiCTLA4'  'antiLy6G_antiPDL1'...
     'antiCTLA4_antiLy6G'};

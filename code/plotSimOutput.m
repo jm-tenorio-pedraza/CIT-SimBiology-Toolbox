@@ -46,7 +46,14 @@ end
     error.FaceAlpha = 0.2;
     
     ylabel(PI.variableUnits(colIndx))
+    xlabel('Time [days]')
+    ax = gca;
+    try
+     legend(ax.Children(3:1),{PI.observablesPlot{colIndx} 'Data' 'SD'}, 'location', 'best')
+    catch
+      legend(ax.Children(2:1),{PI.observablesPlot{colIndx} 'SD'}, 'location', 'best')
 
+    end
     
     % Change axis if there is large variability in output
     if std(log10(PI.data(i).simOutput(:,colIndx)))>2
@@ -54,7 +61,7 @@ end
     end
 %        set(gca,'YScale','log')
        try
-       ylim(([floor(min(PI.data(i).dataValue(:,colIndx))) ceil(max(PI.data(i).dataValue(:,colIndx)))]))
+       ylim(10.^([floor(log10(min(PI.data(i).dataValue(:,colIndx)))) ceil(log10(max(PI.data(i).dataValue(:,colIndx))))]))
        catch
        end
 % ylim([1e-2, 100])

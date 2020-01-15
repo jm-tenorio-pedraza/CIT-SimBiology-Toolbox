@@ -80,21 +80,30 @@ for i=1:length(outputs)
         dat.Marker='d';
         
         ylabel(PI.variableUnits(i),'interpreter', 'none')
-        xlabel('Time [hr]')
+        xlabel('Time [days]')
         grid on
         hold on
         if max(m_data)/min(m_data)>1e1
 %             set(gca,'YScale','log')
         else
         end
-        title(output_i,'interpreter', 'none')
+        ax=gca;
             if strcmp(p.outputs,'indiv')
-                legend(PI.data(j).Name,'interpreter','none')
+                title(PI.data(j).Name,'interpreter','none')
+                try
+                    legend(ax.Children, {'Data' output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none')
+                catch
+                    legend(ax.Children, {output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none')
+
+                end
             end
 
 
     end
-    set(gca,'YScale','log')
+    try
+        ylim(10.^([floor(log10(min(PI.data(j).dataValue(:,i)))) ceil(log10(max(PI.data(j).dataValue(:,i))))]))
+    catch
+    end
     ax = gca;
     if strcmp(p.outputs,'indiv')
     else

@@ -38,6 +38,6 @@ for i=1:pc_indx
     legend_i(i)={strjoin({'pc' num2str(i)},'')};
 end
 legend_i(end+1) = {'Threshold'};
-legend(legend_i,'Location','NorthEastOutside');
+legend(legend_i,'Location','northeast');
 
 return
