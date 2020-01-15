@@ -15,22 +15,9 @@ tic
     4e5,'StepSize',2.38,'H', h);
 toc
 
-tic
-[x2, p_x2,accept2,pCR2] = dream(x(:,:,end)',likelihood_fun,prior_fun,...
-    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
-    1.38,'H', h);
-toc
 
-tic
-[x3, p_x3,accept3,pCR3] = dream(x2(:,:,end)',likelihood_fun,prior_fun,...
-    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', 2e5,'StepSize',...
-    1.38,'H', h);
-toc
-
-xa = cat(3,xa,x3);
-p_xa = [p_x;p_x2;p_x3];
 %% Diagnostics
-plotMCMCDiagnostics(xa,p_xa,'name', paramNames,'model',...
+plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
 %% Plotting results
 delta = 2300;
@@ -75,8 +62,8 @@ plotPosteriorPredictions(PI,observablesPlot,'output','indiv')
  PI=mcmcCI(PI, exp(postSamples), logP_thinned', 0.95,'method', 'symmetric');
  plotCI(PI, 'TwoComp')
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'xa')
-save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_xa')
+save(strjoin({cd '/ICB1_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/ICB1_DREAM_MCMC_p_x.mat'},''), 'p_x')
 
 load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))

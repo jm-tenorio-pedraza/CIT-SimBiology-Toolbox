@@ -17,7 +17,7 @@ toc
 
 
 %% Diagnostics
-plotMCMCDiagnostics(xa,p_xa,'name', paramNames,'model',...
+plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
 %% Plotting results
 delta = 2300;
@@ -62,8 +62,8 @@ plotPosteriorPredictions(PI,observablesPlot,'output','indiv')
  PI=mcmcCI(PI, exp(postSamples), logP_thinned', 0.95,'method', 'symmetric');
  plotCI(PI, 'TwoComp')
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'xa')
-save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_xa')
+save(strjoin({cd '/ICB1_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/ICB1_DREAM_MCMC_p_x.mat'},''), 'p_x')
 
 load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))
