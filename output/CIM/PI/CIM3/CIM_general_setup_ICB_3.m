@@ -18,8 +18,8 @@ set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-12);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
-parameters = {'kill_max'; 'kpro_Tumor_0'; 'K_CD8'; 'K_pro';...
-    'KDE_MDSC';'kill_Treg';'K_el'};
+parameters = {'kill_CD8'; 'kpro_Tumor'; 'K_CD8'; 'K_CTLA4';...
+    'KDE_MDSC';'kill_Treg';'K_PDL1'};
 sensitivity_parameters = {};
 
 parameters = [parameters; 'T_0'];
@@ -29,7 +29,6 @@ groups_subset = {'MOC1_Control', 'MOC2_Control',...
     'MOC1_antiPDL1','MOC1_antiCTLA4', 'MOC1_antiCTLA4_antiPDL1',...
     'MOC2_antiPDL1','MOC2_antiCTLA4', 'MOC2_antiCTLA4_antiPDL1'};
 observables={'TV'};
-observablesPlot={'TV'};
 stateVar={'Tumor'};
 doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
 %% Obtain data, simulation function and dose table
@@ -40,6 +39,8 @@ PI=getPIData2('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data
 PI.variableUnits={'Volume [mL]'};
 PI.normIndx = [];
 PI.model = 'CIM Control';
+PI.observablesPlot={'TV'};
+
 % Get initial values
 [PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
     initialStruct);
@@ -50,8 +51,8 @@ PI.model = 'CIM Control';
 
 %% Optimization setup
 % Hierarchical structure
-cell_indx = [2 ];
-indiv_indx = [1];
+cell_indx = [1 ];
+indiv_indx = [2];
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', indiv_indx, 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
@@ -115,7 +116,7 @@ toc
 
 
 %% Save results
-save('PI_CIM_ICB_4.mat', 'PI')
+save('PI_CIM_ICB_7.mat', 'PI')
 save('PI_CIM_Control_2_red.mat', 'PI')
 
 load(strjoin({cd 'PI_CIM_ICB_5.mat'},'/'))

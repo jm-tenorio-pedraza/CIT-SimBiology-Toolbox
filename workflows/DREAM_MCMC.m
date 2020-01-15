@@ -56,7 +56,7 @@ simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
 tic
 PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observables);
 toc
-PI=getCredibleIntervals(PI,observables, exp(postSamples),PI.H);
+PI=getCredibleIntervals(PI,observables, exp(postSamples),PI.H, 'logit_indx', 2:6);
 plotPosteriorPredictions(PI,observables,'output','indiv')
 
 %% Posterior credible intervals
