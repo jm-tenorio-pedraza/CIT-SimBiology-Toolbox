@@ -49,7 +49,7 @@ for i=1:length(unique_groups)                                               % Fo
 
     n_indiv = length(data_i);
     
-    for j=1:length(observables)                                             % For each jth variable do:
+    for j=1:length(varindx)                                             % For each jth variable do:
         datavar_j = cellfun(@(x) x(:,j),data_i, 'UniformOutput',false);     % Select jth the variable
         mat_j = NaN(length(time),n_indiv);                        % NaN mat with K rows and N columns (one for each individual)
         

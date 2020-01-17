@@ -21,7 +21,6 @@ MODEL = 'TwoComp_CE';
 parameters = {'Blood'; 'Tumor';'CL';'Q23'; 'ID'};
 % Define outputs
 observables={'ID_g_Blood' 'Blood.antiPDL1' 'ID_g_Tumor' 'Tumor.antiPDL1' 'T2B'};
-observablesPlot = {'ID_g_Blood' 'Blood_antiPDL1' 'ID_g_Tumor' 'Tumor_antiPDL1' 'T2B'};
 stateVar={'Tumor.antiPDL1' 'Tumor_to_Blood' 'Blood.antiPDL1'};
 
 dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_1.xlsx'...
@@ -30,6 +29,8 @@ dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbo
 
 [PI,PI.u]=getDataSets(dataset_file_ext);
 PI.variableUnits={'%ID/g' 'mg/l' '%ID/g' 'mg/l' '[]'};
+PI.observablesPlot = {'ID_g_Blood' 'Blood_antiPDL1' 'ID_g_Tumor' 'Tumor_antiPDL1' 'T2B'};
+
 variants=getvariant(model);
 variant=variants(strcmp(get(variants,'Name'), MODEL));
 dose = {'Blood.antiPDL1'};
@@ -88,10 +89,7 @@ prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/i
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),...
     exp(finalValues(end-length(observables)+1:end)),PI.normIndx,'log', true);
-paramNames = ['\eta_{Blood}' '\eta_{Tumor}' 'CL_{Central}' 'Q23'...
-    {PI.par([PI.H.IndividualParams(:).Index]).name}, '\omega_{Blood}',...
-    '\omega_{Tumor}', '\sigma_{IDg.Blood}' '\sigma_{Blood.antiPDL1}'...
-    '\sigma_{IDg.Tumor}' '\sigma_{Tumor.antiPDL1}' '\sigma_{T2B}'];
+paramNames = getParamNames(PI,sim, observables);
 %% Objective function
 
 % Obj function
@@ -101,7 +99,7 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_CE_red.mat', 'PI')
+save('PI_PK_CE.mat', 'PI')
 load(strjoin({cd 'PI_PK_CE.mat'},'/'))
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/parameters_hat.mat','parameters_hat')
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))

@@ -19,7 +19,7 @@ indx=indx(1);
 for i=1:n_p
     modeHPD = mode(p_hat(:,i));
     meanHPD = mean(p_hat(:,i));
-
+    SD = std(exp(p_hat(:,i)));
     PI.par(i).posterior_mode=p_sorted(1,i+1);
     if strcmp(p.method, 'symmetric')
         LB=exp(quantile(p_hat(:,i),(1-prob)/2));
@@ -30,6 +30,8 @@ for i=1:n_p
 
         PI.par(i).LB=LB;
         PI.par(i).UB=UB;
+        PI.par(i).SD = (SD);
+        PI.par(i).CV = (SD)/exp(meanHPD);
     elseif strcmp(p.method, 'HPD')
         
         p_credible_set=p_sorted(p_sorted(:,1)>=p_sorted(indx,1),i+1);

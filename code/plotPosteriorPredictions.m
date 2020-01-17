@@ -44,6 +44,11 @@ for i=1:length(outputs)
         end
         hold on
         
+        pi_data=[PI.CI(j).(output_i){'Pred_UB',:}, PI.CI(j).(output_i){'Pred_LB',:}(end:-1:1)];
+            pi_nan=or(isnan(pi_data), pi_data==0);
+                        
+             % Plotting prediction interval
+            pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
         % Plotting credible interval
         ci=patch('XData', simTime(~ci_nan),'YData',ci_data(~ci_nan));
 
@@ -67,7 +72,7 @@ for i=1:length(outputs)
         
         ci.FaceColor=col_i;
         ci.EdgeColor=col_i;
-        ci.FaceAlpha=0.1;
+        ci.FaceAlpha=0.2;
         ci.LineStyle='--';
         ci.LineWidth=1;
         
@@ -100,15 +105,17 @@ for i=1:length(outputs)
 
 
     end
+        ax = gca;
+    
     try
         ylim(10.^([floor(log10(min(PI.data(j).dataValue(:,i)))) ceil(log10(max(PI.data(j).dataValue(:,i))))]))
     catch
     end
-    ax = gca;
+    
     if strcmp(p.outputs,'indiv')
     else
         title(output_i,'interpreter', 'none')
-        legend(ax.Children(3:3:end),{PI.data(:).Name},'Interpreter', 'none')
+        legend(ax.Children(end:-4:3),[PI.data(:).Group],'Interpreter', 'none')
     end
 
 end

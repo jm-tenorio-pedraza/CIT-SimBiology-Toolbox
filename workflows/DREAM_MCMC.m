@@ -21,11 +21,8 @@ plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
 %% Plotting results
 delta = 1500;
-indx1 = ceil(4e5/size(x,1)+1):delta:size(x,3);
-indx2 = (size(x,3)+ceil(2e5/size(x2,1))+1):delta:(size(x2,3)+size(x,3));
-indx3 = (indx2(end)+ceil(2e5/size(x3,1))+1):delta:(size(x3,3)+indx2(end));
+indx = ceil(4e5/size(x,1)+1):delta:size(x,3);
 
-indx = [indx1];
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
 
 postSamples =x(:,w_indx(1:end),indx);
@@ -54,17 +51,18 @@ plotIIVParams(postSamples, PI)
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
 tic
-PI=getPosteriorPredictions(exp(postSamples),PI,simFun,observables);
+PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesPlot);
 toc
-PI=getCredibleIntervals(PI,observables, exp(postSamples),PI.H, 'logit_indx', 2:6);
-plotPosteriorPredictions(PI,observables,'output','indiv')
+PI=getCredibleIntervals(PI,PI.observablesPlot, exp(postSamples),PI.H, 'logit_indx', 2:6);
+plotPosteriorPredictions(PI,observables,'output','group')
 
 %% Posterior credible intervals
  PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
- plotCI(PI, 'TwoComp')
+ plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
+ PI.postSamples = postSamples;
 %% Save results
-save(strjoin({cd '/DREAM_MCMC_x.mat'},''), 'xa')
-save(strjoin({cd '/DREAM_MCMC_p_x.mat'},''), 'p_xa')
+save(strjoin({cd '/ICB1_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/ICB1_DREAM_MCMC_p_x.mat'},''), 'p_x')
 
-load(strjoin({cd '/DREAM_MCMC_x.mat'},''))
-load(strjoin({cd '/DREAM_MCMC_p_x.mat'},''))
+load(strjoin({cd '/ICB1_DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/ICB1_DREAM_MCMC_p_x.mat'},''))
