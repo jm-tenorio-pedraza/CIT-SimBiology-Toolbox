@@ -8,8 +8,11 @@ par=par.Results;
 nVar=size(PI.data(1).dataValue,2);
 
 % Generate parameter structure
-phi=getPhi(p);
-
+try
+    phi=getPhi(p);
+catch
+    phi = repmat(p, length(PI.data),1);
+end
 % Simulate model with parameter structure
 simdata=simFun(phi);
 
@@ -55,10 +58,9 @@ dataOutput=arrayfun(@(x)x.yOutput(ismember(PI.tspan,x.dataTime),:),PI.data,...
     'UniformOutput',false);
 [PI.data(1:length(dataOutput)).('y_hat')]=dataOutput{:,:};
 
-
-% Get lower and upper boudaries
+try
+% Get lower and upper boudariestry
 sigma = p(setdiff(H.SigmaParams, [H.CellParams(:).OmegaIndex H.IndividualParams(:).OmegaIndex]));
-
 
 lb = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),1-par.prob,3),...
     PI.data,'UniformOutput',false);
@@ -66,5 +68,6 @@ ub = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_
     PI.data,'UniformOutput',false);
 [PI.data(1:end).lb]= lb{:,:};
 [PI.data(1:end).ub] = ub{:,:};
-
+catch
 end
+return

@@ -25,7 +25,11 @@ for i=1:size(params,1)
          output_j=char(outputs(j));
          out_j=arrayfun(@(x)x.yOutput(:,j)',PI_i.data,'UniformOutput',false);
          for k=1:length(PI.output)
+             if any(out_j{k,:}<0)
+                 PI.output(k).(output_j)(i,:) = nan(1,length(p.simTime));  
+             else
              PI.output(k).(output_j)(i,:)=out_j{k,:};
+             end
          end
          
     end

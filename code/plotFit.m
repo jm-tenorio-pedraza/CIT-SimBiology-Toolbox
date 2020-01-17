@@ -22,8 +22,8 @@ if xl==0
 end
 rx = ((xl):((xu-xl)/1e3):(xu));
 plot(rx,rx,'k')
-plot(rx,rx*10,'--r')
-plot(rx,rx*.1,'--r')
+plot(rx,rx*10,'--k')
+plot(rx,rx*.1,'--k')
 % plot(rx,rx*1.2,'--k')
 % plot(rx,rx*0.8, '--k')
 % plot(rx,rx*1.5,'--g')
@@ -32,7 +32,8 @@ set(gca,'XScale', 'log', 'YScale', 'log')
 xlabel('Data')
 ylabel('Fitted value')
 title(strjoin({'Model fit to data (', PI.model, ')'},''))
-
+ylim([xl xu])
+xlim([xl xu])
 figure
 hold on
 h=arrayfun(@(x)histogram((log(x.dataValue)-log(x.y_hat))./repmat(input.sigma,size(x.dataValue,1),1),'Normalization', 'probability'),PI.data,'UniformOutput',false)

@@ -38,7 +38,7 @@ PI=getPIData2('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data
     false,'output', 'mean','maxIIV', true);
 PI.variableUnits={'Volume [mL]'};
 PI.normIndx = [];
-PI.model = 'CIM Control';
+PI.model = 'CIM ICB (K_CD8)';
 PI.observablesPlot={'TV'};
 
 % Get initial values
@@ -51,7 +51,7 @@ PI.observablesPlot={'TV'};
 
 %% Optimization setup
 % Hierarchical structure
-cell_indx = [1 ];
+cell_indx = [1];
 indiv_indx = [2];
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', indiv_indx, 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
@@ -114,12 +114,12 @@ tic
 obj_fun((finalValues))
 toc
 
-
+PI.AIC = 2*length(PI.par)-2*obj_fun(finalValues)*(-1);
 %% Save results
-save('PI_CIM_ICB_7.mat', 'PI')
+save('PI_CIM_ICB_1.mat', 'PI')
 save('PI_CIM_Control_2_red.mat', 'PI')
 
-load(strjoin({cd 'PI_CIM_ICB_5.mat'},'/'))
+load(strjoin({cd 'PI_CIM_ICB_7.mat'},'/'))
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
