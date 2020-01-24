@@ -18,8 +18,9 @@ set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-10);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
-parameters = {'kill_CD8'; 'kpro_Tumor';'kin_CD8';...
-    'K_MDSC';'kin_DC'; 'KDE_MDSC';};
+parameters = {'K_CTLA4'; 'kin_CD8';'kill_CD8';...
+    'kpro_Tumor';'K_MDSC'; 'kin_DC'; 'kel_Effector';'K_DC'; 'kin_MDSC';
+    'KDE_MDSC'; 'K_CD8'; 'kin_Treg'; 'kill_Treg'; 'K_IFNg'; 'K_PDL1'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -53,7 +54,7 @@ PI.observablesPlot={'Tumor volume' 'CD8+ T-cells' 'CD107a+CD8+ T-cells' 'Treg' '
 
 %% Optimization setup
 % Hierarchical structure
-cell_indx = [1 2];
+cell_indx = [3 4];
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', [], 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
@@ -120,10 +121,7 @@ toc
 
 
 %% Save results
-save('PI_CIM_Control_3_red.mat', 'PI')
-load(strjoin({cd 'PI_CIM_Control_3_red.mat'},'/'),'PI')
+save('PI_CIM_Control_4_red.mat', 'PI')
+load(strjoin({cd 'PI_CIM_Control_4_red.mat'},'/'),'PI')
 
-load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
-load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
 
-sbiosaveproject '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/Kosinsky_2.sbproj' 'model'

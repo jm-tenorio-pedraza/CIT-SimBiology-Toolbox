@@ -18,7 +18,7 @@ set(cs, 'MaximumWallClock', 0.25)
 MODEL = 'TwoComp_CE';
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor';'CL';'Q23'; 'ID'};
+parameters = {'Blood'; 'CL';'Q23'; 'ID'};
 % Define outputs
 observables={'ID_g_Blood' 'Blood.antiPDL1' 'ID_g_Tumor' 'Tumor.antiPDL1' 'T2B'};
 stateVar={'Tumor.antiPDL1' 'Tumor_to_Blood' 'Blood.antiPDL1'};
@@ -31,10 +31,8 @@ dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbo
 PI.variableUnits={'%ID/g' 'mg/l' '%ID/g' 'mg/l' '[]'};
 PI.observablesPlot = {'ID_g_Blood' 'Blood_antiPDL1' 'ID_g_Tumor' 'Tumor_antiPDL1' 'T2B'};
 
-variants=getvariant(model);
-variant=variants(strcmp(get(variants,'Name'), MODEL));
 dose = {'Blood.antiPDL1'};
-sim=createSimFunction(model,parameters,observables, dose,variant,...
+sim=createSimFunction(model,parameters,observables, dose,[],...
     'UseParallel', false);
 PI.normIndx = [];
 PI.model = 'PK-Two Compartment Model';
@@ -103,7 +101,7 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_CE.mat', 'PI')
+save('PI_PK_red.mat', 'PI')
 load(strjoin({cd 'PI_PK_CE.mat'},'/'))
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/parameters_hat.mat','parameters_hat')
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))

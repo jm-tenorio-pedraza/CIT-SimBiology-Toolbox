@@ -18,8 +18,8 @@ set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-10);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
-parameters = {'kill_CD8'; 'kpro_Tumor';'kin_CD8';...
-    'K_MDSC';'kin_DC'; 'KDE_MDSC';};
+parameters = {'kill_CD8'; 'kpro_Tumor';'K_CTLA4';...
+    'kin_CD8';'K_MDSC'; 'kel_Effector'; 'kin_DC'; 'K_DC'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
