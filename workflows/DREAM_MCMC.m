@@ -46,7 +46,7 @@ plotBivariateMarginals_2((postSamples(:, [PI.H.CellParams.Index PI.H.IndividualP
 % Sigma parameters
 plotBivariateMarginals_2(exp(postSamples(:, PI.H.SigmaParams)),'names',...
     {PI.par(H.SigmaParams).name})
-plotIIVParams(postSamples, PI)
+plotIIVParams(postSamples, PI,'name', paramNames)
 %% Posterior predictions
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);

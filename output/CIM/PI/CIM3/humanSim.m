@@ -51,8 +51,8 @@ Theta2 = exp(theta);
 allo_factor1 = [1 1 0.9 0.9 0];
 allo_factor2 = [1 1 0.9 0.9 -1/4];
 
-Theta1(:,[1 2 10 11 13])= Theta1(:,[1 2 10 11 13]).*((77/.022).^allo_factor1);
-Theta2(:,[1 2 10 11 13])= Theta2(:,[1 2 10 11 13]).*((77/.022).^allo_factor2);
+Theta1(:,[1 2 10 11 12])= Theta1(:,[1 2 10 11 12]).*((77/.022).^allo_factor1);
+Theta2(:,[1 2 10 11 12])= Theta2(:,[1 2 10 11 12]).*((77/.022).^allo_factor2);
 
 TV_range = [pi*4/3*.5^3 pi*4/3*2.5^3];
 TV = (rand(size(Theta1,1),1)*(TV_range(2)-TV_range(1))+TV_range(1))/0.00153;
@@ -74,6 +74,9 @@ set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
 parameters = [par([pop_indx eta_indx]) 'T_0'];
 parameters(1) = {'CL_antiPDL1'};
+% plotBivariateMarginals_2((Theta1),...
+%      'names',parameters,'interpreter', 'none')
+
 % Define outputs% Define outputs
 groups_subset = {'MOC1_Control', 'MOC1_antiPDL1','MOC1_antiCTLA4', 'MOC1_antiCTLA4_antiPDL1'};
 observables={'TV' 'CD8' 'Tumor.antiPDL1' 'Tumor.antiCTLA4'};
@@ -109,9 +112,9 @@ antiPDL1 = table(dosing_times', repelem(antiPDL1_dose,length(dosing_times),1),..
 antiCTLA4 = table(dosing_times', repelem(antiCTLA4_dose,length(dosing_times),1),...
     repelem(antiCTLA4_dose/60, length(dosing_times),1),'VariableNames',{'Time' 'Amount' 'Rate'});
 
-control.Properties.VariableUnits={'day' 'micromole' 'micromole/minute'};
-antiPDL1.Properties.VariableUnits={'day' 'micromole' 'micromole/minute'};
-antiCTLA4.Properties.VariableUnits={'day' 'micromole' 'micromole/minute'};
+control.Properties.VariableUnits = {'day' 'micromole' 'micromole/minute'};
+antiPDL1.Properties.VariableUnits = {'day' 'micromole' 'micromole/minute'};
+antiCTLA4.Properties.VariableUnits = {'day' 'micromole' 'micromole/minute'};
 
 PI.u = {};
 PI.u(1,1:2) = {control control};
@@ -131,10 +134,11 @@ tic
 PI2=getPosteriorPredictions(Theta2,PI,simFun,PI.observablesPlot);
 toc
 
+%% Plot posterior predictions (Tumor growth scaling exponent: 0]
 colors = linspecer(4);
 colors_i = zeros(size(Theta1,1),3);
-groups = {'Control' 'antiPDL1' 'antiCTLA4' 'antiPDL1+antiCTLA4'};
-%% Plot posterior predictions (Tumor growth scaling exponent: 0]
+groups = {'Control' 'antiPDL1' 'antiCTLA4' 'antiPDL1_antiCTLA4'};
+
 response1 = table({'PD'; 'SD'; 'PR'; 'CR'},zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1),...
     'VariableNames', {'Response' 'Control' 'antiPDL1' 'antiCTLA4' 'antiPDL1_antiCTLA4'});
 
@@ -255,7 +259,7 @@ title (strjoin({'anti-PD-L1 concentrations in tumor tissue of virtual patients (
 end
 
 
-%% Plot posterior predictions (Tumor growth scaling exponent: -1/4]
+%% Plot posterior predictions (Killing rate scaling exponent: -1/4]
 response2 = table({'PD'; 'SD'; 'PR'; 'CR'},zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1),...
     'VariableNames', {'Response' 'Control' 'antiPDL1' 'antiCTLA4' 'antiPDL1_antiCTLA4'});
 
@@ -375,56 +379,31 @@ title (strjoin({'anti-PD-L1 concentrations in tumor tissue of virtual patients (
 
 end
 
-%% PFS
+%% PFS in theta1
 % Calculate SLD and response %
-cutoff_indx = find(PI.tspan==181);
-for i=1:4
-    pd = any(PI1.output(i).SLD(:,1:cutoff_indx)>20,2);
-    pr = and((and((PI1.output(i).SLD(:,cutoff_indx)<=-30), ~(PI1.output(i).SLD(:,cutoff_indx)<-99))),~pd);
-    cr = and(((PI1.output(i).SLD(:,cutoff_indx)<-99)),~pd);
-    sd = and(and(~pd,~pr), ~cr);
-    response1{1:4,i+1} = [mean(pd); mean(sd); mean(pr); mean(cr)];
-    PI1.output(i).PFS = [pd sd pr cr];
-end
+[PI1, response1] = getPFS(PI1, groups, 181);
+[PI1,T, censor] = getSurvivalTime(PI1, 181, groups, Theta1);
+plotSurvival(T,censor,Theta1,groups)
+subplot(1,2,1)
+plotSurvivalFunction(PI1,181,groups)
+title('Progresson-free survival at 6 months (kill_{CD8} \propto M^{0})')
+[PI2, response2] = getPFS(PI2, groups, 181);
+[PI2,T2, censor2] = getSurvivalTime(PI2, 181, groups, Theta2);
+plotSurvival(T2,censor2,Theta2,groups)
+subplot(1,2,2)
+plotSurvivalFunction(PI2,181,groups)
+title('Progresson-free survival at 6 months (kill_{CD8} \propto M^{-0.25})')
 
+%% Analysing parameter-output relations
+corrInOut = plotInputToOutput(Theta1, {'SLD'}, PI1, groups, parameters);
+corrInOut2 = plotInputToOutput(Theta2, {'SLD'}, PI2, groups, parameters);
 
-cutoff_indx = find(PI.tspan==181);
-T = zeros(size(Theta1,1)*4,1);
-for i=1:4
-    rowindx = (i-1)*size(Theta1,1);
-    pd = rowfun(@(x)detectPD(x,PI.tspan(1:cutoff_indx)),table(PI1.output(i).SLD(:,1:cutoff_indx)));
-    T(rowindx+1:rowindx+size(Theta1,1),1)=pd{:,1};
-end
-zeroV = zeros(size(Theta1,1),1);
-oneV = ones(size(Theta1,1),1);
-X = [[oneV; zeroV; zeroV; zeroV] [zeroV; oneV; zeroV; oneV], [zeroV; zeroV; oneV; oneV]]...
-    ;
-[b,logl,H,stats] = coxphfit(X,T);
-
-
-figure()
-ax1 = gca;
-censor = T==181;
-
-[f,x] = ecdf(T(1:5e3,1),'Censoring',censor(1:5e3),'function','survivor');
-stairs(x,f,'--k','LineWidth', 2)
-hold on
-[f,x] = ecdf(T(5e3+1:10e3,1),'Censoring',censor(5e3+1:10e3),'function','survivor');
-stairs(x,f,'--r','LineWidth', 2)
-[f,x] = ecdf(T(10e3+1:15e3,1),'Censoring',censor(10e3+1:15e3),'function','survivor');
-stairs(x,f,'--g','LineWidth', 2)
-[f,x] = ecdf(T(15e3+1:20e3,1),'Censoring',censor(15e3+1:20e3),'function','survivor');
-stairs(x,f,'--b','LineWidth', 2)
-
-legend('Control','antiPDL1','antiCTLA4', 'antiCTLA4+antiPDL1')
-title('Progression-free survival (6 months)')
-ylabel('S(t)')
-xlabel('Time [days]')
+%%
 PI1.Theta = Theta1;
 PI1.parameters = parameters;
 PI2.Theta = Theta2;
 PI2.parameters = parameters;
 
-%%
+
 save(strjoin({cd '/CIM/HuSim/PI1.mat'},''),'PI1')
 save(strjoin({cd '/CIM/HuSim/PI2.mat'},''),'PI2')

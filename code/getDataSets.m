@@ -65,7 +65,7 @@ end
 [PI,doses] = getDoses(PI);
 doses = doses';
 for i=1:length(doses)
-    doses{i}.Properties.VariableUnits = {'hour' 'milligram' 'milligram/second'};
+    doses{i}.Properties.VariableUnits = {'hour' 'micromole' 'micromole/second'};
 end
 
 [PI.data(1:end).doses] = doses{:,:};
