@@ -48,7 +48,7 @@ for i=1:length(outputs)
             pi_nan=or(isnan(pi_data), pi_data==0);
                         
              % Plotting prediction interval
-            pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
+%             pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
         % Plotting credible interval
         ci=patch('XData', simTime(~ci_nan),'YData',ci_data(~ci_nan));
 
@@ -67,12 +67,12 @@ for i=1:length(outputs)
         col_i=treatment_colors(ismember(treatments,PI.CI(j).Group),:);
         pi.FaceColor=col_i;
         pi.EdgeColor=col_i;
-        pi.FaceAlpha=0.1;
+        pi.FaceAlpha=0.2;
         pi.LineStyle='none';
         
         ci.FaceColor=col_i;
         ci.EdgeColor=col_i;
-        ci.FaceAlpha=0.2;
+        ci.FaceAlpha=0.4;
         ci.LineStyle='--';
         ci.LineWidth=1;
         
@@ -106,11 +106,14 @@ for i=1:length(outputs)
 
     end
         ax = gca;
-    
-    try
-        ylim(10.^([floor(log10(min(PI.data(j).dataValue(:,i)))) ceil(log10(max(PI.data(j).dataValue(:,i))))]))
-    catch
+    if (strcmp('%',PI.variableUnits{i}))
+        ylim([0 100])
     end
+%     try
+%         ylim(2.^([floor(log2(min(PI.data(j).dataValue(:,i)))) ceil(log2(max(PI.data(j).dataValue(:,i))))]))
+%     catch
+%     end
+
     
     if strcmp(p.outputs,'indiv')
     else

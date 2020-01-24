@@ -1,5 +1,4 @@
 
-
 %% Optimization
 
 % Optimizer options
@@ -53,10 +52,12 @@ residuals_fx = @(x,sigma) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.ts
     sigma,PI.normIndx);
 tic
 [finalValues, logL] = saem(finalValues, residuals_fx,likelihood_fun, prior_fun, PI.H, PI,...
-    'm', 2e3,'StepSize',2.38^2,'MinFunc', 'fminsearch','OutputFn',...
+    'm', 1e4,'StepSize',2.38^2,'MinFunc', 'fminsearch','OutputFn',...
     @(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(x),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H));
-toc
+toc1
+PI.AIC = 2*length(PI.par)-2*obj_fun(finalValues)*(-1);
+
 %% Simulation output
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H);

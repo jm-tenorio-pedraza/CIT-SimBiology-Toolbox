@@ -79,7 +79,7 @@ end
 
 % Correlation matrix
 if ismember('corr', p.plots)
-figure('Renderer', 'painters', 'Position', [10 10 1500 600])
+figure('Renderer', 'painters', 'Position', [10 10 1200 800])
 plotCorrMat(phat, p.name, 'model', p.model,'interpreter', p.interpreter)
 end
 end
