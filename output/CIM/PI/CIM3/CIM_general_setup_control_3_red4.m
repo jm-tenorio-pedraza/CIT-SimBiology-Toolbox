@@ -121,7 +121,7 @@ toc
 
 
 %% Save results
-save('PI_CIM_Control_4_red.mat', 'PI')
+save('PI_CIM_Control_3_red4.mat', 'PI')
 load(strjoin({cd 'PI_CIM_Control_4_red.mat'},'/'),'PI')
 
 

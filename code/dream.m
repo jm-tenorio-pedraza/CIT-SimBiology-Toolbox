@@ -112,7 +112,7 @@ for t = 2:T
         
         if accept<0.2
             stepSize = stepSize*1/2;
-        elseif accept>0.3
+        elseif accept>0.4
             stepSize = stepSize*2;
         end
     end

@@ -16,6 +16,12 @@ tic
 toc
 
 
+h.IndividualParams=[];
+tic
+[x2, p_x2,accept2,pCR2] = dreamHParallel(x(:,:,end)',likelihood_fun,prior_fun,...
+    size(w0,1),ceil(2e6/size(w0,1)), length(finalValues), 'BurnIn', ...
+    4e5,'StepSize',2.38,'H', h);
+toc
 %% Diagnostics
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
@@ -62,8 +68,8 @@ plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
  plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
  PI.postSamples = postSamples;
 %% Save results
-save(strjoin({cd '/CIM_red3_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/CIM_red3_DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/ICB_red6_DREAM_MCMC_x2.mat'},''), 'x2')
+save(strjoin({cd '/ICB_red6_DREAM_MCMC_p_x2.mat'},''), 'p_x2')
 
 load(strjoin({cd '/ICB1_DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/ICB1_DREAM_MCMC_p_x.mat'},''))
