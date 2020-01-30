@@ -1,0 +1,116 @@
+%%
+clear all
+cd('/Users/migueltenorio/Documents/Data/CSV/Morisada_2017')
+addpath(genpath("/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/code"))
+
+%%
+Morisada_ImmuneName = {'CD8' 'CD107a' 'Tumor_Tregs' 'Tumor_gMDSC' 'CD11c_DC'...
+    'Tumor_PDL1' 'Myeloid_PDL1' 'Tumor_mMDSC' 'M1_MO' 'M2_MO' 'CTLA4'};
+MOC1_fileExt = cellfun(@(x) strjoin({cd '/' 'MOC1_' x '.csv'}, ''), Morisada_ImmuneName, 'UniformOutput', false);
+MC38_fileExt = cellfun(@(x) strjoin({cd '/' 'MC38_' x '.csv'}, ''), Morisada_ImmuneName, 'UniformOutput', false);
+
+Morisada_Treatments = {'Control' '8Gyx2' '2Gyx10'};
+MOC1_names=cellfun(@(y)cellfun(@(x)strjoin({'MOC1' y num2str(x)},'_'),num2cell(1:5),'UniformOutput', false),...
+    Morisada_Treatments,'UniformOutput',false);
+MOC1_names=['Time' MOC1_names{:,:}];
+
+MC38_names=cellfun(@(y)cellfun(@(x)strjoin({'MC38' y num2str(x)},'_'),num2cell(1:5),'UniformOutput', false),...
+    Morisada_Treatments,'UniformOutput',false);
+MC38_names=['Time' MC38_names{:,:}];
+
+Morisada_MOC1_ImmuneVariables = cellfun(@(x) importPrismFile(x,[2 Inf], MOC1_names,0),MOC1_fileExt,'UniformOutput', false);
+Morisada_MC38_ImmuneVariables = cellfun(@(x) importPrismFile(x,[2 Inf], MC38_names,0),MC38_fileExt,'UniformOutput', false);
+
+Morisada_ImmuneVariables = [Morisada_MC38_ImmuneVariables Morisada_MOC1_ImmuneVariables];
+%% Data array 
+Morisada_ImmuneTime = [10 15 20 30];
+
+name = [MC38_names(2:end) MOC1_names(2:end)]';
+dataTime = repelem({Morisada_ImmuneTime}, length(name),1);
+cellMat = repelem({nan(length(Morisada_ImmuneTime), length(Morisada_ImmuneName))}, length(name),1);
+
+simBioData = [];
+[simBioData(1:length(name)).Name] = name{:,:};
+[simBioData(1:end).dataTime] = dataTime{:,:};
+[simBioData(1:end).dataValue] = cellMat{:,:};
+
+for i = 1:length(Morisada_ImmuneName)
+   [indx1,~] = ismember(name,Morisada_ImmuneVariables{1, i}.Properties.VariableNames(2:end));
+   [indx2, varindx2] = ismember(name,Morisada_ImmuneVariables{1, i+length(Morisada_ImmuneName)}.Properties.VariableNames(2:end));
+
+    indx1 = find(indx1);
+    indx2 = find(indx2);
+   for j=1:length(indx1)
+       simBioData(indx1(j)).dataValue(:,i) = Morisada_ImmuneVariables{1,i}{:,1+indx1(j)};
+       simBioData(indx2(j)).dataValue(:,i) = Morisada_ImmuneVariables{1,...
+           i+length(Morisada_ImmuneName)}{:,1+indx1(j)};
+
+   end
+
+end
+group = cellfun(@(x) x(1:regexp(x,'_\d*$')-1),{simBioData.Name},'UniformOutput', false)';
+empty_indx = cellfun(@(x) isempty(x), group, 'UniformOutput', true);
+group(empty_indx) = name(empty_indx);
+
+[simBioData(1:end).Group]=group{:,:};
+%% Transform variables
+percVar = {'CD8' 'Tumor_Tregs' 'Tumor_gMDSC' 'CD11c_DC' 'Tumor_mMDSC' 'M1_MO' 'M2_MO'};
+normVar = {'CD107a' 'Tumor_PDL1' 'Myeloid_PDL1' 'CTLA4'};
+percVar_indx = ismember(Morisada_ImmuneName, percVar);
+normVar_indx = ismember(Morisada_ImmuneName, normVar);
+for i = 1:length(simBioData)
+    simBioData(i).dataValue(:, percVar_indx) = simBioData(i).dataValue(:, percVar_indx)/1e4*1e2;
+    simBioData(i).dataValue(:, normVar_indx) = simBioData(i).dataValue(:, normVar_indx)./...
+        simBioData(i).dataValue(end,normVar_indx);
+
+end
+
+%% Adding a column for necessary variables
+CD107a = nan(length(Morisada_ImmuneTime),1);
+for i=1:length(simBioData)
+    simBioData(i).dataValue(:,end+1) = CD107a;
+end
+%% Plotting results
+ncol = 3;
+nrow = 2;
+groupNames =unique({simBioData(1:end).Group}, 'stable');
+for i=1:length(Morisada_ImmuneName)
+    
+    figure
+    for j=1:6
+    subplot(nrow,ncol,j)
+    hold on
+    data_indx = ismember({simBioData(:).Group}, groupNames(j));
+    data_i = simBioData(data_indx);
+    arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i)), data_i)
+    title(groupNames{j},'interpreter', 'none')
+    legend(Morisada_ImmuneName(i),'interpreter', 'none')
+    end
+end
+%% Merge with tumor volume data
+load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Tumor_Morisada.mat')
+
+for i=1:length(PI.data)
+    originIndx= ismember({simBioData(:).Name}, PI.data(i).Name);
+    if all(~originIndx)
+        data_i = [PI.data(i).dataValue nan(length(PI.data(i).dataTime), length(Morisada_ImmuneName)+1)];
+        PI.data(i).dataValue = data_i;
+        continue
+    else
+    time_i = unique([PI.data(i).dataTime;simBioData(originIndx).dataTime']);
+    data_i = nan(length(time_i), 1+size(simBioData(originIndx).dataValue,2));
+    tumor_indx = ismember(time_i, PI.data(i).dataTime);
+    immune_indx = ismember(time_i, simBioData(originIndx).dataTime);
+    
+    data_i(tumor_indx,1) = PI.data(i).dataValue;
+    data_i(immune_indx,2:end) = simBioData(originIndx).dataValue;
+    PI.data(i).dataValue = data_i;
+    PI.data(i).dataTime = time_i;
+    end
+end
+%%
+PI.stateVar = {'Tumor' 'CD8' 'CD107a_Rel' 'Treg' 'GMDSC' 'DC' 'Tumor_PDL1_Rel'...
+    'Myeloid_PDL1_Rel' 'MMDSC' 'M1_MO' 'M2_MO' 'CTLA4_Rel' 'CD107a'};
+
+%% Save output
+save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Morisada.mat', 'PI')

@@ -10,18 +10,19 @@ w0=X0(I(1:N),:);
 
 h.IndividualParams=[];
 tic
-[x, p_x,accept,pCR] = dream(w0,likelihood_fun,prior_fun,...
-    size(w0,1),ceil(2e6/size(w0,1)), length(finalValues), 'BurnIn', ...
-    4e5,'StepSize',2.38,'H', h);
+[x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun,...
+    size(w0,1),ceil(1.5e6/size(w0,1)), length(finalValues), 'BurnIn', ...
+    2e5,'StepSize',2.38,'H', h);
 toc
 
-
+x = cat(3, x, x2);
+p_x = [p_x; p_x2];
 %% Diagnostics
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
 %% Plotting results
 delta = 1.5e3;
-burnIn=4e5;
+burnIn=2e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
@@ -65,5 +66,5 @@ plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
 save(strjoin({cd '/CIM_red3_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/CIM_red3_DREAM_MCMC_p_x.mat'},''), 'p_x')
 
-load(strjoin({cd '/ICB1_DREAM_MCMC_x.mat'},''))
-load(strjoin({cd '/ICB1_DREAM_MCMC_p_x.mat'},''))
+load(strjoin({cd '/CIM_red6_DREAM_MCMC_x2.mat'},''))
+load(strjoin({cd '/CIM_red6_DREAM_MCMC_p_x.mat'},''))

@@ -31,20 +31,22 @@ pk_postSamples = PI_PK.PI.postSamples(pk_row_indx,pk_col_indx);
 cim_postSamples = PI_CIM.PI.postSamples(cim_row_indx,cim_col_indx);
 icb_postSamples = PI_ICB.PI.postSamples(icb_row_indx,icb_col_indx);
 
+sigmaSamples = [PI_ICB.PI.postSamples(cim_row_indx, PI_ICB.PI.H.SigmaParams(4)) PI_CIM.PI.postSamples(cim_row_indx, PI_CIM.PI.H.SigmaParams(4))];
 postSamples = [pk_postSamples cim_postSamples icb_postSamples];
 pop_indx = [3 4 7:9 13:16];
 var_indx = [5 6 17 18 19];
 eta_indx = [1 2 10 11 12];
 
 theta = repmat(postSamples(:,[pop_indx eta_indx]), N_indiv,1);
+sigma = exp(repmat(sigmaSamples,N_indiv,1));
 
 delta = theta(:,13)-mean(theta(:,13));
 kpro_Tumor_human = log(0.0072);
 theta(:,13) = kpro_Tumor_human+delta;
 z = randn(N_indiv*N_pop,length(eta_indx)).*exp(postSamples(var_indx));
 theta(:,eta_indx)= theta(:,eta_indx)+z;
-plotBivariateMarginals_2(exp(theta),...
-     'names',par([pop_indx eta_indx]),'interpreter', 'tex')
+% plotBivariateMarginals_2(exp(theta),...
+%      'names',par([pop_indx eta_indx]),'interpreter', 'tex')
 %% Adjust for human differences
 Theta1 = exp(theta);
 Theta2 = exp(theta);
@@ -262,20 +264,39 @@ end
 %% Plot posterior predictions (Killing rate scaling exponent: -1/4]
 response2 = table({'PD'; 'SD'; 'PR'; 'CR'},zeros(4,1),zeros(4,1),zeros(4,1),zeros(4,1),...
     'VariableNames', {'Response' 'Control' 'antiPDL1' 'antiCTLA4' 'antiPDL1_antiCTLA4'});
-
+lineStyle = {'-' '-.' '--' ':'};
+response2_pred = response2;
 % Calculate SLD and response %
 for i=1:4
     PI2.output(i).SLD = ((PI2.output(i).TV./(Theta1(:,end)*0.00153)).^(1/3))*100-100;
-    pd = (any(PI2.output(i).SLD>20,2));
+    PI2.output(i).TV_sigma = exp(log(PI2.output(i).TV)+randn(N_indiv*N_pop,...
+        size(PI2.output(i).TV,2)).*sigma(:,1));
+    PI2.output(i).CD8_sigma = exp(log(PI2.output(i).CD8)+randn(N_indiv*N_pop,...
+        size(PI2.output(i).CD8,2)).*sigma(:,2));
+    PI2.output(i).SLD_sigma = ((PI2.output(i).TV_sigma./(Theta1(:,end)*0.00153)).^(1/3))*100-100;
+    
+    pd = and(any(PI2.output(i).SLD>20,2),...
+        any(PI2.output(i).TV/(4/3*pi).^(1/3)...
+        -(PI2.output(i).TV(:,1)/(4/3*pi)).^(1/3)>0.5,2));
+    
     pr = and((and(any(PI2.output(i).SLD<=-30,2), ~any(PI2.output(i).SLD<-99,2))),~pd);
     cr = and((any(PI2.output(i).SLD<-99,2)),~pd);
     sd = and(and(~pd,~pr), ~cr);
     response2{1:4,i+1} = [mean(pd); mean(sd); mean(pr); mean(cr)];
+
+    pd_sigma = (any(PI2.output(i).SLD_sigma>20,2));
+    pr_sigma = and((and(any(PI2.output(i).SLD_sigma<=-30,2), ~any(PI2.output(i).SLD_sigma<-99,2))),~pd);
+    cr_sigma = and((any(PI2.output(i).SLD_sigma<-99,2)),~pd);
+    sd_sigma = and(and(~pd_sigma,~pr_sigma), ~cr_sigma);
+    response2_pred{1:4,i+1} = [mean(pd_sigma); mean(sd_sigma); mean(pr_sigma); mean(cr_sigma)];
+    
     colors_i(pd,:) = repmat(colors(1,:),sum(pd),1);
     colors_i(sd,:) = repmat(colors(2,:),sum(sd),1);
     colors_i(pr,:) = repmat(colors(3,:),sum(pr),1);
     colors_i(cr,:) = repmat(colors(4,:),sum(cr),1);
     PI2.output(i).Response = [pd sd pr cr];
+    PI2.output(i).Response_sigma = [pd_sigma sd_sigma pr_sigma cr_sigma];
+
     PI2.output(i).colors = colors_i;
 end
 % Plot SLD
@@ -301,42 +322,75 @@ ylabel('Change in tumor diameter wrt baseline')
 title (strjoin({'Tumor response in virtual patients (' groups{i} ')'},''))
 end
 % Plot mean SLD
-figure
+figure('Renderer', 'painters', 'Position', [10 10 800 700])
 for i =1:4
    subplot(2,2,i)
    hold on
    for j=1:4
        mean_ij=mean(PI2.output(i).SLD(PI2.output(i).Response(:,j),:),'omitnan');
-       std_ij = std(PI2.output(i).SLD(PI2.output(i).Response(:,j),:),'omitnan');
-    h=errorbar(PI2.tspan/7, mean_ij,std_ij);
+       ci_ub = quantile(PI2.output(i).SLD(PI2.output(i).Response(:,j),:),.975);
+       ci_lb = quantile(PI2.output(i).SLD(PI2.output(i).Response(:,j),:),.025);
+       
+       pi_ub = quantile(PI2.output(i).SLD_sigma(PI2.output(i).Response(:,j),:),.975);
+       pi_lb = quantile(PI2.output(i).SLD_sigma(PI2.output(i).Response(:,j),:),.025);
+       
+    h=plot(PI2.tspan/7, mean_ij);
+    ci_plot = patch('XData', [PI2.tspan/7 PI2.tspan(end:-1:1)/7], 'YData', [ci_ub ci_lb(end:-1:1)]);
+    pi_plot = patch('XData', [PI2.tspan/7 PI2.tspan(end:-1:1)/7], 'YData', [pi_ub pi_lb(end:-1:1)]);
     h.Color = colors(j,:);
+    h.LineWidth = 2;
+    ci_plot.FaceColor = colors(j,:);
+    ci_plot.LineStyle = lineStyle{j};
+    ci_plot.EdgeColor = colors(j,:);
+    ci_plot.FaceAlpha = 0.2;
+    
+    pi_plot.LineStyle = 'none';
+    pi_plot.FaceColor = colors(j,:);
+    pi_plot.FaceAlpha = 0.01;
    end
-   legend({'PD'; 'SD'; 'PR'; 'CR'})
+   ax = gca;
+   legend(ax.Children(end:-3:1),{'PD'; 'SD'; 'PR'; 'CR'})
 
- %set(gca, 'YSCale', 'linear','YLim', [-100 100])
+ set(gca, 'YSCale', 'linear','YLim', [-100 100])
  xlabel('Time [weeks]')
 ylabel('Change in tumor diameter wrt baseline')
-title (strjoin({'Mean tumor response in virtual patients (' groups{i} ')'},''))
+title (strjoin({'Mean tumor response in virtual patients (' groups{i} ')'},''),'interpreter', 'none')
 
 end
 
 % Mean CD8
-figure
+figure('Renderer', 'painters', 'Position', [10 10 800 700])
 for i=1:4
 subplot(2,2,i)
 hold on
  for j=1:4
-       mean_ij=mean(PI2.output(i).CD8(PI2.output(i).Response(:,j),:),'omitnan');
-       std_ij = std(PI2.output(i).CD8(PI2.output(i).Response(:,j),:),'omitnan');
-    h=errorbar(PI2.tspan/7, mean_ij,std_ij);
+        mean_ij=mean(PI2.output(i).CD8(PI2.output(i).Response(:,j),:),'omitnan');
+       ci_ub = quantile(PI2.output(i).CD8(PI2.output(i).Response(:,j),:),.975);
+       ci_lb = quantile(PI2.output(i).CD8(PI2.output(i).Response(:,j),:),.025);
+       
+       pi_ub = quantile(PI2.output(i).CD8_sigma(PI2.output(i).Response(:,j),:),.975);
+       pi_lb = quantile(PI2.output(i).CD8_sigma(PI2.output(i).Response(:,j),:),.025);
+       
+    h=plot(PI2.tspan/7, mean_ij);
+    ci_plot = patch('XData', [PI2.tspan/7 PI2.tspan(end:-1:1)/7], 'YData', [ci_ub ci_lb(end:-1:1)]);
+    pi_plot = patch('XData', [PI2.tspan/7 PI2.tspan(end:-1:1)/7], 'YData', [pi_ub pi_lb(end:-1:1)]);
     h.Color = colors(j,:);
- end
-   legend({'PD'; 'SD'; 'PR'; 'CR'})
-
+    h.LineWidth = 2;
+    ci_plot.FaceColor = colors(j,:);
+    ci_plot.LineStyle = lineStyle{j};
+    ci_plot.EdgeColor = colors(j,:);
+    ci_plot.FaceAlpha = 0.2;
+    
+    pi_plot.LineStyle = 'none';
+    pi_plot.FaceColor = colors(j,:);
+    pi_plot.FaceAlpha = 0.01;
+end
+     ax = gca;
+   legend(ax.Children(end:-3:1),{'PD'; 'SD'; 'PR'; 'CR'},'FontSize', 10)
 xlabel('Time [weeks]')
 ylabel('Percentage [%]')
 title (strjoin({'CD8+ T-cell response in virtual patients (' groups{i} ')'},''))
-
+ylim([0 5])
 end
 
 % Mean antiPDL1
@@ -387,16 +441,17 @@ plotSurvival(T,censor,Theta1,groups)
 subplot(1,2,1)
 plotSurvivalFunction(PI1,181,groups)
 title('Progresson-free survival at 6 months (kill_{CD8} \propto M^{0})')
+
 [PI2, response2] = getPFS(PI2, groups, 181);
 [PI2,T2, censor2] = getSurvivalTime(PI2, 181, groups, Theta2);
 plotSurvival(T2,censor2,Theta2,groups)
 subplot(1,2,2)
 plotSurvivalFunction(PI2,181,groups)
-title('Progresson-free survival at 6 months (kill_{CD8} \propto M^{-0.25})')
+title('Progresson-free survival at 6 months (kill_{CD8} \propto M^{-0.25})', 'FontSize', 14)
 
 %% Analysing parameter-output relations
 corrInOut = plotInputToOutput(Theta1, {'SLD'}, PI1, groups, parameters);
-corrInOut2 = plotInputToOutput(Theta2, {'SLD'}, PI2, groups, parameters);
+corrInOut2 = plotInputToOutput(PI2.Theta, {'SLD'}, PI2, groups, parameters,'plotOutput', true);
 
 %%
 PI1.Theta = Theta1;
@@ -407,3 +462,5 @@ PI2.parameters = parameters;
 
 save(strjoin({cd '/CIM/HuSim/PI1.mat'},''),'PI1')
 save(strjoin({cd '/CIM/HuSim/PI2.mat'},''),'PI2')
+
+load(strjoin({cd '/CIM/HuSim/PI2.mat'},''))

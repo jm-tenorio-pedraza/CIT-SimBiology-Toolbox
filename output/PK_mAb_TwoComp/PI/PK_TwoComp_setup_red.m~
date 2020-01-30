@@ -28,7 +28,7 @@ dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbo
     '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Contreras_2016.xlsx'};
 
 [PI,PI.u]=getDataSets(dataset_file_ext, 'subsetVariables', {'Blood_antiPDL1__ID_g_'...
-    'Tumor_antiPDL1__ID_g_' 'Tumor_antiPDL1_free__ID_g_' 'Tumor_to_Blood__' });
+    'Tumor_antiPDL1__ID_g_' 'Tumor_to_Blood__' 'Tumor_antiPDL1_free__ID_g_'});
 PI.variableUnits={'%ID/g'  '%ID/g' '[]' '%ID/g'};
 PI.observablesPlot = {'ID_g_Blood' 'ID_g_Tumor' 'T2B' 'ID_g_Tumor_free'};
 
