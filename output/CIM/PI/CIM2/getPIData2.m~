@@ -42,7 +42,8 @@ for i=1:length(unique_groups)                                               % Fo
     data_i = data_subset(group_i);
     time_i = dataTime(group_i);
 %     sd_i = SD(group_i);
-    time = unique(cell2mat(time_i));          % Count how many time-resolved data points there are for each individual
+    time = cellfun(@(x) length(x),time_i, 'UniformOutput',true);            % Count how many time-resolved data points there are for each individual
+    time = time_i{max(time)==time};                                         % Select the largest time end point
     mean_i_responders = NaN(length(time),length(observables));               % create NaN matrix with K rows and M columns for non-responders and responders
     sd_i_responders = NaN(length(time),length(observables));               % create NaN matrix with K rows and M columns for non-responders and responders
 
@@ -56,8 +57,9 @@ for i=1:length(unique_groups)                                               % Fo
         mat_j = NaN(length(time),n_indiv);                        % NaN mat with K rows and N columns (one for each individual)
         
         for k=1:n_indiv                                          % For each individual do:
-            time_indx_k = ismember(time, time_i{k});
-            mat_j(time_indx_k,k) = datavar_j{:,k};                                % assing the observed values in the first t_k rows of the kth column
+            time_indx_k
+            t_k = length(datavar_j{:,k});                                   % determine the number of observed time points for the kth individual
+            mat_j(1:t_k,k) = datavar_j{:,k};                                % assing the observed values in the first t_k rows of the kth column
             if j==1                                                         % For the 1st variable (i.e., tumor volume) check:
                 if k==1
                     phenotype_i = repelem({'nan'}, n_indiv,1);

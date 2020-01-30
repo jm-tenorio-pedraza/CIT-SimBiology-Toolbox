@@ -1,6 +1,8 @@
 function [PI,doses] = getDataSets(dataset_file_ext,varargin)
 p = inputParser;
 p.addParameter('zeroAction','omit');
+p.addParameter('subsetVariables',{});
+
 p.parse(varargin{:});
 p=p.Results;
 
@@ -23,9 +25,9 @@ meanIndx = cellfun(@(x) cellfun(@(y)strcmp(y(1:2),'SD'),...
 
 % meanIndx = cat(2,meanIndx{:,:});
 
-nVar = length(varNames);                                                  % Set the number of columns that the common dataset will have
+nVar = length(varNames);                                                    % Set the number of columns that the common dataset will have
 dataValue = cellfun(@(x)nan(size(x,1),nVar),data,'UniformOutput',false);    % Allocate space for each data matrix corresponding to each dataset
-SD = cellfun(@(x)nan(size(x,1),nVar),data,'UniformOutput',false);    % Allocate space for each data matrix corresponding to each dataset
+SD = cellfun(@(x)nan(size(x,1),nVar),data,'UniformOutput',false);           % Allocate space for each data matrix corresponding to each dataset
 
 PI = [];                                                                    % Create PI structure
 [PI.data(1:length(groups)).Name] = names{:,:};                                 % Add one group entry to the PI structure for each considered condition in each dataset
@@ -71,6 +73,17 @@ end
 [PI.data(1:end).doses] = doses{:,:};
 
 PI.stateVar = varNames;
+
+%% Subset variables
+if ~isempty(p.subsetVariables)
+    var_indx = ismember(varNames, p.subsetVariables);
+    var_indx = find(var_indx);
+    data = cellfun(@(x) x(:,var_indx),{PI.data(:).dataValue}, 'UniformOutput', false);
+    [PI.data(1:end).dataValue] = data{:,:}; 
+    SD = cellfun(@(x) x(:,var_indx),{PI.data(:).SD}, 'UniformOutput', false);
+    [PI.data(1:end).SD] = SD{:,:};
+end
+
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},'UniformOutput',true));
 PI.data = PI.data';
 PI.tspan = unique(cat(1,PI.data(:).dataTime));

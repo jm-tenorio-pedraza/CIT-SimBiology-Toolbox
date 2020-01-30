@@ -55,7 +55,7 @@ tic
     'm', 1e4,'StepSize',2.38^2,'MinFunc', 'fminsearch','OutputFn',...
     @(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(x),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H));
-toc1
+toc
 PI.AIC = 2*length(PI.par)-2*obj_fun(finalValues)*(-1);
 
 %% Simulation output

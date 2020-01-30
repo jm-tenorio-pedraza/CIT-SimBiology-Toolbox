@@ -70,6 +70,7 @@ for t = 2:T
     std_X = std(X);                                         % Compute std each dimension
     id = randsample(1:n_CR, N, true, pCR);                  % Select index of crossover value
     % Compute ith proposal for the individual parameters
+    tic
     for i=1:N
         a = R(i, draw(1:D(t,i), i));                        % Calculate step size and update only those columns in A
         b = R(i, draw(D(t,i)+1:2*D(t,i),i));                % Extract vectors a and b whose entries are indexes not equal to i 
@@ -97,6 +98,7 @@ for t = 2:T
         J(id(i)) = J(id(i)) + sum((dX(i,:)./std_X).^2);              % Update jump distance crossover idx
         n_id(id(i)) = n_id(id(i)) + 1;
     end
+    toc
     totcount = N*(t);
     accept = sum(accept_pop)/totcount;
     

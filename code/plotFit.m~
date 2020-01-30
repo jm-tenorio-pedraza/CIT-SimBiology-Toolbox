@@ -23,13 +23,12 @@ end
 rx = ((xl):((xu-xl)/1e3):(xu));
 plot(rx,rx,'k')
 colors = linspecer(2);
-plot(rx,rx*2,'-', 'Color', colors(1,:),'LineWidth', 2)
-plot(rx,rx*0.5, '-', 'Color', colors(1,:),'LineWidth', 2)
-plot(rx,rx*10,'--', 'Color', colors(2,:),'LineWidth', 2)
-plot(rx,rx*.1,'--', 'Color', colors(2,:),'LineWidth', 2)
-% plot(rx,rx*1.2,'-', 'Color', colors(2,:),'LineWidth', 2)
-% plot(rx,rx*0.8, '-', 'Color', colors(2,:),'LineWidth', 2)
-
+ plot(rx,rx*10,'-', 'Color', colors(1,:),'LineWidth', 2)
+plot(rx,rx*.1,'-', 'Color', colors(1,:),'LineWidth', 2)
+plot(rx,rx*1.2,'-', 'Color', colors(2,:),'LineWidth', 2)
+plot(rx,rx*0.8, '-', 'Color', colors(2,:),'LineWidth', 2)
+plot(rx,rx*2,'-r', 'Color', colors(3,:),'LineWidth', 2)
+plot(rx,rx*0.5, '-r', 'Color', colors(3,:),'LineWidth', 2)
 set(gca,'XScale', 'log', 'YScale', 'log')
 xlabel('Data')
 ylabel('Fitted value')
