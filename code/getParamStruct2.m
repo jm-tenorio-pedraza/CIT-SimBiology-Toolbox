@@ -20,8 +20,10 @@ try
 param_cell=cellfun(@(x)simFun.Parameters.Value(ismember(simFun.Parameters.Name,x)),...
     cell_indx,'UniformOutput',false);                                      % Compare names of parameters and extract the corresponding value
 param_cell=reshape(repelem(cell2mat(param_cell),1,length(H.CellParams(1).Index))',[],1);
+n_cell = length(param_cell);
 catch
     param_cell =[];
+    n_cell = 0;
 end
 
 % Individual params
@@ -30,7 +32,9 @@ try
 param_indiv=cellfun(@(x)simFun.Parameters.Value(ismember(simFun.Parameters.Name,x)),...
     indiv_indx,'UniformOutput',false);                                      % Compare names of parameters and extract the corresponding value
 param_indiv=reshape(repelem(cell2mat(param_indiv),1,n_sim)',[],1);
+n_indiv = length(param_indiv);
 catch
+    n_indiv = 0;
     param_indiv =[];
 end
 % Population params
@@ -45,15 +49,15 @@ param = [simFun.Parameters.Value(H.PopulationParams)];       %
 if ~isempty(inputs.LB)
         % Min                                   Max                                 Start                       % Mu           
 p=[ inputs.LB                             inputs.UB                          param                       param 
-    10.^(floor(log10(param_cell*1e-1)))   10.^(ceil(log10(param_cell*10)))   ones(size(param_cell))      ones(size(param_cell))
-    10.^(floor(log10(param_indiv*1e-1)))  10.^(ceil(log10(param_indiv*10)))  ones(size(param_indiv))     ones(size(param_indiv))     
+    ones(size(param_cell))*1e-3           ones(size(param_cell))*1e2         ones(size(param_cell))      ones(size(param_cell))
+    ones(size(param_indiv))*1e-3          ones(size(param_indiv))*1e2          ones(size(param_indiv))     ones(size(param_indiv))     
     sigmaParams*0.1                       sigmaParams*1000                   inputs.startSigma           sigmaParams];
 
 else
     % Min                                   Max                                 Start                       % Mu           
 p=[ 10.^(floor(log10(ref*1e-6)))          10.^(ceil(log10(ref*1e6)))         param                       param 
-    10.^(floor(log10(param_cell*1e-1)))   10.^(ceil(log10(param_cell*10)))   ones(size(param_cell))      ones(size(param_cell))
-    10.^(floor(log10(param_indiv*1e-1)))  10.^(ceil(log10(param_indiv*10)))  ones(size(param_indiv))     ones(size(param_indiv))     
+    ones(size(param_cell))*1e-3           ones(size(param_cell))*1e2         ones(size(param_cell))      ones(size(param_cell))
+    ones(size(param_indiv))*1e-3          ones(size(param_indiv))*1e2        ones(size(param_indiv))     ones(size(param_indiv))     
     sigmaParams*0.1                       sigmaParams*1000                   inputs.startSigma           sigmaParams];
 end
 if length(inputs.Sigma)<2

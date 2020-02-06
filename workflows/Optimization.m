@@ -9,40 +9,32 @@ options = optimoptions('simulannealbnd','PlotFcns',...
           {@saplotbestx,@saplotbestf,@saplotx,@saplotf},'InitialTemperature', 100, 'MaxFunctionEvaluations', 1e4);
 delta = 1;
 
-%% Local optimisation
-
-ub = log([PI.par([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index]).maxValue]);
-lb = log([PI.par([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index]).minValue]);
-[phat, ~] = lsqnonlin(residuals_fn,(finalValues([PI.H.PopulationParams...
-    PI.H.CellParams.Index PI.H.IndividualParams.Index])), lb,ub, options_fminsearch);
-
-finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index])=phat;
- finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)log(std(finalValues(x.Index))), PI.H.IndividualParams);
-% finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)log(std(finalValues(x.Index))), PI.H.CellParams);
 
 %% Global optimisation
+
 while delta >1e-4
-% Nelder-Mead
-[finalValues, fval_fminsearch]=fminsearch(obj_fun,p_hat,options_fminsearch);
 
+% Population parameter optimization
+obj_fun_pop = @(x)obj_fun([x finalValues([PI.H.CellParams.Index PI.H.IndividualParams.Index...
+    PI.H.SigmaParams])]);
 % Simulated annealing
-[p_hat, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
+[p_hat_pop, ~]=anneal(obj_fun_pop,finalValues([PI.H.PopulationParams]),options_anneal);
+% Nelder-Mead
+[p_hat_pop, ~]=fminsearch(obj_fun_pop,p_hat_pop,options_fminsearch);
 
-% Local optimization
-% Residuals 
-residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
-    @(x)getPhi2(x,PI.H,length(PI.u),'initialvalue',PI.x_0),exp(p_hat(setdiff([PI.H.SigmaParams],...
-    [PI.H.CellParams(:).OmegaIndex PI.H.IndividualParams(:).OmegaIndex]))),PI.normIndx);
+finalValues([PI.H.PopulationParams]) = p_hat_pop;
 
-[phat, ~] = lsqnonlin(residuals_fn,(p_hat([PI.H.PopulationParams...
-    PI.H.CellParams.Index PI.H.IndividualParams.Index])), lb,ub, options_fminsearch);
- finalValues=p_hat;
+% Individual Parameter optimization
+obj_fun_indiv = @(x)obj_fun([finalValues([PI.H.PopulationParams]) x finalValues([PI.H.SigmaParams])]);
+% Simulated annealing
+[p_hat_indiv, fval_anneal]=anneal(obj_fun_indiv,finalValues([PI.H.CellParams.Index...
+    PI.H.IndividualParams.Index]),options_anneal);
+% Nelder-Mead
+[p_hat_indiv, fval_fminsearch]=fminsearch(obj_fun_indiv,p_hat_indiv,options_fminsearch);
 
-finalValues([PI.H.IndividualParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.IndividualParams);
-finalValues([PI.H.CellParams.OmegaIndex]) = arrayfun(@(x)std(finalValues(x.Index)), PI.H.CellParams);
+finalValues([PI.H.CellParams.Index PI.H.IndividualParams.Index]) = p_hat_indiv;
 
-% % [finalValues, fval_fminunc] = fminunc(obj_fun,finalValues,options_fminsearch);
-% fval_fminunc = obj_fun(finalValues);
+[finalValues, fval_anneal]=anneal(obj_fun, finalValues, options_anneal);
 delta = abs(fval_anneal - fval_fminsearch);
 end
 
@@ -52,7 +44,7 @@ residuals_fx = @(x,sigma) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.ts
     sigma,PI.normIndx);
 tic
 [finalValues, logL] = saem(finalValues, residuals_fx,likelihood_fun, prior_fun, PI.H, PI,...
-    'm', 1e4,'StepSize',2.38^2,'MinFunc', 'fminsearch','OutputFn',...
+    'm', 2e3,'StepSize',2.38^2,'MinFunc', 'fminsearch','OutputFn',...
     @(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(x),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H));
 toc
