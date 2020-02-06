@@ -11,8 +11,8 @@ w0=X0(I(1:N),:);
 h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dream(w0,likelihood_fun,prior_fun,...
-    size(w0,1),ceil(2e6/size(w0,1)), length(finalValues), 'BurnIn', ...
-    4e5,'StepSize',2.38,'H', h);
+    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', ...
+    2e5,'StepSize',2.38,'H', h);
 toc
 
 
@@ -26,8 +26,8 @@ toc
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
 %% Plotting results
-delta = 1.5e3;
-burnIn=4e5;
+delta = 700;
+burnIn=2e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
@@ -60,7 +60,7 @@ simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
 tic
 PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesPlot);
 toc
-PI=getCredibleIntervals(PI,PI.observablesPlot, exp(postSamples),PI.H, 'logit_indx', 2:6);
+PI=getCredibleIntervals(PI,PI.observablesPlot, exp(postSamples),PI.H, 'logit_indx', []);
 plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
 
 %% Posterior credible intervals
