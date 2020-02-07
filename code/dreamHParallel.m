@@ -110,6 +110,7 @@ for t = 2:T
     
     Xp(:,param_index) = Xp(:,param_index)...
         + dX(:,param_index);                                    % Compute ith proposal for the individual parameters
+%     tic
     parfor k=1:N
         [X(k,:), p_X(k,1), accept_i]= mcmcstep(X(k,:),...
             Xp(k,:), p_X(k,1), likelihood, prior,...
@@ -120,7 +121,7 @@ for t = 2:T
             dX(k,param_index) = 0;                              % Set jump back to 0 for pCR for population parameters
         end
     end
-    
+%     toc
     totcount = N*(t);
    
     if ~isempty(H.IndividualParams)

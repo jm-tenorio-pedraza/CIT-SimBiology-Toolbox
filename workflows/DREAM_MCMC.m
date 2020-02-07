@@ -11,18 +11,19 @@ w0=X0(I(1:N),:);
 h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun,...
-    size(w0,1),ceil(1.5e6/size(w0,1)), length(finalValues), 'BurnIn', ...
-    2e5,'StepSize',2.38,'H', h);
+    size(w0,1),ceil(2e6/size(w0,1)), length(finalValues), 'BurnIn', ...
+    4e5,'StepSize',2.38,'H', h);
 toc
-
-x = cat(3, x, x2);
-p_x = [p_x; p_x2];
 %% Diagnostics
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
+plotMCMCDiagnostics(x([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
+    p_x,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
+    'model', PI.model, 'interpreter', 'tex');
+
 %% Plotting results
 delta = 1.5e3;
-burnIn=2e5;
+burnIn=4e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
@@ -55,7 +56,7 @@ simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
 tic
 PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesPlot);
 toc
-PI=getCredibleIntervals(PI,PI.observablesPlot, exp(postSamples),PI.H, 'logit_indx', 2:6);
+PI=getCredibleIntervals(PI,PI.observablesPlot, exp(postSamples),PI.H, 'logit_indx', []);
 plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
 
 %% Posterior credible intervals
@@ -63,8 +64,8 @@ plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
  plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
  PI.postSamples = postSamples;
 %% Save results
-save(strjoin({cd '/CIM_red3_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/CIM_red3_DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/CIM_red2_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/CIM_red2_DREAM_MCMC_p_x.mat'},''), 'p_x')
 
 load(strjoin({cd '/CIM_red6_DREAM_MCMC_x2.mat'},''))
 load(strjoin({cd '/CIM_red6_DREAM_MCMC_p_x.mat'},''))

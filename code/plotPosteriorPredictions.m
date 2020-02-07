@@ -40,16 +40,18 @@ for i=1:length(outputs)
         else
             if all(isnan( PI.data(j).dataValue(:,i)))
                 continue
+            else
+                  pi_data=[PI.CI(j).(output_i){'Pred_UB',:}, PI.CI(j).(output_i){'Pred_LB',:}(end:-1:1)];
+            pi_nan=or(isnan(pi_data), pi_data==0);
+                        
+             % Plotting prediction interval
+             pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
+       
             end
         end
         hold on
         
-        pi_data=[PI.CI(j).(output_i){'Pred_UB',:}, PI.CI(j).(output_i){'Pred_LB',:}(end:-1:1)];
-            pi_nan=or(isnan(pi_data), pi_data==0);
-                        
-             % Plotting prediction interval
-%             pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
-        % Plotting credible interval
+       % Plotting credible interval
         ci=patch('XData', simTime(~ci_nan),'YData',ci_data(~ci_nan));
 
         % Plotting simulation median
@@ -118,7 +120,7 @@ for i=1:length(outputs)
     if strcmp(p.outputs,'indiv')
     else
         title(output_i,'interpreter', 'none')
-        legend(ax.Children(end:-4:3),[PI.data(:).Group],'Interpreter', 'none')
+        legend(ax.Children(end:-4:3),[PI.data(:).Name],'Interpreter', 'none')
     end
 
 end

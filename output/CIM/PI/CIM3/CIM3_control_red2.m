@@ -49,9 +49,10 @@ PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [
     'Relative units []' 'Relative units []'};
 PI.normIndx = 7:8;
 PI.model = 'CIM Control';
-PI.observablesPlot={'Tumor volume' 'CD8+ T-cells' 'CD107a+CD8+ T-cells' 'Treg' 'DCm'...
+PI.observablesPlot={'TV' 'CD8' 'CD107aCD8' 'Treg' 'DCm'...
     'MDSC' 'PDL1_T' 'PDL1_I'};
-
+simulationNames = {'MC38 (Morisada 2017)'; 'MOC1 (Morisada 2017)'; 'MOC1 (Clavijo, 2017)'; 'MOC2 (Clavijo, 2017)'};
+[PI.data(:).Name] = simulationNames{:,:};
 % Get initial values
 [PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
     initialStruct);
