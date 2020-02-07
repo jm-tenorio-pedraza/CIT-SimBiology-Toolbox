@@ -54,7 +54,7 @@ PI.observablesPlot={'TV' };
 %% Optimization setup
 % Hierarchical structure
 cell_indx = [4];
-indiv_indx = [3];
+indiv_indx = [2];
 
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', indiv_indx, 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
