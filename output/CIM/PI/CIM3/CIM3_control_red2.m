@@ -135,7 +135,7 @@ table({PI.H.CellParams(cell_indx).name}', w)
 
 %% Save results
 save('PI_CIM3_red2.mat', 'PI')
-load(strjoin({cd 'PI_CIM_Control_3_full.mat'},'/'),'PI')
+load(strjoin({cd 'PI_CIM3_red2.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))

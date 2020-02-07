@@ -103,7 +103,9 @@ toc
 
 %% Save results
 save('PI_PK_red.mat', 'PI')
-load(strjoin({cd 'PI_PK_CE.mat'},'/'))
-save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/Kuznetsov/parameters_hat.mat','parameters_hat')
-load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
-load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
+load(strjoin({cd 'PI_PK_red.mat'},'/'))
+
+save(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/PK_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
+load(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/PK_red_DREAM_MCMC_p_x.mat'},''))
