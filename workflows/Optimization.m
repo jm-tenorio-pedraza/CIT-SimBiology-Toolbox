@@ -35,6 +35,8 @@ obj_fun_indiv = @(x)obj_fun([finalValues([PI.H.PopulationParams]) x finalValues(
 finalValues([PI.H.CellParams.Index PI.H.IndividualParams.Index]) = p_hat_indiv;
 
 [finalValues, fval_anneal]=anneal(obj_fun, finalValues, options_anneal);
+[finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
+
 delta = abs(fval_anneal - fval_fminsearch);
 end
 

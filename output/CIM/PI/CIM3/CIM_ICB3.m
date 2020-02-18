@@ -54,7 +54,7 @@ PI.observablesPlot={'TV' };
 %% Optimization setup
 % Hierarchical structure
 cell_indx = [3 4];
-indiv_indx = [1];
+indiv_indx = [7];
 
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', indiv_indx, 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
@@ -94,7 +94,7 @@ table({PI.H.CellParams(cell_indx).name}', w)
 
 
 %% Save results
-save('PI_CIM3_red2.mat', 'PI')
+save('PI_CIM3_ICB_3.mat', 'PI')
 load(strjoin({cd 'PI_CIM_Control_3_full.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
