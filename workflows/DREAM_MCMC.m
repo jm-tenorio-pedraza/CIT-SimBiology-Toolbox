@@ -10,10 +10,18 @@ w0=X0(I(1:N),:);
 
 h.IndividualParams=[];
 tic
-[x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun,...
+[x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun_MCMC,...
     size(w0,1),ceil(2e6/size(w0,1)), length(finalValues), 'BurnIn', ...
     4e5,'StepSize',2.38,'H', h);
 toc
+
+tic
+[x2, p_x2,accept2,pCR2] = dreamHParallel(x(:,:,end)',likelihood_fun,prior_fun_MCMC,...
+    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', ...
+    2e5,'StepSize',2.38,'H', h);
+toc
+x=cat(3,x,x2);
+p_x = [p_x; p_x2];
 %% Diagnostics
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
@@ -22,7 +30,7 @@ plotMCMCDiagnostics(x([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 1.5e3;
+delta = 3.5e3;
 burnIn=4e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
@@ -30,8 +38,6 @@ indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
 postSamples =x(:,w_indx(1:end),indx);
 logP_thinned = p_x(indx,w_indx(1:end));
-plotMCMCDiagnostics(postSamples,logP_thinned,'name',...
-    paramNames,'model', PI.model,'interpreter','tex');
 
 plotMCMCDiagnostics(postSamples([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
     logP_thinned,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
@@ -63,9 +69,10 @@ plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
  PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
  plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
  PI.postSamples = postSamples;
+ plotHistogram(PI.postSamples, paramNames)
 %% Save results
-save(strjoin({cd '/CIM_red2_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/CIM_red2_DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/CIM_ICB7_red2_3_DREAM_MCMC_x.mat'},''), 'x2')
+save(strjoin({cd '/CIM_ICB7_red2_3_DREAM_MCMC_p_x.mat'},''), 'p_x2')
 
-load(strjoin({cd '/CIM_red6_DREAM_MCMC_x2.mat'},''))
-load(strjoin({cd '/CIM_red6_DREAM_MCMC_p_x.mat'},''))
+load(strjoin({cd '/CIM_red2_DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/CIM_red2_DREAM_MCMC_p_x.mat'},''))

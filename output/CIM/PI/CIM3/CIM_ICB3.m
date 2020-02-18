@@ -54,7 +54,7 @@ PI.observablesPlot={'TV' };
 %% Optimization setup
 % Hierarchical structure
 cell_indx = [3 4];
-indiv_indx = [7];
+indiv_indx = [8];
 
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', indiv_indx, 'cell_indx',cell_indx, 'n_indiv', length(PI.u));
@@ -72,16 +72,21 @@ catch
     finalValues =log([PI.par(:).startValue]);
 
 end
+prior = {'U' 'U' 'N' 'N' 'N' 'U' 'U' 'U' 'U'};
+PI = getPriorDistribution(PI,prior);
 
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
-prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma/inverse gamma'}));
+prior_fun=@(p)getPriorPDF(p,PI, prior);
+prior_fun_MCMC=@(p)getPriorPDFMCMC(p,PI, prior);
+
+likelihood_indiv = @(p)evaluateIndivPrior(p, PI);
 % Generate parameter names for plots
 paramNames = getParamNames(PI,sim, observables);
 %% Objective function
 
 % Obj function
-obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
+obj_fun=@(x)((likelihood_fun(x)+prior_fun_MCMC(x))*(-1));
 tic
 obj_fun((finalValues))
 toc
@@ -94,7 +99,7 @@ table({PI.H.CellParams(cell_indx).name}', w)
 
 
 %% Save results
-save('PI_CIM3_ICB_3.mat', 'PI')
+save('PI_CIM3_ICB_7.mat', 'PI')
 load(strjoin({cd 'PI_CIM_Control_3_full.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))

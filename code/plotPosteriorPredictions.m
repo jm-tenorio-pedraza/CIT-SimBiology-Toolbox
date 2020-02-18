@@ -48,6 +48,7 @@ for i=1:length(outputs)
              pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
        
             end
+
         end
         hold on
         
@@ -62,9 +63,7 @@ for i=1:length(outputs)
             dat= errorbar(PI.data(j).dataTime, PI.data(j).dataValue(:,i), PI.data(j).SD(:,i));
         catch
             dat=plot(PI.data(j).dataTime, PI.data(j).dataValue(:,i));
-
         end
-       
         
         col_i=treatment_colors(ismember(treatments,PI.CI(j).Group),:);
         pi.FaceColor=col_i;
@@ -92,7 +91,6 @@ for i=1:length(outputs)
         hold on
         if max(m_data)/min(m_data)>1e1
 %             set(gca,'YScale','log')
-        else
         end
         ax=gca;
             if strcmp(p.outputs,'indiv')
@@ -101,13 +99,12 @@ for i=1:length(outputs)
                     legend(ax.Children, {'Data' output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none')
                 catch
                     legend(ax.Children, {output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none')
-
                 end
             end
-
-
+            if max(m_data)>1
+            ylim([0 3]) 
+            end
     end
-        ax = gca;
     if (strcmp('%',PI.variableUnits{i}))
         ylim([0 100])
     end
@@ -115,14 +112,12 @@ for i=1:length(outputs)
 %         ylim(2.^([floor(log2(min(PI.data(j).dataValue(:,i)))) ceil(log2(max(PI.data(j).dataValue(:,i))))]))
 %     catch
 %     end
+    ax = gca;
 
-    
     if strcmp(p.outputs,'indiv')
     else
         title(output_i,'interpreter', 'none')
         legend(ax.Children(end:-4:3),[PI.data(:).Name],'Interpreter', 'none')
     end
-
 end
-
-end
+return
