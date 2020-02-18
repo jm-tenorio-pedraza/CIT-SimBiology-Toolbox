@@ -44,34 +44,10 @@ PI.x_0 =[PI.data(:).dose]';
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', 1,'cell_indx', 2, 'n_indiv', length(PI.u),'CellField', 'Name');
-if ~isempty(PI.H.IndividualParams(1).Index)
-        indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
-else
-    indivSigmaNames = [];
-end
-if ~isempty(PI.H.CellParams(1).Index)
-    cellSigmaNames=arrayfun(@(x)strjoin({'lambda', x.name}, '_'),PI.H.CellParams,'UniformOutput',false)';
-else
-    cellSigmaNames = [];
-end
-try
-SigmaNames = [cellSigmaNames; indivSigmaNames];
-SigmaNames(end+1:end+length(observables),1) =  cellfun(@(x) strjoin({'sigma', x}, '_'),...
-    observables','UniformOutput', false);
-catch
-    SigmaNames=cellfun(@(x) strjoin({'sigma', x}, '_'),...
-    observables','UniformOutput', false);
-end
 
 % Generating PI
-alpha = [repelem(0.1, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
-    repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.IndividualParams(:).OmegaIndex])),1)];
-beta = [repelem(0.1, length([PI.H.IndividualParams(:).OmegaIndex]),1);...
-    repelem(0.001, length(setdiff(PI.H.SigmaParams, [PI.H.IndividualParams(:).OmegaIndex])),1)];
-sigma_prior= [ repelem(1,length(PI.H.PopulationParams), 1);...
-    repelem(1,length(PI.H.CellParams), 1);...
-     repelem(1, length([PI.H.IndividualParams(:).Index]),1);...
-    alpha];
+SigmaNames = getVarNames(PI, observables);
+[beta, sigma_prior] = getVarValues([0.1 0.1 .001], [0.1, 0.1 0.001], [1 1 1], PI);
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior);
 try
