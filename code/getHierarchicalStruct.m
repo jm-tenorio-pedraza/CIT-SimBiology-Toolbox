@@ -4,6 +4,7 @@ p.addParameter('n_sigma',1,@isnumeric);
 p.addParameter('rand_indx',0,@isnumeric);
 p.addParameter('n_indiv',1,@isnumeric);
 p.addParameter('cell_indx',[],@isnumeric);
+p.addParameter('CellField', 'Group');
 p.parse(varargin{:})
 p=p.Results;
 
@@ -15,10 +16,10 @@ n_cell = length(cell_indx);
 n_indiv = length(PI.data);
 n_sigma=p.n_sigma;
 try
-cell_groups = cellfun(@(x)x(1:find(x=='_',1)-1),[PI.data(:).Group],...
+cell_groups = cellfun(@(x)x(1:find(x=='_',1)-1),[PI.data(:).(p.CellField)],...
     'UniformOutput',false);
 catch
-    cell_groups = cellfun(@(x)x(1:find(x=='_',1)-1),{PI.data(:).Group},...
+    cell_groups = cellfun(@(x)x(1:find(x=='_',1)-1),{PI.data(:).(p.CellField)},...
     'UniformOutput',false);
 end
 celltypes = unique(cell_groups);                                                % Extract the cell types in the dataset
