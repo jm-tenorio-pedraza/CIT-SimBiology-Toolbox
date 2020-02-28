@@ -67,15 +67,15 @@ end
         for i=1:n_p
             subplot(n_row, n_col,i)
             hold on
-            if dim_phat(2)<=dim_phat(3)
+%             if dim_phat(2)<=dim_phat(3)
             p_ij=reshape(p_hat(i,:,:),n_w,dim_phat(3),1);                  % NxT matrix with the numer of walkers/ensemble in the rows and the columns representing the steps 
                 colors=linspecer(n_w);
 
-            else
-                p_ij=reshape(p_hat(:,i,:),dim_phat(3),dim_phat(1),1);
-                colors=linspecer(dim_phat(2));
-
-            end
+%             else
+%                 p_ij=reshape(p_hat(:,i,:),dim_phat(3),dim_phat(1),1);
+%                 colors=linspecer(dim_phat(2));
+% 
+%             end
             h=plot(p.steps,p_ij);
             for j=1:length(h)
                 set(h(j),'color',colors(j,:))
@@ -88,6 +88,7 @@ end
 
             try
             title(p.names(i), 'interpreter', p.interpreter)
+            catch
             end
             xlabel('MCMC step')
             %ylim([min_y max_y])

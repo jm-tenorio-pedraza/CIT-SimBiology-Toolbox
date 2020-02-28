@@ -1,5 +1,5 @@
 % Local Optimization
-options_fminsearch=optimset('Display','iter','MaxFunEvals', 1e4, 'MaxIter',1e4, 'TolFun', 1e-4);
+options_fminsearch=optimset('Display','iter','MaxFunEvals', 5e4, 'MaxIter',5e4, 'TolFun', 1e-4);
 ub = log([PI.par([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index]).maxValue]);
 lb = log([PI.par([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index]).minValue]);
 

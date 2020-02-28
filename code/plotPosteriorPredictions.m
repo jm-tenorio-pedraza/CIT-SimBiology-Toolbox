@@ -101,7 +101,7 @@ for i=1:length(outputs)
                     legend(ax.Children, {output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none')
                 end
             end
-            if max(m_data)>1
+            if max(m_data)>1 && strcmp(PI.variableUnits{i},'Volume [mL]')
             ylim([0 3]) 
             end
     end
