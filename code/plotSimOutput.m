@@ -61,7 +61,7 @@ end
     end
 %        set(gca,'YScale','log')
        try
-       ylim(10.^([floor(log10(min(PI.data(i).dataValue(:,colIndx)))) ceil(log10(max(PI.data(i).dataValue(:,colIndx))))]))
+%        ylim(10.^([floor(log10(min(PI.data(i).dataValue(:,colIndx)))) ceil(log10(max(PI.data(i).dataValue(:,colIndx))))]))
        catch
        end
 % ylim([1e-2, 100])
