@@ -21,8 +21,8 @@ priorPDF = nan(length(prior),1);
 U_indx = ismember(prior, 'U');
 N_indx = ismember(prior, 'N');
 
-psi = reshape(exp(repelem(p([PI.H.CellParams.OmegaIndex]), length(PI.H.CellParams(1).Index),1)),[],1);
-omega = exp(repelem(p([PI.H.IndividualParams.OmegaIndex]), length(PI.H.IndividualParams(1).Index),1));
+psi = reshape(exp(repelem(p([PI.H.CellParams.OmegaIndex])', length(PI.H.CellParams(1).Index),1)),[],1);
+omega = exp(repelem(p([PI.H.IndividualParams.OmegaIndex])', length(PI.H.IndividualParams(1).Index),1));
 
 priorPDF(U_indx,1) = U(p(U_indx), log(lb(U_indx)),log(ub(U_indx)));
 priorPDF(N_indx,1) = N(p(N_indx), log(mu(N_indx)), sigma(N_indx));
