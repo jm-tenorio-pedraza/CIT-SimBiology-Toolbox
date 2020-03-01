@@ -17,4 +17,8 @@ catch
     varNames=cellfun(@(x) strjoin({'sigma', x}, '_'),...
     stateVar','UniformOutput', false);
 end
+
+if size(varNames,2)>size(varNames,1)
+    varNames = varNames';
+end
 return

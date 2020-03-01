@@ -55,7 +55,7 @@ PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
      
 %% Plotting output
 for i=1:length(observables)
-plotSimOutput(PI,i)
+plotSimOutput(PI,i,'all', false)
 end
 %%
 finalValue=num2cell(exp(finalValues'));
