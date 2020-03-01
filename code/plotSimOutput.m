@@ -1,29 +1,44 @@
-function plotSimOutput(PI,colIndx)
+function plotSimOutput(PI,colIndx, varargin)
+par=inputParser;
+par.addParameter('all', true)
+par.parse(varargin{:})
+par = par.Results;
 
-n_sim=size(PI.data,1);
-n_col=ceil(sqrt(n_sim));
-n_row=ceil(n_sim/n_col);
-treatments=([PI.data(:).Group]);
+if par.all
+    n_sim=size(PI.data,1);
+    sim_indx = ones(n_sim,1);
+    n_col=ceil(sqrt(n_sim));
+    n_row=ceil(n_sim/n_col);
+else
+    sim_indx=(arrayfun(@(x) ~all(isnan(x.dataValue(:,colIndx))), PI.data));
+    n_sim = sum(sim_indx);
+    n_col = ceil(sqrt(n_sim));
+    n_row = ceil(n_sim/n_col);
+end
+
+treatments=({PI.data(sim_indx).Group});
 if length(treatments)~=n_sim
     treatments = unique({PI.data(:).Group});
 else
     treatments = unique(treatments);
 end
+
 treatment_colors=linspecer(length(treatments));
-figure
+simIndx = find(sim_indx);
+figure('Position', [10 10 1e3 900])
 for i=1:n_sim
     subplot(n_row,n_col,i)
     hold on
-    sim=plot(PI.data(i).simTime, PI.data(i).simOutput(:,colIndx));
+        sim=plot(PI.data(simIndx(i)).simTime, PI.data(simIndx(i)).simOutput(:,colIndx));
     try
-        dat = errorbar(PI.data(i).dataTime, PI.data(i).dataValue(:,colIndx), PI.data(i).SD(:,colIndx));
+        dat = errorbar(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx), PI.data(simIndx(i)).SD(:,colIndx));
     catch
-        dat=plot(PI.data(i).dataTime, PI.data(i).dataValue(:,colIndx));
+        dat=plot(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx));
 
     end
 try
-    X = [PI.data(i).simTime; PI.data(i).simTime(end:-1:1)];
-    Y = [PI.data(i).ub(:,colIndx); PI.data(i).lb(end:-1:1,colIndx)];
+    X = [PI.data(simIndx(i)).simTime; PI.data(simIndx(i)).simTime(end:-1:1)];
+    Y = [PI.data(simIndx(i)).ub(:,colIndx); PI.data(simIndx(i)).lb(end:-1:1,colIndx)];
     nanindx = isnan(Y);
     error = patch('XData', X(~nanindx),...
         'YData',Y(~nanindx));
@@ -31,9 +46,9 @@ try
 catch
     error = [];
 end
-    title(PI.data(i).Name,'interpreter', 'none')
+    title(PI.data(simIndx(i)).Name,'interpreter', 'none')
     
-    col_i=treatment_colors(ismember(treatments,PI.data(i).Group),:);
+    col_i=treatment_colors(ismember(treatments,PI.data(simIndx(i)).Group),:);
     sim.Color=col_i;
     dat.LineStyle='none';
     dat.Color = col_i;
@@ -60,15 +75,9 @@ end
 %         set(gca,'YScale','log')
     end
 %        set(gca,'YScale','log')
-%        try
-%        ylim(10.^([floor(log10(min(PI.data(i).dataValue(:,colIndx)))) ceil(log10(max(PI.data(i).dataValue(:,colIndx))))]))
-%        catch
-%        end
+       try
+       ylim(10.^([floor(log10(min(PI.data(simIndx(i)).dataValue(:,colIndx)))) ceil(log10(max(PI.data(simIndx(i)).dataValue(:,colIndx))))]))
+       catch
+       end
 % ylim([1e-2, 100])
-
-if strcmp(PI.variableUnits{colIndx}, 'Volume [mL]')
-    ylim([0 3])
-else
-
-end
 end

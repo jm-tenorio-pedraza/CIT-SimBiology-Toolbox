@@ -30,9 +30,9 @@ dataValue = cellfun(@(x)nan(size(x,1),nVar),data,'UniformOutput',false);    % Al
 SD = cellfun(@(x)nan(size(x,1),nVar),data,'UniformOutput',false);           % Allocate space for each data matrix corresponding to each dataset
 
 PI = [];                                                                    % Create PI structure
-[PI.data(1:length(groups)).Name] = names{:,:};                                 % Add one group entry to the PI structure for each considered condition in each dataset
+[PI.data(1:length(groups)).Name] = names{:,:};                             % Add one group entry to the PI structure for each considered condition in each dataset
 
-[PI.data(1:end).Group] = groups{:};                                 % Add one group entry to the PI structure for each considered condition in each dataset
+[PI.data(1:end).Group] = groups{:};                                         % Add one group entry to the PI structure for each considered condition in each dataset
 
 for i=1:length(data)
     data_i = data{i};
@@ -76,15 +76,40 @@ PI.stateVar = varNames;
 
 %% Subset variables
 if ~isempty(p.subsetVariables)
-    var_indx = ismember(varNames, p.subsetVariables);
-    var_indx = find(var_indx);
-    data = cellfun(@(x) x(:,var_indx),{PI.data(:).dataValue}, 'UniformOutput', false);
+    [bool_indx, var_indx] = ismember(varNames, p.subsetVariables);
+    indx = find(bool_indx);
+    data = cellfun(@(x) x(:,indx),{PI.data(:).dataValue}, 'UniformOutput', false);
     [PI.data(1:end).dataValue] = data{:,:}; 
-    SD = cellfun(@(x) x(:,var_indx),{PI.data(:).SD}, 'UniformOutput', false);
+    SD = cellfun(@(x) x(:,indx),{PI.data(:).SD}, 'UniformOutput', false);
     [PI.data(1:end).SD] = SD{:,:};
 end
 
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},'UniformOutput',true));
 PI.data = PI.data';
 PI.tspan = unique(cat(1,PI.data(:).dataTime));
+
+%% Plot data
+nVar = size(PI.data(1).dataValue,2);
+ncol = ceil(sqrt(nVar));
+nrow =ceil(nVar/ncol);
+colors = linspecer(length(PI.data));
+figure('Position', [10 10 1000 900])
+for i=1:nVar % For each variable plot all data points
+    subplot(nrow, ncol, i)
+%     if ~isempty(p.subsetVariables)
+%         title(p.subsetVariables{i})
+%     else
+%         title(varNames{i})
+%     end
+    hold on
+    h = arrayfun(@(x) errorbar(x.dataTime, x.dataValue(:,i), x.SD(:,i)),PI.data, 'UniformOutput', false);
+    for j=1:length(h)
+        h{i}.Marker = 'd';
+        h{i}.MarkerFaceColor = colors(j,:);
+        h{i}.MarkerEdgeColor = colors(j,:);
+        h{i}.Color = colors(j,:);
+    end
+        legend({PI.data(:).Name})
+
+end
 return

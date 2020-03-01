@@ -1,10 +1,11 @@
 
 %% Optimization
-
 % Optimizer options
-options_fminsearch=optimset('Display','iter','MaxFunEvals', 5e4, 'MaxIter',5e4, 'TolFun', 1e-4);
+options_fminsearch=optimset('Display','iter','MaxFunEvals', 1e4, 'MaxIter',1e4, 'TolFun', 1e-4);
 options_anneal.Verbosity=2;
 options_anneal.InitTemp=100;
+
+
 %% Global optimisation
 
 while delta >1e-4
@@ -54,7 +55,7 @@ PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
      
 %% Plotting output
 for i=1:length(observables)
-plotSimOutput(PI,i)
+plotSimOutput(PI,i,'all', false)
 end
 %%
 finalValue=num2cell(exp(finalValues'));
