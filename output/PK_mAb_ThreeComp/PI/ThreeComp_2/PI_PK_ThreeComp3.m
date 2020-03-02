@@ -81,7 +81,7 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp3.mat', 'PI')
+save('PI_PK_ThreeComp4.mat', 'PI')
 load(strjoin({cd 'PI_PK_red.mat'},'/'))
 
 save(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''), 'x')
