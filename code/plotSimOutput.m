@@ -16,7 +16,7 @@ else
     n_row = ceil(n_sim/n_col);
 end
 
-treatments=({PI.data(sim_indx).Group});
+treatments=([PI.data(sim_indx).Group]);
 if length(treatments)~=n_sim
     treatments = unique({PI.data(:).Group});
 else
