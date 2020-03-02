@@ -28,14 +28,6 @@ catch
 end
 %%
 unique_groups = unique(groups);                                             % identify unique treatment groups
-if strcmp(p.output, 'mean')                                                 % processing for reduced mean model
-    data_cell = repelem({'nan'}, length(unique_groups),1);
-else
-    data_cell = repelem({'nan'}, length(groups),1);
-end
-data=[];
-% [data(1:end).dataValue] = data_cell{:,:};
-
 struct_indx = 1;
 for i=1:length(unique_groups)                                               % For each unique treatment do
     group_i = ismember(groups, unique_groups(i));                           % Identify and select observations belonging to ith group
@@ -51,7 +43,7 @@ for i=1:length(unique_groups)                                               % Fo
 
     n_indiv = length(data_i);
     
-    for j=1:length(varindx)                                             % For each jth variable do:
+    for j=1:length(varindx)                                                 % For each jth variable do:
         datavar_j = cellfun(@(x) x(:,j),data_i, 'UniformOutput',false);     % Select jth the variable
         mat_j = NaN(length(time),n_indiv);                        % NaN mat with K rows and N columns (one for each individual)
         
