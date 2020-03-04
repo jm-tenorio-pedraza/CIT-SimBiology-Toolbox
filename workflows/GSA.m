@@ -5,11 +5,11 @@ inputs = [PI.par(PI.H.PopulationParams).finalValue];
 %inputs = [PI.par(PI.H.PopulationParams).posterior_mean];
 
 %variant = reshape([PI.par([PI.H.CellParams.Index]).finalValue],[],length(PI.H.CellParams));
- %eta = reshape([PI.par([PI.H.IndividualParams.Index]).finalValue],[],length(PI.H.IndividualParams));
+eta = reshape([PI.par([PI.H.IndividualParams.Index]).finalValue],[],length(PI.H.IndividualParams));
 
 inputs = [repelem(inputs,size(PI.x_0,1),1) PI.x_0(:,1)];
 %inputs(:,[PI.H.CellParams.EtaIndex]) = inputs(:,[PI.H.CellParams.EtaIndex]).*(PI.H.CellIndx*variant);
- %inputs(:,[PI.H.IndividualParams.EtaIndex]) = inputs(:,[PI.H.IndividualParams.EtaIndex]).*eta;
+inputs(:,[PI.H.IndividualParams.EtaIndex]) = inputs(:,[PI.H.IndividualParams.EtaIndex]).*eta;
 group = [PI.data(:).Group];
 if ischar(group)
     group = {PI.data(:).Group};
@@ -33,7 +33,7 @@ s=shmPlot2(F,group,time, observables,'tau',0.1);
 %% Get PSS
 pcs = V*S;
 pcs = (pcs/max(max(abs(pcs))));
-pc = plotPSS(pcs,4,paramNames(PI.H.PopulationParams),'threshold',-1);
+pc = plotPSS(pcs,9,paramNames(PI.H.PopulationParams),'threshold',-1);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');

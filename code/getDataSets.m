@@ -12,17 +12,24 @@ varNames = cellfun(@(x) x.Properties.VariableNames,data,'UniformOutput',false);
 varNames = cat(2,varNames{:});
 varNames = unique(varNames,'stable');
 varNames = varNames(~cellfun(@(x)strcmp(x(1:2),'SD'),varNames));            % Extract unique variable names from each data table of the datasets
-varNames = setdiff(varNames, {'Time_hour_s__' 'Group' 'Dose_mg_kg_' 'Name'});
+varNames = setdiff(varNames, {'Time_hour_s__' 'Group' 'Dose_mg_kg_' 'Dose2_mg_kg_' 'Name'});
 
 
-groups = cellfun(@(x)unique(x.Group),data,'UniformOutput',false);
+groups = cellfun(@(x)unique(x.Group, 'stable'),data,'UniformOutput',false);
 groups = cat(1,groups{:,:});                                                  % Extract the groups from each dataset
 names = cellfun(@(x)unique(x.Name),data,'UniformOutput',false);
 names = cat(1,names{:,:});
 meanIndx = cellfun(@(x) cellfun(@(y)strcmp(y(1:2),'SD'),...
     x.Properties.VariableNames,'UniformOutput',true),data,...
     'UniformOutput', false);                                                % Extract column indexes where time points and mean data is stored
-
+dataDoses = cellfun(@(x)(x.Dose_mg_kg_(x.Time_hour_s__==0)),data,'UniformOutput',false);
+dataDoses = cell2mat(dataDoses');
+try
+    dataDoses2 = cellfun(@(x)(x.Dose2_mg_kg_(x.Time_hour_s__==0)),data,'UniformOutput',false);
+    dataDoses2=cell2mat(dataDoses2');
+catch
+    dataDoses2=[];
+end
 % meanIndx = cat(2,meanIndx{:,:});
 
 nVar = length(varNames);                                                    % Set the number of columns that the common dataset will have
@@ -57,20 +64,24 @@ for i = 1:length(data)
         end
         PI.data(indx).dataTime = dataTime_i(zeroIndx,:);
         PI.data(indx).dataValue = dataValue_i(zeroIndx,:);
-         PI.data(indx).SD = SD_i(zeroIndx,:);
+        PI.data(indx).SD = SD_i(zeroIndx,:);
         indx = indx+1;
     end
 end
      
 % Add dosage
-
-[PI,doses] = getDoses(PI);
-doses = doses';
-for i=1:length(doses)
-    doses{i}.Properties.VariableUnits = {'hour' 'micromole' 'micromole/second'};
+if ~isempty(dataDoses2)
+[PI,doses] = getDoses(PI, 'doses', [dataDoses dataDoses2]);
+else
+    [PI,doses] = getDoses(PI, 'doses', dataDoses);
+end
+for i=1:size(doses,1)
+    for j=1:size(doses,2)
+    doses{i,j}.Properties.VariableUnits = {'hour' 'micromole' 'micromole/second'};
+    end
 end
 
-[PI.data(1:end).doses] = doses{:,:};
+[PI.data(1:end).doses] = doses{:,1};
 
 PI.stateVar = varNames;
 
@@ -96,11 +107,11 @@ colors = linspecer(length(PI.data));
 figure('Position', [10 10 1000 900])
 for i=1:nVar % For each variable plot all data points
     subplot(nrow, ncol, i)
-%     if ~isempty(p.subsetVariables)
-%         title(p.subsetVariables{i})
-%     else
-%         title(varNames{i})
-%     end
+    if ~isempty(p.subsetVariables)
+        title(p.subsetVariables{i})
+    else
+        title(varNames{i})
+    end
     hold on
     h = arrayfun(@(x) errorbar(x.dataTime, x.dataValue(:,i), x.SD(:,i)),PI.data, 'UniformOutput', false);
     for j=1:length(h)

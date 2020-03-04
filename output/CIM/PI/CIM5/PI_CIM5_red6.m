@@ -27,10 +27,9 @@ parameters = [parameters; 'T_0'];
 groups_subset = {'MOC1_Control', 'MOC1_Control_Mean', 'MOC2_Control',...
     'MOC2_Control_Mean' 'MC38_Control'};
 observables={'TV'  'CD8'  'Treg' 'DCm'...
-    'MDSC' 'PDL1_T' 'PDL1_I'};
+    'MDSC' 'CD8_E' 'PDL1_T' 'PDL1_I'};
 stateVar={'Tumor'  'CD8' 'Treg' 'DC'...
-    'GMDSC'...
-    'Tumor_PDL1_Rel' 'Myeloid_PDL1_Rel'};
+    'GMDSC' 'CD107a_Rel' 'Tumor_PDL1_Rel' 'Myeloid_PDL1_Rel'};
 doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
 %% Obtain data, simulation function and dose table
 
@@ -45,10 +44,10 @@ PI.tspan = unique([PI1.tspan; PI2.tspan]);
 PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [%]' ...
      'Percentage [%]'   'Percentage [%]' ...
     'Relative units []' 'Relative units []'};
-PI.normIndx = 6:7;
+PI.normIndx = 6:8;
 PI.model = 'CIM Control';
 PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
-    'MDSC' 'PDL1_T' 'PDL1_I'};
+    'MDSC' 'CD107a' 'PDL1_T' 'PDL1_I'};
 
 % Get initial values
 [PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
@@ -60,7 +59,7 @@ PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [1:13] , 'cell_indx',[], 'n_indiv', length(PI.u));
+    'rand_indx', [5 6 9 10 12 13] , 'cell_indx',[], 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
 else
@@ -127,8 +126,8 @@ w = (std(cell2mat(w'),[], 2));
 params = [ {PI.H.IndividualParams(:).name}'];
 table(params(cell_indx), w)
 %% Save results
-save('PI_CIM5_Control_red5.mat', 'PI')
-load(strjoin({cd 'PI_CIM5_Control_red5.mat'},'/'),'PI')
+save('PI_CIM5_Control_red6.mat', 'PI')
+load(strjoin({cd 'PI_CIM45Control_red6.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
