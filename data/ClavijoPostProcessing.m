@@ -85,7 +85,7 @@ group(empty_indx) = name(empty_indx);
 PI.data = simBioData;
 PI.stateVar = {'Tumor' 'CD8' 'CD107a' 'Treg' 'DC' 'GMDSC' 'Tumor_PDL1_Rel'...
     'Myeloid_PDL1_Rel' 'DC_Rel'  'GMDSC_Rel' 'CD8_logit' 'CD107a_logit'...
-    'Treg_logit' 'DC_logit' 'GMDSC_logit'};
+    'Treg_logit' 'DC_logit' 'GMDSC_logit' 'CD107a_Rel'};
 %% Save output
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Clavijo_Data.mat', 'simBioData')
 save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat', 'PI')
