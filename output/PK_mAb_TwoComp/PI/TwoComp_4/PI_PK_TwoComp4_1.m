@@ -20,21 +20,21 @@ MODEL = 'TwoComp_CE';
 
 parameters = {'Blood'; 'Tumor'; 'CL'; 'Q23'; 'kint';'PDL1_Tumor'; 'PDL1_Blood'; 'ID'};
 % Define outputs
-observables={'ID_Id_g_Blood' 'ID_Io_g_Blood' 'ID_Id_g_Tumor' 'ID_g_Tumor_free' 'T2B_Io' 'T2B'  };
+observables={'ID_Id_g_Blood' 'ID_Id_g_Tumor' 'ID_g_Tumor_free' 'T2B'  };
 
 dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_1.xlsx'...
     '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_2.xlsx'...
     '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Contreras_2016.xlsx'...
-    '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Deng_2016_Fig4.xlsx'};
+    };
 
 [PI,PI.u]=getDataSets(dataset_file_ext, 'subsetVariables', {'Blood_antiPDL1__ID_g_'...
-    'Blood_antiPDL1_Io__ID_g_' 'Tumor_antiPDL1__ID_g_' 'Tumor_antiPDL1_free__ID_g_'...
-    'Tumor_to_Blood_Io__' 'Tumor_to_Blood__' });
+    'Tumor_antiPDL1__ID_g_' 'Tumor_antiPDL1_free__ID_g_'...
+     'Tumor_to_Blood__' });
 
 PI.u = PI.u(:,1);
-PI.variableUnits={'%ID/g'  '%ID/g' '%ID/g' '%ID/g' '[]' '[]' };
-PI.observablesPlot = {'Blood.antiPDL1_Iodine' 'Blood.antiPDL1_Indium'...
-    'Tumor.antiPDL1_Indium' 'Tumor.antiPDL1_Free' 'Tumor to blood_Iodine' 'Tumor to blood_Indium' };
+PI.variableUnits={'%ID/g'  '%ID/g' '%ID/g' '[]' };
+PI.observablesPlot = {'Blood.antiPDL1_Indium'...
+    'Tumor.antiPDL1_Indium' 'Tumor.antiPDL1_Free' 'Tumor to blood_Indium' };
 
 dose = {'Blood.antiPDL1'};
 sim=createSimFunction(model,parameters,observables, dose,[],...
@@ -66,7 +66,7 @@ end
 residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,144,PI.u,PI.tspan),PI,...
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),...
     (@(x)getCovariance(x,PI.H)),PI.normIndx,'log',true);
-prior = {'U' 'U' 'U' 'U' 'U'};
+prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U'};
 
 % Log-ikelihood function
 likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
