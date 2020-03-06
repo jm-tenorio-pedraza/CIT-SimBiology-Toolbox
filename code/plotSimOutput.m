@@ -74,10 +74,11 @@ end
     if std(log10(PI.data(i).simOutput(:,colIndx)))>2
 %         set(gca,'YScale','log')
     end
-%        set(gca,'YScale','log')
+       set(gca,'YScale','log')
+       ylim([0.1, 100])
        try
-       ylim(10.^([floor(log10(min(PI.data(simIndx(i)).dataValue(:,colIndx)))) ceil(log10(max(PI.data(simIndx(i)).dataValue(:,colIndx))))]))
+       %ylim(10.^([floor(log10(min(PI.data(simIndx(i)).dataValue(:,colIndx)))) ceil(log2(max(PI.data(simIndx(i)).dataValue(:,colIndx))))]))
        catch
        end
-% ylim([1e-2, 100])
+%ylim([1e-2, 100])
 end

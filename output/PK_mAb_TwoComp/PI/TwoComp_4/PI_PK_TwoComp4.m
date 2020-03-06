@@ -18,7 +18,7 @@ set(cs, 'MaximumWallClock', 0.25)
 MODEL = 'TwoComp_CE';
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor'; 'CL'; 'Q23'; 'PDL1_0'; 'kint'; 'ID'};
+parameters = {'Blood'; 'Tumor'; 'CL'; 'Q23'; 'kint'; 'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood','ID_Id_g_Tumor',...
     'ID_g_Tumor_free', 'T2B' };
@@ -64,7 +64,7 @@ end
 residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),...
     (@(x)getCovariance(x,PI.H)),PI.normIndx,'log',true);
-prior = {'U' 'U' 'U' 'U' 'U' 'U'};
+prior = {'U' 'U' 'U' 'U' 'U'};
 
 % Log-ikelihood function
 likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));

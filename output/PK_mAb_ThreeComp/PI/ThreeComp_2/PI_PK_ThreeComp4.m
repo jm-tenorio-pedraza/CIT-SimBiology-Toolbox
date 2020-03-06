@@ -31,6 +31,16 @@ dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbo
 [PI,PI.u]=getDataSets(dataset_file_ext, 'subsetVariables', { 'Blood_antiPDL1__ID_g_',...
     'Tumor_antiPDL1__ID_g_', ...
     'Tumor_antiPDL1_free__ID_g_', 'Tumor_to_Blood__' });
+
+% Eliminate the data points where ATA was observed in Deng et al (2016):
+% deng= PI.data(11:13);
+% dataTime_deng = arrayfun(@(x) x.dataTime(1:5), deng, 'UniformOutput', false);
+% dataValue_deng = arrayfun(@(x) x.dataValue(1:5,:), deng, 'UniformOutput', false);
+% sd_deng =arrayfun(@(x) x.SD(1:5,:), deng, 'UniformOutput', false);
+% [PI.data(11:13).dataTime] = dataTime_deng{:,:};
+% [PI.data(11:13).dataValue] = dataValue_deng{:,:};
+% [PI.data(11:13).SD] = sd_deng{:,:};
+% PI.n_data = PI.n_data - 3;
 PI.u = PI.u(:,1);
 PI.variableUnits={'%ID/g' '%ID/g' '%ID/g' '[]' '%ID/g' '%ID/g' '[]' };
 PI.observablesPlot = {'ID_g_Blood' ...
@@ -52,7 +62,7 @@ PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observable
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([0.1 0.1 .001], [0.1, 0.1 0.001], [1 1 1], PI);
-lb = [1e-3  1e-3    1e-3    1e-3    1e-3    1e-3    1e-3];
+lb = [1e-3  1e-3    1e-3    1e-3    1e-3    1e-4    1e-3];
 ub = [1e3   1e3     1e3     1e3     1e3     1e3     1e3];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'LB', lb', 'UB', ub');
@@ -87,8 +97,8 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp13.mat', 'PI')
-load(strjoin({cd 'PI_PK_ThreeComp13.mat'},'/'))
+save('PI_PK_ThreeComp5.mat', 'PI')
+load(strjoin({cd 'PI_PK_ThreeComp16.mat'},'/'))
 
 save(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PK_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
