@@ -1,7 +1,7 @@
 
 %% Optimization
 % Optimizer options
-options_fminsearch=optimset('Display','iter','MaxFunEvals', 5e4, 'MaxIter',5e4, 'TolFun', 1e-4);
+options_fminsearch=optimset('Display','iter','MaxFunEvals', 1e4, 'MaxIter',1e4, 'TolFun', 1e-4);
 options_anneal.Verbosity=2;
 options_anneal.InitTemp=100;
 
@@ -31,7 +31,7 @@ obj_fun_indiv = @(x)obj_fun([finalValues([PI.H.PopulationParams]) x finalValues(
 finalValues([PI.H.CellParams.Index PI.H.IndividualParams.Index]) = p_hat_indiv;
 
 [finalValues, fval_anneal]=anneal(obj_fun, finalValues, options_anneal);
-[finalVlues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
+[finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 
 delta = abs(fval_anneal - fval_fminsearch);
 end
@@ -46,7 +46,7 @@ tic
     @(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(x),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H));
 toc
-PI.AIC = 2*length(PI.par)-2*obj_fun(finalValues)*(-1);
+PI.AIC = 2*length(PI.par)-2*likelihood_fun(finalValues)*(1);
 
 %% Simulation output
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
