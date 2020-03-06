@@ -33,7 +33,7 @@ s=shmPlot2(F,group,time, observables,'tau',0.1);
 %% Get PSS
 pcs = V*S;
 pcs = (pcs/max(max(abs(pcs))));
-pc = plotPSS(pcs,9,paramNames(PI.H.PopulationParams),'threshold',-1);
+pc = plotPSS(pcs,4,paramNames(PI.H.PopulationParams),'threshold',-1);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');
