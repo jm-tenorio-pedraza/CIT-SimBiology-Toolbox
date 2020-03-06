@@ -47,7 +47,7 @@ PI.x_0 =[PI.data(:).dose]';
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [2],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
@@ -87,8 +87,8 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_TwoComp2_4.mat', 'PI')
-load(strjoin({cd 'PI_PK_TwoComp2_2.mat'},'/'))
+save('PI_PK_TwoComp4_1.mat', 'PI')
+load(strjoin({cd 'PI_PK_TwoComp4_1.mat'},'/'))
 
 save(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PK_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
