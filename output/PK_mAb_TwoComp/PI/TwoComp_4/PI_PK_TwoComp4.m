@@ -8,7 +8,7 @@ cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_T
 sensitivity = false;
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/TwoComp_4.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/TwoComp_5.sbproj');
 % Extract model
 model=out.m1;
 cs=model.getconfigset;
@@ -31,12 +31,12 @@ dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbo
     'Blood_antiPDL1_Io__ID_g_' 'Tumor_antiPDL1__ID_g_' 'Tumor_antiPDL1_free__ID_g_'...
     'Tumor_to_Blood_Io__' 'Tumor_to_Blood__' });
 
-PI.u = PI.u(:,1);
+PI.u = PI.u(:,1:2);
 PI.variableUnits={'%ID/g'  '%ID/g' '%ID/g' '%ID/g' '[]' '[]' };
 PI.observablesPlot = {'Blood.antiPDL1_Iodine' 'Blood.antiPDL1_Indium'...
     'Tumor.antiPDL1_Indium' 'Tumor.antiPDL1_Free' 'Tumor to blood_Iodine' 'Tumor to blood_Indium' };
 
-dose = {'Blood.antiPDL1'};
+dose = {'Blood.antiPDL1' 'Blood.antiPDL1_ul'};
 sim=createSimFunction(model,parameters,observables, dose,[],...
     'UseParallel', false);
 PI.normIndx = [];
@@ -66,7 +66,7 @@ end
 residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,144,PI.u,PI.tspan),PI,...
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),...
     (@(x)getCovariance(x,PI.H)),PI.normIndx,'log',true);
-prior = {'U' 'U' 'U' 'U' 'U'};
+prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U'};
 
 % Log-ikelihood function
 likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));
