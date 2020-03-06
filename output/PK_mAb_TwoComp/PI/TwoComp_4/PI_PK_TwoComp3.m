@@ -21,7 +21,7 @@ MODEL = 'TwoComp_CE';
 parameters = {'Blood'; 'Tumor'; 'CL'; 'Q23'; 'kint'; 'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood','ID_Id_g_Tumor',...
-    'ID_g_Tumor_free', 'T2B' };
+    'ID_g_Tumor_free', 'T2B_Io', 'T2B' };
 
 dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_1.xlsx'...
     '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_2.xlsx'...
@@ -30,11 +30,11 @@ dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbo
 
 [PI,PI.u]=getDataSets(dataset_file_ext, 'subsetVariables', { 'Blood_antiPDL1__ID_g_',...
     'Tumor_antiPDL1__ID_g_', ...
-    'Tumor_antiPDL1_free__ID_g_', 'Tumor_to_Blood__' });
+    'Tumor_antiPDL1_free__ID_g_',  'Tumor_to_Blood_Io__', 'Tumor_to_Blood__'});
 % PI.u = PI.u(:,1);
-PI.variableUnits={'%ID/g' '%ID/g' '%ID/g' '[]'  };
+PI.variableUnits={'%ID/g' '%ID/g' '%ID/g' '[]'  '[]'};
 PI.observablesPlot = {'ID_g_Blood' ...
-    'ID_g_Tumor' 'ID_g_Tumor_free' 'T2B' };
+    'ID_g_Tumor' 'ID_g_Tumor_free' 'T2B' 'T2B'};
 
 dose = {'Blood.antiPDL1' 'Blood.antiPDL1_ul'};
 sim=createSimFunction(model,parameters,observables, dose,[],...
@@ -52,8 +52,10 @@ PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observable
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([0.1 0.1 .001], [0.1, 0.1 0.001], [1 1 1], PI);
+lb = [1e-3  1e-3    1e-3    1e-4    1e-3];
+ub = [1e3   1e3     1e3     1e3     1e3];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
-    SigmaNames,'Sigma', sigma_prior);
+    SigmaNames,'Sigma', sigma_prior, 'lb', lb', 'ub', ub');
 try
     finalValues =log([PI.par(:).finalValue]);
 catch
@@ -85,8 +87,8 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_TwoComp9.mat', 'PI')
-load(strjoin({cd 'PI_PK_TwoComp8.mat'},'/'))
+save('PI_PK_TwoComp3_3.mat', 'PI')
+load(strjoin({cd 'PI_PK_TwoComp3_1.mat'},'/'))
 
 save(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PK_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
