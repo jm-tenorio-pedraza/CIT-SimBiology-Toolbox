@@ -26,6 +26,13 @@ end
 treatment_colors=linspecer(length(treatments));
 simIndx = find(sim_indx);
 figure('Position', [10 10 1e3 900])
+
+try
+    minX = min(arrayfun(@(x) min(x.dataValue(:,colIndx)), PI.data, 'UniformOutput', true));
+    maxX = max(arrayfun(@(x) max(x.dataValue(:,colIndx)), PI.data, 'UniformOutput', true));
+catch
+    
+end
 for i=1:n_sim
     subplot(n_row,n_col,i)
     hold on
@@ -64,21 +71,25 @@ end
     xlabel('Time [days]')
     ax = gca;
     try
-     legend(ax.Children(3:1),{PI.observablesPlot{colIndx} 'Data' 'SD'}, 'location', 'best')
+     legend(ax.Children(3:1),{PI.observablesPlot{colIndx} 'Data' 'SD'}, 'location', 'best', 'interpreter','none')
     catch
-      legend(ax.Children(2:1),{PI.observablesPlot{colIndx} 'SD'}, 'location', 'best')
+      legend(ax.Children(2:1),{PI.observablesPlot{colIndx} 'SD'}, 'location', 'best', 'interpreter', 'none')
 
     end
-    
+%     
     % Change axis if there is large variability in output
     if std(log10(PI.data(i).simOutput(:,colIndx)))>2
 %         set(gca,'YScale','log')
     end
-       set(gca,'YScale','log')
-       ylim([0.1, 100])
+%        set(gca,'YScale','log')
+%        ylim([0.1, 100])
        try
        %ylim(10.^([floor(log10(min(PI.data(simIndx(i)).dataValue(:,colIndx)))) ceil(log2(max(PI.data(simIndx(i)).dataValue(:,colIndx))))]))
        catch
        end
-%ylim([1e-2, 100])
+       
+     ylim([floor(minX), ceil(maxX)])
+    
+       
+%ylim([1e-2, 3])
 end
