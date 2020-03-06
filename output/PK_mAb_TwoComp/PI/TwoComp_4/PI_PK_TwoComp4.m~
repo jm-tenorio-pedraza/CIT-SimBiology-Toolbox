@@ -33,8 +33,7 @@ dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbo
 
 PI.u = PI.u(:,1);
 PI.variableUnits={'%ID/g'  '%ID/g' '%ID/g' '%ID/g' '[]' '[]' };
-PI.observablesPlot = {'Blood.antiPDL1_Iodine' 'Blood.antiPDL1_Indium'...
-    'Tumor.antiPDL1_Indium' 'Tumor.antiPDL1_Free' 'Tumor to blood_Iodine' 'Tumor to blood_Indium' };
+PI.observablesPlot = {'_Blood' 'ID_g_Blood' 'ID_g_Tumor' 'ID_g_Tumor_free' 'T2B' };
 
 dose = {'Blood.antiPDL1'};
 sim=createSimFunction(model,parameters,observables, dose,[],...
