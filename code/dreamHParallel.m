@@ -90,7 +90,7 @@ for t = 2:T
        
     end
     
-                                       % Compute ith proposal for the individual parameters
+%      tic                                  % Compute ith proposal for the individual parameters
     if ~isempty(H.IndividualParams)
          Xp(:,ind_index) = Xp(:,ind_index)...
         + dX(:,ind_index);  

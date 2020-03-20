@@ -81,7 +81,7 @@ end
     if std(log10(PI.data(i).simOutput(:,colIndx)))>2
 %         set(gca,'YScale','log')
     end
-%        set(gca,'YScale','log')
+      % set(gca,'YScale','log')
 %        ylim([0.1, 100])
        try
        %ylim(10.^([floor(log10(min(PI.data(simIndx(i)).dataValue(:,colIndx)))) ceil(log2(max(PI.data(simIndx(i)).dataValue(:,colIndx))))]))
@@ -90,6 +90,12 @@ end
        
      ylim([floor(minX), ceil(maxX)])
     
-       
-%ylim([1e-2, 3])
+if strcmp(PI.variableUnits{colIndx}, 'Volume [ml]')
+    ylim([1e-2, 3])
+
+elseif strcmp(PI.variableUnits{colIndx}, 'Percentage [%]')
+    %ylim([1e-1, 30])
+else
+end
+
 end
