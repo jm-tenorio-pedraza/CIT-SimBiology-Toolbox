@@ -18,7 +18,7 @@ set(cs, 'MaximumWallClock', 0.25)
 MODEL = 'TwoComp_CE';
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor'; 'CL'; 'Q23'; 'kint';'PDL1_Tumor'; 'PDL1_Blood'; 'ID'};
+parameters = {'Blood'; 'CL'; 'Q23'; 'kint';'PDL1_Tumor'; 'PDL1_Blood'; 'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_Id_g_Tumor' 'ID_g_Tumor_free' 'T2B'  };
 
@@ -52,8 +52,8 @@ PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observable
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([0.1 0.1 .001], [0.1, 0.1 0.001], [1 1 1], PI);
-lb = [1e-3  1e-3    1e-3    1e-4    1e-3    1e0     1e0];
-ub = [1e3   1e3     1e2     1e2     1e3     1e6     1e6];
+lb = [1e-3  1e-4    1e-4    1e-3    1e0     1e0];
+ub = [1e3   1e2     1e2     1e1     1e6     1e6];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 try
@@ -66,7 +66,7 @@ end
 residuals_fun=@(p)getNormResiduals(p,@(x)sim(x,144,PI.u,PI.tspan),PI,...
     @(x)getPhi2(x,PI.H,length(PI.u),'initialValue',PI.x_0),...
     (@(x)getCovariance(x,PI.H)),PI.normIndx,'log',true);
-prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U'};
+prior = {'U' 'U' 'U' 'U' 'U' 'U'};
 
 % Log-ikelihood function
 likelihood_fun=@(p)sum(residuals_fun(exp(p))*(-1));

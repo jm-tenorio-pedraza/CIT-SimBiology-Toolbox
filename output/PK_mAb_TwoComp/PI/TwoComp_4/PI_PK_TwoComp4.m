@@ -88,7 +88,7 @@ toc
 
 %% Save results
 save('PI_PK_TwoComp2_4.mat', 'PI')
-load(strjoin({cd 'PI_PK_TwoComp2_2.mat'},'/'))
+load(strjoin({cd 'PI_PK_TwoComp4_4.mat'},'/'))
 
 save(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PK_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
