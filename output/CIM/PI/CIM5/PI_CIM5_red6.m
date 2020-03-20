@@ -59,7 +59,7 @@ PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [5 6 9 10 12 13] , 'cell_indx',[], 'n_indiv', length(PI.u));
+    'rand_indx', [5 6] , 'cell_indx',[9 10 12 13], 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
 else
@@ -126,7 +126,7 @@ w = (std(cell2mat(w'),[], 2));
 params = [ {PI.H.IndividualParams(:).name}'];
 table(params(cell_indx), w)
 %% Save results
-save('PI_CIM5_Control_red6.mat', 'PI')
+save('PI_CIM5_Control_2.mat', 'PI')
 load(strjoin({cd 'PI_CIM5_Control_red6.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))

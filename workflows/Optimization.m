@@ -50,7 +50,7 @@ PI.AIC = 2*length(PI.par)-2*likelihood_fun(finalValues)*(1);
 
 %% Simulation output
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
-    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H);
+    @(p)getPhi3(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H);
  
      
 %% Plotting output

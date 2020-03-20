@@ -65,7 +65,7 @@ out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Tool
 % Extract model
 model=out.m1;
 variants = get(model,'variants');
-human = variants(5);
+human = variants(2);
 % Solver configuration
 cs=model.getconfigset;
 cs.StopTime = 365;
@@ -80,7 +80,7 @@ parameters(1) = {'CL_antiPDL1'};
 %      'names',parameters,'interpreter', 'none')
 
 % Define outputs% Define outputs
-groups_subset = {'MOC1_Control', 'MOC1_antiPDL1','MOC1_antiCTLA4', 'MOC1_antiCTLA4_antiPDL1'};
+groups_subset = {'MOC1_Control', 'MOC1_antiPDL1', 'MOC1_antiCTLA4', 'MOC1_antiCTLA4_antiPDL1'};
 observables={'TV' 'CD8' 'Tumor.antiPDL1' 'Tumor.antiCTLA4'};
 stateVar={'Tumor'};
 doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
@@ -102,17 +102,17 @@ PI.H.CellParams.OmegaIndex = [];
 sim = createSimFunction(model,parameters,observables, doses,human);
 
 %% Doses
-dosing_times = 0:21:365;
+dosing_times_antiPDL1 = 0:21:365;
 
-antiPDL1_dose = 770*1e-3/1.5e5*1e6;
-antiCTLA4_dose = 385*1e-3/1.5e5*1e6;
+antiPDL1_dose = 77*10*1e-3/1.5e5*1e6; % kg*mg/kg*g/mg*mole/g*µmol/mol
+antiCTLA4_dose = 77*3*1e-3/1.5e5*1e6;   % kg*mg/kg*g/mg*mole/g*µmol/mol
 
-control = table(dosing_times', repelem(0,length(dosing_times),1),...
-    repelem(0/60, length(dosing_times),1),'VariableNames',{'Time' 'Amount' 'Rate'});
-antiPDL1 = table(dosing_times', repelem(antiPDL1_dose,length(dosing_times),1),...
-    repelem(antiPDL1_dose/60, length(dosing_times),1),'VariableNames',{'Time' 'Amount' 'Rate'});
-antiCTLA4 = table(dosing_times', repelem(antiCTLA4_dose,length(dosing_times),1),...
-    repelem(antiCTLA4_dose/60, length(dosing_times),1),'VariableNames',{'Time' 'Amount' 'Rate'});
+control = table(dosing_times_antiPDL1', repelem(0,length(dosing_times_antiPDL1),1),...
+    repelem(0/60, length(dosing_times_antiPDL1),1),'VariableNames',{'Time' 'Amount' 'Rate'});
+antiPDL1 = table(dosing_times_antiPDL1', repelem(antiPDL1_dose,length(dosing_times_antiPDL1),1),...
+    repelem(antiPDL1_dose/60, length(dosing_times_antiPDL1),1),'VariableNames',{'Time' 'Amount' 'Rate'});
+antiCTLA4 = table(dosing_times_antiPDL1', repelem(antiCTLA4_dose,length(dosing_times_antiPDL1),1),...
+    repelem(antiCTLA4_dose/60, length(dosing_times_antiPDL1),1),'VariableNames',{'Time' 'Amount' 'Rate'});
 
 control.Properties.VariableUnits = {'day' 'micromole' 'micromole/minute'};
 antiPDL1.Properties.VariableUnits = {'day' 'micromole' 'micromole/minute'};

@@ -10,6 +10,6 @@ for i=1:length(groups)
     sd = and(and(~pd,~pr), ~cr);
     response{1:4,i+1} = [mean(pd); mean(sd); mean(pr); mean(cr)];
     PI.output(i).PFS = [pd sd pr cr];
-    PI.output(i).PFS_St
+%     PI.output(i).PFS_St
 end
 response.Properties.VariableNames = ['Response' groups];

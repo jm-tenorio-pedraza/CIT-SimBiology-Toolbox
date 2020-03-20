@@ -104,13 +104,19 @@ for i=1:length(unique_groups)
             response(~respIndx) =  {'Responder'};
             
         case 4
-            respIndx = cellfun(@(x) x(end)>0.01 || isnan(x(end)) || all(isnan(x)), TV_i);
             temp = [];
              nan_indx = cellfun(@(x) isnan(x), TV_i,'UniformOutput', false);
             [temp(1:length(TV_i)).time] = dataTime_i{:,:};
             [temp(1:length(TV_i)).nanIndx] = nan_indx{:,:};
-            
+            [temp(1:length(TV_i)).TV] = TV_i{:,:};
+
             time_an = arrayfun(@(x) x.time(~x.nanIndx), temp, 'UniformOutput', false);
+            tv_an = arrayfun(@(x) x.TV(~x.nanIndx), temp, 'UniformOutput', false);
+            try
+            respIndx = cellfun(@(x) x(end)>0.01 || isnan(x(end)) || all(isnan(x)), tv_an);
+            catch
+                respIndx = true;
+            end
             try
             time_end_p =  cellfun(@(x) x(end), time_an(respIndx));
             time_end_r =  cellfun(@(x) x(end), time_an(~respIndx));
@@ -120,9 +126,10 @@ for i=1:length(unique_groups)
                 time_end_p =  cellfun(@(x) x(end), time_an(respIndx));
                 time_end_r =  cellfun(@(x) x(end), time_an(~respIndx));
             end
-            
-            kinIndx_p = time_end_p<=median(time_end_p);
-            kinIndx_r = time_end_r<median(time_end_r);
+            endValueIndx_r = cellfun(@(x) x(end)==0, TV_i(~respIndx));
+
+            kinIndx_p = (time_end_p<=median(time_end_p)+3);
+            kinIndx_r = or(time_end_r<=median(time_end_r+3), endValueIndx_r);
             
             mean_i_f_p = NaN(length(time),length(stateVar));
             sd_i_f_p = NaN(length(time),length(stateVar));
@@ -207,10 +214,12 @@ for i=1:length(unique_groups)
                     end
                     
                 case 4
-                    mean_i_f_p(:,j) = mean(mat_ij(:,kinIndx_p),2, 'omitnan');
-                    mean_i_f_r(:,j) = mean(mat_ij(:,kinIndx_r),2, 'omitnan');
-                    mean_i_s_p(:,j) = mean(mat_ij(:,~kinIndx_p),2, 'omitnan');
-                    mean_i_s_r(:,j) = mean(mat_ij(:,~kinIndx_r),2, 'omitnan');
+                    nonRespIndx = find(respIndx);
+                    RespIndx = find(~respIndx);
+                    mean_i_f_p(:,j) = mean(mat_ij(:,nonRespIndx(kinIndx_p)),2, 'omitnan');
+                    mean_i_f_r(:,j) = mean(mat_ij(:,RespIndx(kinIndx_r)),2, 'omitnan');
+                    mean_i_s_p(:,j) = mean(mat_ij(:,nonRespIndx(~kinIndx_p)),2, 'omitnan');
+                    mean_i_s_r(:,j) = mean(mat_ij(:,RespIndx(~kinIndx_r)),2, 'omitnan');
                     if n_i == 1
                         sd_i_f_p(:,j) = matSD_ij;
                     else

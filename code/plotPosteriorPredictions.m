@@ -5,9 +5,12 @@ end
 p=inputParser;
 p.addParameter('simTime',PI.tspan);
 p.addParameter('outputs','indiv');
+p.addParameter('all', false);
 
 p.parse(varargin{:});
 p=p.Results;
+
+
 n_sim=size(PI.data,1);
 treatments=([PI.CI(:).Group]);
 
@@ -20,28 +23,45 @@ treatment_colors=linspecer(length(treatments));
 for i=1:length(outputs)
     output_i=char(outputs(i));
     figure('Renderer', 'painters', 'Position', [10 10 1000 800])
-    ncol=ceil(sqrt(length(PI.CI)));
-    nrow=ceil(length(PI.CI)/ncol);
+    
+    if p.all
+        n_sim=size(PI.data,1);
+        sim_indx = ones(n_sim,1);
+        ncol=ceil(sqrt(n_sim));
+        nrow=ceil(n_sim/ncol);
+    else
+        sim_indx=(arrayfun(@(x) ~all(isnan(x.dataValue(:,i))), PI.data));
+        n_sim = sum(sim_indx);
+        ncol = ceil(sqrt(n_sim));
+        nrow = ceil(n_sim/ncol);
+    end
+   
+try
+    minX = min(arrayfun(@(x) min(x.dataValue(:,i)), PI.data, 'UniformOutput', true));
+    maxX = max(arrayfun(@(x) max(x.dataValue(:,i)), PI.data, 'UniformOutput', true));
 
-    for j=1:size(PI.CI,2)
+catch
+end
+    for j=1:n_sim
+        simIndx = find(sim_indx);
         simTime=[p.simTime p.simTime(end:-1:1)];
-        ci_data=[PI.CI(j).(output_i){'UB',:}, PI.CI(j).(output_i){'LB',:}(end:-1:1)];
-        m_data =PI.CI(j).(output_i){'Median',:};
+        ci_data=[PI.CI(simIndx(j)).(output_i){'UB',:}, PI.CI(simIndx(j)).(output_i){'LB',:}(end:-1:1)];
+        m_data =PI.CI(simIndx(j)).(output_i){'Median',:};
         ci_nan=or(isnan(ci_data),ci_data==0);
         m_nan=or(isnan(m_data), m_data==0);
        
         if strcmp(p.outputs,'indiv')
             subplot(nrow,ncol,j)
-            pi_data=[PI.CI(j).(output_i){'Pred_UB',:}, PI.CI(j).(output_i){'Pred_LB',:}(end:-1:1)];
+            pi_data=[PI.CI(simIndx(j)).(output_i){'Pred_UB',:}, PI.CI(simIndx(j)).(output_i){'Pred_LB',:}(end:-1:1)];
             pi_nan=or(isnan(pi_data), pi_data==0);
                         
              % Plotting prediction interval
             pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
         else
-            if all(isnan( PI.data(j).dataValue(:,i)))
+            if all(isnan( PI.data(simIndx(j)).dataValue(:,i)))
                 continue
             else
-                  pi_data=[PI.CI(j).(output_i){'Pred_UB',:}, PI.CI(j).(output_i){'Pred_LB',:}(end:-1:1)];
+                  pi_data=[PI.CI(simIndx(j)).(output_i){'Pred_UB',:}, PI.CI(simIndx(j)).(output_i){'Pred_LB',:}(end:-1:1)];
             pi_nan=or(isnan(pi_data), pi_data==0);
                         
              % Plotting prediction interval
@@ -60,12 +80,12 @@ for i=1:length(outputs)
         
         % Plotting data
         try
-            dat= errorbar(PI.data(j).dataTime, PI.data(j).dataValue(:,i), PI.data(j).SD(:,i));
+            dat= errorbar(PI.data(simIndx(j)).dataTime, PI.data(simIndx(j)).dataValue(:,i), PI.data(simIndx(j)).SD(:,i));
         catch
-            dat=plot(PI.data(j).dataTime, PI.data(j).dataValue(:,i));
+            dat=plot(PI.data(simIndx(j)).dataTime, PI.data(simIndx(j)).dataValue(:,i));
         end
         
-        col_i=treatment_colors(ismember(treatments,PI.CI(j).Group),:);
+        col_i=treatment_colors(ismember(treatments,PI.CI(simIndx(j)).Group),:);
         pi.FaceColor=col_i;
         pi.EdgeColor=col_i;
         pi.FaceAlpha=0.2;
@@ -96,14 +116,13 @@ for i=1:length(outputs)
             if strcmp(p.outputs,'indiv')
                 title(PI.data(j).Name,'interpreter','none')
                 try
-                    legend(ax.Children, {'Data' output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none')
+                    legend(ax.Children, {'Data' output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none','Location', 'best')
                 catch
-                    legend(ax.Children, {output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none')
+                    legend(ax.Children, {output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none','Location', 'best')
                 end
             end
-            if max(m_data)>1 && strcmp(PI.variableUnits{i},'Volume [mL]')
-            ylim([0 3]) 
-            end
+                    ylim([floor(minX), ceil(maxX)])
+
     end
     if (strcmp('%',PI.variableUnits{i}))
         ylim([0 100])
