@@ -69,7 +69,7 @@ PI=getCredibleIntervals(PI,PI.observablesPlot, exp(postSamples),PI.H, 'logit_ind
 plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv','all', true)
 
 %% Posterior credible intervals
- PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
+PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
 plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
 PI.postSamples = postSamples;
 plotHistogram(PI.postSamples(:,[PI.H.PopulationParams]),...

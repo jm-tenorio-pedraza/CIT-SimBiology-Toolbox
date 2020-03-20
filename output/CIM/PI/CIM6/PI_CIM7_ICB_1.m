@@ -94,7 +94,7 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
-save('PI_CIM7_ICB_8.mat', 'PI')
+save('PI_CIM7_ICB_2.mat', 'PI')
 load(strjoin({cd 'PI_CIM7_ICB_2.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
