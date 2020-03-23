@@ -58,12 +58,12 @@ PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct2(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [4 5 10] , 'cell_indx',[8 9], 'n_indiv', length(PI.u));
+    'rand_indx', [3 4 10] , 'cell_indx',[7 9], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
-lb=([1e-3    1e-3   1e-3    1e-6    1e-3     1e-3    1e-3   1e-3    1e-3    1e-4    1e-6    1e0    1e0 ])';
-ub=([1e3     1e3    10      1e3     1e3      1e3     1e3    1e0     1       1e3     1e3     1e7     1e4 ])';
+lb=([1e-3    1e-3   1e-3    1e-6    1e-3     1e-3    1e-3   1e-3    1e-3    1e-4    1e-6    1e0    1e0])';
+ub=([1e2     1e3    10      1e2     1e2      1e2     1e3    1e0     1e3     1e0     1e3     1e7     1e4])';
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 try
