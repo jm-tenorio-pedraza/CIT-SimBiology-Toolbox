@@ -20,7 +20,7 @@ set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
 parameters = {'kin_CD8';'KDE_MDSC'; ...
     'kpro_Tumor'; 'kill_CD8'; 'kin_Treg' ; 'K_IFNg';...
-    'K_MDSC';'kin_MDSC';'kin_DC';'f3'; 'kpro_Tumor_Linear'; };
+    'K_MDSC';'kin_MDSC';'kin_DC';'f3'; 'kpro_Tumor_Linear'; 'S_L'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs

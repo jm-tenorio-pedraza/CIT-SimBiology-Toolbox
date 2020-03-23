@@ -122,7 +122,7 @@ end
                 end
             end
                     ylim([floor(minX), ceil(maxX)])
-
+set(ax, 'YScale', 'log')
     end
     if (strcmp('%',PI.variableUnits{i}))
         ylim([0 100])
