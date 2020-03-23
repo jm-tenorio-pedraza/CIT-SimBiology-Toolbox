@@ -3,7 +3,7 @@
 warning on
 clear all
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM6')
+cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM8')
 
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_4.sbproj');
@@ -18,9 +18,9 @@ set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-10);
 set(cs, 'MaximumWallClock', 0.25)
 %% Parameter setup
-parameters = {'kin_CD8';'KDE_MDSC'; ...
-    'kpro_Tumor'; 'kill_CD8'; 'kin_Treg' ; 'K_IFNg';...
-    'K_MDSC';'kin_MDSC';'kin_DC';'f3'; 'kpro_Tumor_Linear'; 'S_L'};
+parameters = {'S_L';'kin_CD8';'KDE_MDSC'; ...
+    'kpro_Tumor'; 'kill_CD8'; 'kin_Treg' ;...
+    'kin_MDSC';'f3'; 'kpro_Tumor_Linear'; 'kill_Treg';'K_PDL1';'K_CTLA4'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -59,7 +59,7 @@ PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [3 4 11] , 'cell_indx',[ 8 7 10], 'n_indiv', length(PI.u));
+    'rand_indx', [1 4 5] , 'cell_indx',[], 'n_indiv', length(PI.u));
 if ~isempty(PI.H.IndividualParams(1).Index)
         indivSigmaNames=arrayfun(@(x)strjoin({'omega', x.name}, '_'),PI.H.IndividualParams,'UniformOutput',false)';
 else
@@ -91,8 +91,8 @@ sigma_prior= [ repelem(1,length(PI.H.PopulationParams), 1);...
     repelem(.1, length([PI.H.CellParams(:).Index]),1);
      repelem(1, length([PI.H.IndividualParams(:).Index]),1);...
     alpha];
-lb=([1e-3    1e-6   1e-3    1e-6    1e-3    1e-3    1e-3    1e-3    1e-3    1e-4    1e-4 ])';
-ub=([1e3     1e3    10      1e3     1e3     1e3     1       1e3     1e3     10      1    ])';
+lb=([1e-3   1e-3    1e-3   1e-3    1e-6    1e-3    1e-3    1e-3    1e-4    1e-6    1e0      1e0 ])';
+ub=([1e3    1e3     1e3    10      1e3     1e3     1e3     1       1e3     1e3     1e5      1e4 ])';
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 try
@@ -101,10 +101,10 @@ catch
     finalValues =log([PI.par(:).startValue]);
 
 end
-prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U'};
+prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U'};
 
 % Log-ikelihood function
-likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
+likelihood_fun=@(p)likelihood2(exp(p),sim,PI,'censoring',false);
 % prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma/inverse gamma'}));
 prior_fun=@(p)getPriorPDF(p,PI, prior);
 prior_fun_MCMC=@(p)getPriorPDFMCMC(p,PI, prior);
@@ -132,8 +132,8 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
-save('PI_CIM7_Control_3.mat', 'PI')
-load(strjoin({cd 'PI_CIM7_Control_3.mat'},'/'),'PI')
+save('PI_CIM8_Control_2.mat', 'PI')
+load(strjoin({cd 'PI_CIM8_Control_1.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
