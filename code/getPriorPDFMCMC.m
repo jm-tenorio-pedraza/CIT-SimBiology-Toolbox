@@ -6,8 +6,8 @@ priorW = repelem({'N_z'}, 1, length([PI.H.CellParams.Index]));
 
 prior = [prior priorW priorZ priorSigma];
 
-N = @(x,mu,sigma) exp(-(x-mu).^2./(2*sigma.^2));
-N_z = @(x,sigma) exp(-(x.^2)./(2*sigma.^2));
+N = @(x,mu,sigma) exp(-(x-mu).^2./(2*sigma.^2))./(2*pi*sigma);
+N_z = @(x,sigma) exp(-(x.^2)./(2*sigma.^2))./(2*pi*sigma);
 
 U = @(x,a,b) prod(and(x>=a, x<=b));
 IG = @(x,a,b) x.^(-a-1).*exp(-b./x);

@@ -4,11 +4,11 @@
 clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_TwoComp/PI/TwoComp_4')
+cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_TwoComp/PI/TwoComp_3')
 sensitivity = false;
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/TwoComp_4.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/TwoComp_3.sbproj');
 % Extract model
 model=out.m1;
 cs=model.getconfigset;
@@ -18,7 +18,7 @@ set(cs, 'MaximumWallClock', 0.25)
 MODEL = 'TwoComp_CE';
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor'; 'CL'; 'Q23'; 'kint';'PDL1_Tumor'; 'PDL1_Blood'; 'ID'};
+parameters = {'Blood'; 'CL'; 'Q23'; 'Tumor'; 'kint';'PDL1_Tumor';'PDL1_Blood';'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_Id_g_Tumor' 'ID_g_Tumor_free' 'T2B'  };
 
@@ -47,13 +47,13 @@ PI.x_0 =[PI.data(:).dose]';
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct2(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [3],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [2],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([0.1 0.1 .001], [0.1, 0.1 0.001], [1 1 1], PI);
-lb = [1e-3  1e-3    1e-4    1e-4    1e-4    1e0     1e0];
-ub = [1e1   1e1     1e2     1e2     1e1     1e6     1e6];
+lb = [1e-4  1e-4    1e-4    1e-4 ];
+ub = [1e1   1e1     1e2     1e3];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 try
@@ -62,8 +62,7 @@ catch
     finalValues =log([PI.par(:).startValue]);
 
 end
-prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U'};
-
+prior = {'U' 'U' 'U' 'U'};
 
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood2(exp(p),sim,PI,'censoring',false);
@@ -81,10 +80,10 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_TwoComp4_9.mat', 'PI')
-load(strjoin({cd 'PI_PK_TwoComp4_4.mat'},'/'))
+save('PI_PK_TwoComp1_7.mat', 'PI')
+load(strjoin({cd 'PI_PK_TwoComp1_3.mat'},'/'))
 
 save(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PK_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
-load(strjoin({cd '/PI_PK_TwoComp4_4_DREAM_MCMC_p_x.mat'},''))
-load(strjoin({cd '/PI_PK_TwoComp4_4_DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/PK_red_DREAM_MCMC_p_x.mat'},''))
