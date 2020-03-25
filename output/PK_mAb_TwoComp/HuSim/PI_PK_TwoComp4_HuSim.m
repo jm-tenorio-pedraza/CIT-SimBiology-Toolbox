@@ -77,16 +77,27 @@ toc
 %% Load posterior samples
 PI_Preclinical=load(strjoin({cd 'PI_PK_TwoComp4_4.mat'},'/'));
 load(strjoin({cd '/PI_PK_TwoComp4_4_DREAM_MCMC_x.mat'},''))
-postSamples = PI_Preclinical.PI.postSamples(:,[1:7 15:19]) ;
+postSamples = exp(PI_Preclinical.PI.postSamples(:,[1:7 15:19])) ;
 N_pop=100;
 N_indiv = 10;
 randIndx = rand(1:size(postSamples), N_pop,1);
-Theta = NaN(N_pop*N_indiv, length(parameters));
 Theta = repmat(postSamples(randIndx,:), N_indiv, 1);
-Z_indiv = randn(N_indiv*N_pop, 1).*exp(Theta(:,,8));
+Z_indiv = exp(randn(N_indiv*N_pop, 1)).*(Theta(:,8));
 
 scalingExp = [0.9 0.9 0.9 0.9 0 0 0];
 scalingFactor = (77/.022).^(scalingExp);
+
+Theta(:,8) = Z_indiv;
+Theta(:,1:7) = Theta(:,1:7).*scalingFactor;
+%% Posterior predictions
+simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
+    @(p)getPhi3(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
+tic
+PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesPlot);
+toc
+PI=getCredibleIntervals(PI,PI.observablesPlot, (postSamples),PI.H);
+plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
+
 
 
 
