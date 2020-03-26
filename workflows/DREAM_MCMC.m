@@ -30,8 +30,8 @@ plotMCMCDiagnostics(x([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 1.5e3;
-burnIn=6e5;
+delta = 8e2;
+burnIn=2e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
@@ -58,7 +58,7 @@ plotBivariateMarginals_2(exp(postSamples(:, PI.H.SigmaParams)),'names',...
 plotIIVParams(postSamples, PI,'name', paramNames)
 %% Posterior predictions
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
-    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
+    @(p)getPhi3(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
 tic
 PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesPlot);
 toc

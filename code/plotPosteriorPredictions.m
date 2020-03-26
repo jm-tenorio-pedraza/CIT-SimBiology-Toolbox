@@ -114,7 +114,7 @@ end
         end
         ax=gca;
             if strcmp(p.outputs,'indiv')
-                title(PI.data(j).Name,'interpreter','none')
+                title(PI.data(simIndx(j)).Name,'interpreter','none')
                 try
                     legend(ax.Children, {'Data' output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none','Location', 'best')
                 catch
@@ -122,7 +122,7 @@ end
                 end
             end
                     ylim([floor(minX), ceil(maxX)])
-set(ax, 'YScale', 'log')
+%set(ax, 'YScale', 'log')
     end
     if (strcmp('%',PI.variableUnits{i}))
         ylim([0 100])
