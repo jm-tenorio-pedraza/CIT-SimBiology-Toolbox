@@ -42,8 +42,9 @@ try
 
 catch
 end
-    for j=p.indx
         simIndx = find(sim_indx);
+
+    for j=1:length(simIndx)
         simTime=[p.simTime p.simTime(end:-1:1)];
         ci_data=[PI.CI(simIndx(j)).(output_i){'UB',:}, PI.CI(simIndx(j)).(output_i){'LB',:}(end:-1:1)];
         m_data =PI.CI(simIndx(j)).(output_i){'Median',:};
@@ -121,7 +122,7 @@ end
                     legend(ax.Children, {output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none','Location', 'best')
                 end
             end
-                   % ylim([floor(minX), ceil(maxX)])
+                    ylim([floor(minX), ceil(maxX)])
 %set(ax, 'YScale', 'log')
     end
     if (strcmp('%',PI.variableUnits{i}))

@@ -17,6 +17,7 @@ set(cs.SolverOptions, 'RelativeTolerance', 1.0e-9);
 set(cs, 'MaximumWallClock', 0.25)
 MODEL = 'TwoComp_CE';
 variants = get(model,'variants');
+sbioaccelerate(model)
 %% Setting up parameters, data and simulations
 
 parameters = {'Blood'; 'Tumor';'CL'; 'Q23';'kint';'PDL1_Tumor'; 'PDL1_Blood'; 'ID'};

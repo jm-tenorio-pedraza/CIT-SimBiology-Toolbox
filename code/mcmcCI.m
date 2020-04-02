@@ -12,20 +12,20 @@ n_p = size(p_hat,2);
 n_samples= size(p_hat,1);
 p_sorted=sortrows([logP p_hat],1);
 p_sorted=p_sorted(end:-1:1,:);
+
 indx=cumsum(p_sorted(:,1))/sum(p_sorted(:,1))>=prob;
 int =1:n_samples;
 indx=int(indx);
 indx=indx(1);
 for i=1:n_p
-    modeHPD = mode(p_hat(:,i));
+    mapHPD = (p_sorted(1,i+1));
     meanHPD = mean(p_hat(:,i));
     SD = std(exp(p_hat(:,i)));
-    PI.par(i).posterior_mode=p_sorted(1,i+1);
     if strcmp(p.method, 'symmetric')
         LB=exp(quantile(p_hat(:,i),(1-prob)/2));
         UB=exp(quantile(p_hat(:,i),0.5+prob/2));
 
-        PI.par(i).posterior_mode=exp(modeHPD);
+        PI.par(i).MAP=exp(mapHPD);
         PI.par(i).posterior_mean=exp(meanHPD);
 
         PI.par(i).LB=LB;
