@@ -17,6 +17,7 @@ cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-10);
 set(cs, 'MaximumWallClock', 0.25)
+sbioaccelerate(model)
 %% Parameter setup
 parameters = {'kin_CD8';'KDE_MDSC';'kpro_Tumor'; 'kill_CD8'; 'kin_Treg' ;...
     'kin_DC';'kin_MDSC'; 'K_MDSC';'f3'; 'kpro_Tumor_Linear'; 'kill_Treg';'K_PDL1';'K_CTLA4'};
