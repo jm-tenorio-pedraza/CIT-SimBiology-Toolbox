@@ -11,8 +11,8 @@ w0=X0(I(1:N),:);
 h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun_MCMC,...
-    size(w0,1),ceil(1e6/size(w0,1)), length(finalValues), 'BurnIn', ...
-    2e5,'StepSize',2.38,'H', h);
+    size(w0,1),ceil(3e6/size(w0,1)), length(finalValues), 'BurnIn', ...
+    6e5,'StepSize',2.38,'H', h);
 toc
 
 tic
@@ -71,8 +71,8 @@ plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
 PI.postSamples = postSamples;
 plotHistogram(PI.postSamples, paramNames)
 %% Save results
-save(strjoin({cd '/PI_PK_TwoComp4_4_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/PI_PK_TwoComp4_4DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/PI_CIM9_Control_2_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/PI_CIM9_Control_2_DREAM_MCMC_p_x.mat'},''), 'p_x')
 
 load(strjoin({cd '/CIM_red2_DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/CIM_red2_DREAM_MCMC_p_x.mat'},''))
