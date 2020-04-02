@@ -50,12 +50,12 @@ PI.AIC = 2*length(PI.par)-2*likelihood_fun(finalValues)*(1);
 
 %% Simulation output
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
-    @(p)getPhi3(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H);
+    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H);
  
      
 %% Plotting output
 for i=1:length(observables)
-plotSimOutput(PI,i,'all', false)
+plotSimOutput(PI,i,'all', false, 'indiv', true, 'addErrorVar', true)
 end
 %%
 finalValue=num2cell(exp(finalValues'));

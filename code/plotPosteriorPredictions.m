@@ -6,7 +6,7 @@ p=inputParser;
 p.addParameter('simTime',PI.tspan);
 p.addParameter('outputs','indiv');
 p.addParameter('all', false);
-
+p.addParameter('indx', 1:length(PI.data));
 p.parse(varargin{:});
 p=p.Results;
 
@@ -25,12 +25,12 @@ for i=1:length(outputs)
     figure('Renderer', 'painters', 'Position', [10 10 1000 800])
     
     if p.all
-        n_sim=size(PI.data,1);
+        n_sim=length(p.indx);
         sim_indx = ones(n_sim,1);
         ncol=ceil(sqrt(n_sim));
         nrow=ceil(n_sim/ncol);
     else
-        sim_indx=(arrayfun(@(x) ~all(isnan(x.dataValue(:,i))), PI.data));
+        sim_indx=(arrayfun(@(x) ~all(isnan(x.dataValue(:,i))), PI.data(p.indx)));
         n_sim = sum(sim_indx);
         ncol = ceil(sqrt(n_sim));
         nrow = ceil(n_sim/ncol);
@@ -42,7 +42,7 @@ try
 
 catch
 end
-    for j=1:n_sim
+    for j=p.indx
         simIndx = find(sim_indx);
         simTime=[p.simTime p.simTime(end:-1:1)];
         ci_data=[PI.CI(simIndx(j)).(output_i){'UB',:}, PI.CI(simIndx(j)).(output_i){'LB',:}(end:-1:1)];
@@ -121,7 +121,7 @@ end
                     legend(ax.Children, {output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none','Location', 'best')
                 end
             end
-                    ylim([floor(minX), ceil(maxX)])
+                   % ylim([floor(minX), ceil(maxX)])
 %set(ax, 'YScale', 'log')
     end
     if (strcmp('%',PI.variableUnits{i}))
