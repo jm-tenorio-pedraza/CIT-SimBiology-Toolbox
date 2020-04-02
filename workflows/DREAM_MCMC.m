@@ -30,8 +30,8 @@ plotMCMCDiagnostics(x([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 1.5e3;
-burnIn=6e5;
+delta = 8e2;
+burnIn=2e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));

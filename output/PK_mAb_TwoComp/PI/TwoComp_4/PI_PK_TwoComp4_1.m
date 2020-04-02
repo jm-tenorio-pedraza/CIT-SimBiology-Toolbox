@@ -33,8 +33,8 @@ dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbo
 
 PI.u = PI.u(:,1);
 PI.variableUnits={'%ID/g'  '%ID/g' '%ID/g' '[]' };
-PI.observablesPlot = {'Blood.antiPDL1_Indium'...
-    'Tumor.antiPDL1_Indium' 'Tumor.antiPDL1_Free' 'Tumor to blood_Indium' };
+PI.observablesPlot = {'Serum_antiPDL1_Indium'...
+    'Tumor_antiPDL1_Indium' 'Tumor_antiPDL1_Free' 'Tumor_to_blood_Indium' };
 
 dose = {'Blood.antiPDL1'};
 sim=createSimFunction(model,parameters,observables, dose,[],...
@@ -52,8 +52,8 @@ PI.H = getHierarchicalStruct2(parameters(1:end-1),PI,'n_sigma', length(observabl
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([0.1 0.1 .001], [0.1, 0.1 0.001], [1 1 1], PI);
-lb = [1e-3  1e-3    1e-4    1e-4    1e-4    1e0     1e0];
-ub = [1e1   1e1     1e2     1e2     1e1     1e6     1e6];
+lb = [1e0  1e-2    1e-2    1e-4    1e-5    1e3     1e3];
+ub = [1e1  1e1     1e2     1e0     1e1     1e6     1e6];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 try
@@ -81,7 +81,7 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_TwoComp4_9.mat', 'PI')
+save('PI_PK_TwoComp4_4.mat', 'PI')
 load(strjoin({cd 'PI_PK_TwoComp4_4.mat'},'/'))
 
 save(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''), 'x')

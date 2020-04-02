@@ -5,11 +5,11 @@ inputs = [PI.par(PI.H.PopulationParams).finalValue];
 %inputs = [PI.par(PI.H.PopulationParams).posterior_mean];
 
 variant = [[PI.par([PI.H.CellParams.EtaIndex]).finalValue];reshape([PI.par([PI.H.CellParams.Index]).finalValue],[],length(PI.H.CellParams))];
-eta = [[PI.par([PI.H.IndividualParams.EtaIndex]).finalValue];reshape([PI.par([PI.H.IndividualParams.Index]).finalValue],[],length(PI.H.IndividualParams))];
+% eta = [[PI.par([PI.H.IndividualParams.EtaIndex]).finalValue];reshape([PI.par([PI.H.IndividualParams.Index]).finalValue],[],length(PI.H.IndividualParams))];
 
 inputs = [repelem(inputs,size(PI.x_0,1),1) PI.x_0(:,1)];
 inputs(:,[PI.H.CellParams.EtaIndex]) = inputs(:,[PI.H.CellParams.EtaIndex]).*(PI.H.CellIndx*variant);
-inputs(:,[PI.H.IndividualParams.EtaIndex]) = inputs(:,[PI.H.IndividualParams.EtaIndex]).*eta;
+% inputs(:,[PI.H.IndividualParams.EtaIndex]) = inputs(:,[PI.H.IndividualParams.EtaIndex]).*eta;
 group = [PI.data(:).Group];
 
 % Get sensitivity matrix

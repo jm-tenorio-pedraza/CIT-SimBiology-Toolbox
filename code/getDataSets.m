@@ -2,7 +2,7 @@ function [PI,doses] = getDataSets(dataset_file_ext,varargin)
 p = inputParser;
 p.addParameter('zeroAction','omit');
 p.addParameter('subsetVariables',{});
-
+p.addParameter('species', 'mouse');
 p.parse(varargin{:});
 p=p.Results;
 
@@ -17,7 +17,7 @@ varNames = setdiff(varNames, {'Time_hour_s__' 'Group' 'Dose_mg_kg_' 'Dose2_mg_kg
 
 groups = cellfun(@(x)unique(x.Group, 'stable'),data,'UniformOutput',false);
 groups = cat(1,groups{:,:});                                                  % Extract the groups from each dataset
-names = cellfun(@(x)unique(x.Name),data,'UniformOutput',false);
+names = cellfun(@(x)unique(x.Name, 'stable'),data,'UniformOutput',false);
 names = cat(1,names{:,:});
 meanIndx = cellfun(@(x) cellfun(@(y)strcmp(y(1:2),'SD'),...
     x.Properties.VariableNames,'UniformOutput',true),data,...
@@ -38,7 +38,6 @@ SD = cellfun(@(x)nan(size(x,1),nVar),data,'UniformOutput',false);           % Al
 
 PI = [];                                                                    % Create PI structure
 [PI.data(1:length(groups)).Name] = names{:,:};                             % Add one group entry to the PI structure for each considered condition in each dataset
-
 [PI.data(1:end).Group] = groups{:};                                         % Add one group entry to the PI structure for each considered condition in each dataset
 
 for i=1:length(data)
@@ -46,12 +45,20 @@ for i=1:length(data)
     [varIndx,dataIndx] = ismember(varNames,data_i.Properties.VariableNames);
     dataValue{i}(:,varIndx) = data_i{:,setdiff(dataIndx,0,'stable')};
     SD{i}(:,varIndx) = data_i{:,setdiff(dataIndx,0,'stable')+1};
+    [~, boolIndx] = ismember(p.subsetVariables, varNames);
+    dataValue{i} = dataValue{i}(:,boolIndx);
+    SD{i} = SD{i}(:,setdiff(boolIndx,0,'stable'));
+    
 end
+
+
+
+
+%% Add data values and time points
 indx=1;
-% Add data values and time points
 for i = 1:length(data)
     data_i = data{i};
-    groups_i = unique(data_i.Group);
+    groups_i = unique(data_i.Group,'stable');
     for j = 1:length(groups_i)
         valueIndx = ismember(data_i.Group,groups_i(j));
         dataValue_i = dataValue{i}(valueIndx,:);
@@ -60,7 +67,7 @@ for i = 1:length(data)
         if strcmp(p.zeroAction,'omit')
             zeroIndx = ~any(dataValue_i==0,2);
         else
-            zeroIndx = dataValue==dataValue_i;
+            zeroIndx = ~(dataValue_i==dataValue_i);
         end
         PI.data(indx).dataTime = dataTime_i(zeroIndx,:);
         PI.data(indx).dataValue = dataValue_i(zeroIndx,:);
@@ -71,30 +78,23 @@ end
      
 % Add dosage
 if ~isempty(dataDoses2)
-[PI,doses] = getDoses(PI, 'doses', [dataDoses dataDoses2]);
+    [PI,doses] = getDoses(PI, 'doses', [dataDoses dataDoses2], 'species', p.species);
 else
-    [PI,doses] = getDoses(PI, 'doses', dataDoses);
+    [PI,doses] = getDoses(PI, 'doses', dataDoses, 'species', p.species);
 end
 for i=1:size(doses,1)
     for j=1:size(doses,2)
+        if strcmp(p.species, 'mouse')
     doses{i,j}.Properties.VariableUnits = {'hour' 'micromole' 'micromole/second'};
+        elseif strcmp(p.species, 'human')
+                doses{i,j}.Properties.VariableUnits = {'hour' 'micromole' 'micromole/minute'};
+        end
+            
     end
 end
 
 [PI.data(1:end).doses] = doses{:,1};
-
 PI.stateVar = varNames;
-
-%% Subset variables
-if ~isempty(p.subsetVariables)
-    [bool_indx, var_indx] = ismember(varNames, p.subsetVariables);
-    indx = find(bool_indx);
-    data = cellfun(@(x) x(:,indx),{PI.data(:).dataValue}, 'UniformOutput', false);
-    [PI.data(1:end).dataValue] = data{:,:}; 
-    SD = cellfun(@(x) x(:,indx),{PI.data(:).SD}, 'UniformOutput', false);
-    [PI.data(1:end).SD] = SD{:,:};
-end
-
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},'UniformOutput',true));
 PI.data = PI.data';
 PI.tspan = unique(cat(1,PI.data(:).dataTime));
