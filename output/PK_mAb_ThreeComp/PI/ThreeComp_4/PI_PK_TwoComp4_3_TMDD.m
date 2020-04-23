@@ -50,13 +50,13 @@ clear dataset_file_ext dose MODEL
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[2], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[2 3 4 7], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
-lb = [1e-3   1e-3 1e-3    1e-3  1e-4    1e0 1e-2];
-ub = [1e1    1e1  1e2     1e2   1e2     1e6 1e1];
+lb = [1e-1   1e-4   1e-3   1e-4  1e-4    1e0 1e-2];
+ub = [1e1    2      1e2    1e2   1e2     1e6 1e1];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 
@@ -84,10 +84,10 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_TwoComp4_2_TMDD_2_red_11.mat', 'PI')
-load(strjoin({cd 'PI_PK_TwoComp4_2_TMDD_2_red.mat'},'/'))
+save('PI_PK_TwoComp4_3_TMDD_21.mat', 'PI')
+load(strjoin({cd 'PI_PK_TwoComp4_3_TMDD_21.mat'},'/'))
 
-save(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/PI_PK_TwoComp4_3_TMDD_21_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/PI_PK_TwoComp4_3_TMDD_21_DREAM_MCMC_p_x.mat'},''), 'p_x')
 load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_p_x.mat'},''))
 load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_x.mat'},''))

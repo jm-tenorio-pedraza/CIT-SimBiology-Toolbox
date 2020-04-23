@@ -12,14 +12,14 @@ out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Tool
 % Extract model
 model=out.m1;
 cs=model.getconfigset;
-set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-11);
-set(cs.SolverOptions, 'RelativeTolerance', 1.0e-9);
+set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
+set(cs.SolverOptions, 'RelativeTolerance', 1.0e-11);
 set(cs, 'MaximumWallClock', 0.25)
 MODEL = 'TwoComp_CE';
 variants = get(model,'variants');
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor';'CL'; 'Q23';'kint';'PDL1_Tumor'; 'kdeg_PDL1'; 'ID'};
+parameters = {'Blood'; 'Tumor';'CL'; 'Q23';'PDL1_Tumor'; 'kdeg_PDL1'; 'PDL1_Blood'; 'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_g_Blood_free' 'ID_Id_g_Tumor' 'ID_g_Tumor_free'};
 
@@ -46,17 +46,17 @@ PI.normIndx = [];
 PI.model = 'PK-Two Compartment Model';
 % Get initial values
 PI.x_0 =[PI.data(:).dose]';
-clear dataset_file_ext dose MODEL 
+clear dataset_file_ext  MODEL 
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[2], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
-lb = [1e-3   1e-3 1e-3    1e-3  1e-4    1e0 1e-2];
-ub = [1e1    1e1  1e2     1e2   1e2     1e6 1e1];
+lb = [1e-1   1e-3   1e-3    1e-3  1e4 1e-3 1e2];
+ub = [1e1    2      1e1     1e2   1e6 1e2   1e6];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 
@@ -84,10 +84,10 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_TwoComp4_2_TMDD_2_red_11.mat', 'PI')
-load(strjoin({cd 'PI_PK_TwoComp4_2_TMDD_2_red.mat'},'/'))
+save('PI_PK_TwoComp4_6_TMDD_0.mat', 'PI')
+load(strjoin({cd 'PI_PK_TwoComp4_4_TMDD_2.mat'},'/'))
 
-save(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/PI_PK_TwoComp4_3_TMDD_21_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/PI_PK_TwoComp4_3_TMDD_21_DREAM_MCMC_p_x.mat'},''), 'p_x')
 load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_p_x.mat'},''))
 load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_x.mat'},''))

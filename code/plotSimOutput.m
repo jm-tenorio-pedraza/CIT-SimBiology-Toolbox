@@ -3,6 +3,7 @@ par=inputParser;
 par.addParameter('all', true)
 par.addParameter('indiv', true)
 par.addParameter('addErrorVar', true)
+par.addParameter('newFig', true)
 par.parse(varargin{:})
 par = par.Results;
 
@@ -27,7 +28,7 @@ else
 end
 if par.indiv
 else
-    treatments = {PI.data(sim_indx).Name};
+    treatments = {PI.data(:).Name};
 end
 
 treatment_colors=linspecer(length(treatments));
@@ -39,7 +40,9 @@ try
 catch
     
 end
+if par.newFig
 figure('Position', [10 10 900 1000])
+end
 for i=1:n_sim
     if par.indiv
         subplot(n_row,n_col,i)
@@ -121,9 +124,9 @@ end
 ax = gca;
 if ~par.indiv
     if par.addErrorVar
-        legend(ax.Children(end-2:-3:1),{PI.data(sim_indx).Name}, 'location', 'best', 'interpreter','none')
+        legend(ax.Children(end-2:-3:1),{PI.data(simIndx).Name}, 'location', 'best', 'interpreter','none')
     else
-        legend(ax.Children(end-1:-2:1),{PI.data(sim_indx).Name}, 'location', 'best', 'interpreter','none')
+        legend(ax.Children(end-1:-2:1),{PI.data(simIndx).Name}, 'location', 'best', 'interpreter','none')
 
     end
         
