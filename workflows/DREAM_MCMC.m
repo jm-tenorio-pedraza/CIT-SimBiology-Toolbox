@@ -2,7 +2,7 @@
 finalValues = log([PI.par(:).finalValue]);
 N = length(finalValues);
 
-X0 =[ (finalValues); randn(100,length(finalValues))*0.2 + finalValues];
+X0 =[ (finalValues); randn(100,length(finalValues))*0.01 + finalValues];
 logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
 
@@ -11,8 +11,8 @@ w0=X0(I(1:N),:);
 h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun_MCMC,...
-    size(w0,1),ceil(3e6/size(w0,1)), length(finalValues), 'BurnIn', ...
-    6e5,'StepSize',2.38,'H', h);
+    size(w0,1),ceil(5e5/size(w0,1)), length(finalValues), 'BurnIn', ...
+    1e5,'StepSize',2.38,'H', h);
 toc
 
 tic
@@ -33,8 +33,8 @@ plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 8e2;
-burnIn=2e5;
+delta = 4e3;
+burnIn=6e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
@@ -55,13 +55,10 @@ plotBivariateMarginals_2((postSamples(:,[PI.H.PopulationParams PI.H.SigmaParams]
 % Individual and population parameters
 plotBivariateMarginals_2((postSamples(:, [PI.H.CellParams.Index PI.H.IndividualParams.Index])),...
     'names',paramNames([PI.H.CellParams.Index PI.H.IndividualParams.Index]))
-% Sigma parameters
-plotBivariateMarginals_2(exp(postSamples(:, PI.H.SigmaParams)),'names',...
-    {PI.par(H.SigmaParams).name})
 plotIIVParams(postSamples, PI,'name', paramNames)
 %% Posterior predictions
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
-    @(p)getPhi3(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
+    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
 tic
 PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesPlot);
 toc
@@ -74,8 +71,8 @@ plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
 PI.postSamples = postSamples;
 plotHistogram(PI.postSamples(:,[PI.H.PopulationParams]), paramNames([PI.H.PopulationParams]))
 %% Save results
-save(strjoin({cd '/PI_CIM9_Control_2_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/PI_CIM9_Control_2_DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/PI_CIM21_Control_11_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/PI_CIM21_Control_11_DREAM_MCMC_p_x.mat'},''), 'p_x')
 
 load(strjoin({cd '/CIM_red2_DREAM_MCMC_x.mat'},''))
 load(strjoin({cd '/CIM_red2_DREAM_MCMC_p_x.mat'},''))

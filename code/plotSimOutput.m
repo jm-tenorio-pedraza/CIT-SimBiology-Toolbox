@@ -3,6 +3,7 @@ par=inputParser;
 par.addParameter('all', true)
 par.addParameter('indiv', true)
 par.addParameter('addErrorVar', true)
+par.addParameter('newFig', true)
 par.parse(varargin{:})
 par = par.Results;
 
@@ -27,7 +28,7 @@ else
 end
 if par.indiv
 else
-    treatments = {PI.data(sim_indx).Name};
+    treatments = {PI.data(:).Name};
 end
 
 treatment_colors=linspecer(length(treatments));
@@ -39,7 +40,9 @@ try
 catch
     
 end
+if par.newFig
 figure('Position', [10 10 900 1000])
+end
 for i=1:n_sim
     if par.indiv
         subplot(n_row,n_col,i)
@@ -67,11 +70,13 @@ for i=1:n_sim
     else
         error = [];
     end
-    title(PI.data(simIndx(i)).Name,'interpreter', 'none')
     if par.indiv
+            title(PI.data(simIndx(i)).Name,'interpreter', 'none')
+
         col_i=treatment_colors(ismember(treatments,PI.data(simIndx(i)).Group),:);
     else
-        col_i = treatment_colors(ismember(treatments,PI.data(simIndx(i)).Name),:);
+        title(PI.observablesPlot(colIndx))
+        col_i = treatment_colors(simIndx(i),:);
     end
     sim.Color=col_i;
     sim.LineWidth= 2;
