@@ -126,9 +126,9 @@ end
 ax = gca;
 if ~par.indiv
     if par.addErrorVar
-        legend(ax.Children(end-2:-3:1),{PI.data(sim_indx).Name}, 'location', 'best', 'interpreter','none')
+        legend(ax.Children(end-2:-3:1),{PI.data(simIndx).Name}, 'location', 'best', 'interpreter','none')
     else
-        legend(ax.Children(end-1:-2:1),{PI.data(sim_indx).Name}, 'location', 'best', 'interpreter','none')
+        legend(ax.Children(end-1:-2:1),{PI.data(simIndx).Name}, 'location', 'best', 'interpreter','none')
 
     end
         

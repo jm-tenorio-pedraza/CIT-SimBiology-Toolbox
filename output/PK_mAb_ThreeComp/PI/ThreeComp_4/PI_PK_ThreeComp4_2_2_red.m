@@ -19,7 +19,7 @@ MODEL = 'TwoComp_CE';
 variants = get(model,'variants');
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor';'CL'; 'Q23';'kint';'PDL1_Tumor'; 'ID'};
+parameters = {'Blood'; 'Tumor';'CL'; 'Q23';'kint';'PDL1_Tumor'; 'kdeg_PDL1'; 'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_g_Blood_free' 'ID_Id_g_Tumor' 'ID_g_Tumor_free'};
 
@@ -46,7 +46,7 @@ PI.normIndx = [];
 PI.model = 'PK-Two Compartment Model';
 % Get initial values
 PI.x_0 =[PI.data(:).dose]';
-
+clear dataset_file_ext dose MODEL 
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
@@ -55,17 +55,12 @@ PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observable
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
-lb = [1e-3    1e-3 1e-3    1e-4 1e-4    1e0];
-ub = [1e1    1e1  1e2     1e1   1e1     1e6];
+lb = [1e-3   1e-3 1e-3    1e-3  1e-4    1e0 1e-2];
+ub = [1e1    1e1  1e2     1e2   1e2     1e6 1e1];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
-try
-    finalValues =log([PI.par(:).finalValue]);
-catch
-    finalValues =log([PI.par(:).startValue]);
 
-end
-prior = {'U' 'U' 'U' 'U' 'U' 'U'};
+prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U'};
 
 
 % Log-ikelihood function
@@ -76,7 +71,12 @@ prior_fun_MCMC=@(p)getPriorPDFMCMC(p,PI, prior);
 
 paramNames = getParamNames(PI,sim, observables);
 %% Objective function
+try
+    finalValues =log([PI.par(:).finalValue]);
+catch
+    finalValues =log([PI.par(:).startValue]);
 
+end
 % Obj function
 obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
 tic
@@ -84,10 +84,10 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_TwoComp4_3_TMDD_8.mat', 'PI')
-load(strjoin({cd 'PI_PK_TwoComp4_3_TMDD_3.mat'},'/'))
+save('PI_PK_TwoComp4_2_TMDD_2_red_11.mat', 'PI')
+load(strjoin({cd 'PI_PK_TwoComp4_2_TMDD_2_red.mat'},'/'))
 
-save(strjoin({cd '/PK_red_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/PK_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
-load(strjoin({cd '/PI_PK_TwoComp4_4_DREAM_MCMC_p_x.mat'},''))
-load(strjoin({cd '/PI_PK_TwoComp4_4_DREAM_MCMC_x.mat'},''))
+save(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_p_x.mat'},''), 'p_x')
+load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_p_x.mat'},''))
+load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_x.mat'},''))
