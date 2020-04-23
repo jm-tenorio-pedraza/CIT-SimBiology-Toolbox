@@ -2,6 +2,7 @@
 %% Search paths
 warning on
 clear all
+close all
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM8')
 
@@ -20,7 +21,8 @@ set(cs, 'MaximumWallClock', 0.25)
 sbioaccelerate(model, cs)
 %% Parameter setup
 parameters = {'kin_CD8';'kpro_Tumor'; 'kill_CD8'; 'kin_Treg' ;...
-    'kin_DC';'kin_MDSC'; 'K_MDSC';'f3'; 'kpro_Tumor_Linear'};
+    'kin_DC';'kin_MDSC'; 'K_MDSC';'f3'; 'kpro_Tumor_Linear';'kill_Treg';...
+    'K_PDL1';'K_CTLA4'; 'K_IFNg';};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -58,17 +60,17 @@ PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
 
 %% Optimization setup
 % Hierarchical structure
-PI.H = getHierarchicalStruct2(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [2 9] , 'cell_indx',[3 6 8], 'n_indiv', length(PI.u));
+PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
+    'rand_indx', [2 3 9] , 'cell_indx',[6 8], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
-lb=([1e-3    1e-2    1e-3    1e-3     1e-3    1e-3   1e-4    1e-1    1e-1 ])';
-ub=([1e2     10      1e2     1e2      1e2     1e2    1e0     1e3     1e2])';
-PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
+lb=([1e-3    1e-1    1e-3    1e-3     1e-3    1e-3   1e-4    1e-1    1e-1    1e-4    1e0    1e0    1e-2])';
+ub=([1e2     10      1e2     1e2      1e2     1e2    1e0     1e3     1e2    1e1     1e6     1e4   1e2])';
+PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 
-prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U'};
+prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U'};
 
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
@@ -104,7 +106,7 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
-save('PI_CIM9_Control_3.mat', 'PI')
+save('PI_CIM9_Control_4_1.mat', 'PI')
 load(strjoin({cd 'PI_CIM9_Control_3_3.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))

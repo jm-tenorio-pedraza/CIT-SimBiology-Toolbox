@@ -10,8 +10,8 @@ out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Tool
 % Extract model
 model=out.m1;
 variants = getvariant(model);
-initialStruct = struct('name', {'MOC1';'MOC2';'MC38'}, 'initialValue', {5; 0.1; 0.1},...
-    'variant', {variants(1); variants(2); variants(3)});
+initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1;},...
+    'variant', {variants(5); variants(6)});
 
 cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
@@ -19,53 +19,50 @@ set(cs.SolverOptions, 'RelativeTolerance', 1.0e-10);
 set(cs, 'MaximumWallClock', 0.25)
 sbioaccelerate(model, cs)
 %% Parameter setup
-parameters = {'kin_CD8';'kpro_Tumor'; 'kill_CD8'; 'kin_Treg' ;...
-    'kin_DC';'kin_MDSC'; 'K_MDSC';'f3'; 'kpro_Tumor_Linear'};
-parameters = [parameters; 'T_0'];
+parameters = {'kpro_Tumor';'kill_CD8';'kpro_Tumor_Linear'; 'K_MDSC';'S_L';...
+    'S_R'; 'K_CTLA4';'K_PDL1'; 'kill_Treg'};
+parameters = [parameters; 'kin_MDSC';'f3';  'T_0'];
 
 % Define outputs% Define outputs
-groups_subset = {'MOC1_Control', 'MOC1_Control_Mean', 'MOC2_Control',...
-    'MOC2_Control_Mean' 'MC38_Control'};
-observables={'TV'  'CD8'  'Treg' 'DCm'...
-    'MDSC' 'CD8_E' 'PDL1_T' 'PDL1_I'};
-stateVar={'Tumor'  'CD8' 'Treg' 'DC'...
-    'GMDSC' 'CD107a_Rel' 'Tumor_PDL1_Rel' 'Myeloid_PDL1_Rel'};
+groups_subset = {'MOC1_antiCTLA4', 'MOC1_antiPDL1', 'MOC1_antiCTLA4_antiPDL1' 'MOC2_antiCTLA4',...
+    'MOC2_antiPDL1' 'MOC2_antiCTLA4_antiPDL1'  'MC38_antiPD1'};
+observables={'TV'};
+stateVar={'Tumor'  };
 doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
 %% Obtain data, simulation function and dose table
 
-PI1=getPIData3('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
+PI=getPIData3('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
     stateVar,groups_subset,'output', 'mean','responseGrouping', true, 'kineticGrouping', true);
-PI2=getPIData3('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Morisada.mat',...
-    stateVar,groups_subset,'output', 'mean','responseGrouping', true, 'kineticGrouping', true);
+% PI2=getPIData3('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Morisada.mat',...
+%     stateVar,groups_subset,'output', 'mean','responseGrouping', true, 'kineticGrouping', true);
 
-PI.data = [PI1.data(3); PI1.data([1:2 4:5]); PI2.data];
-PI.n_data = PI1.n_data+PI2.n_data;
-PI.tspan = unique([PI1.tspan; PI2.tspan]);
+% PI.data = [PI1.data; PI2.data];
+% PI.n_data = PI1.n_data+PI2.n_data;
+% PI.tspan = unique([PI1.tspan; PI2.tspan]);
 PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [%]' ...
      'Percentage [%]'   'Relative units []' ...
     'Relative units []' 'Relative units []'};
-PI.normIndx = 6:8;
-PI.model = 'CIM Control';
-PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
-    'MDSC' 'CD107a' 'PDL1_T' 'PDL1_I'};
+PI.normIndx = [];
+PI.model = 'CIM9_3 ICB';
+PI.observablesPlot={'TV'};
 
 % Get initial values
 [PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
-    initialStruct);
+    initialStruct, 'parameters', {'kin_MDSC' 'f3'});
 
 % Get simulation function
-[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
+[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1_optimized','doseUnits', 'mole');
 
 %% Optimization setup
 % Hierarchical structure
-PI.H = getHierarchicalStruct2(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [2 9] , 'cell_indx',[3 6 8], 'n_indiv', length(PI.u));
+PI.H = getHierarchicalStruct(parameters(1:end-3),PI,'n_sigma', length(observables),...
+    'rand_indx', [5] , 'cell_indx',[], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
-lb=([1e-3    1e-2    1e-3    1e-3     1e-3    1e-3   1e-4    1e-1    1e-1 ])';
-ub=([1e2     10      1e2     1e2      1e2     1e2    1e0     1e3     1e2])';
-PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
+lb=([.01    0.5    0.1    .05  1e-4     1e-4   1e0   1e0    1e-6])';
+ub=([.16    7      1.7    .12     1      1     1e4   1e7    1e1])';
+PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 
 prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U'};
@@ -104,7 +101,7 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
-save('PI_CIM9_Control_3.mat', 'PI')
+save('PI_CIM9_ICB_3_0.mat', 'PI')
 load(strjoin({cd 'PI_CIM9_Control_3_3.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
