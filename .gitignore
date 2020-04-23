@@ -82,3 +82,7 @@ output/PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_x.
 output/PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_p_x.mat
 output/PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_ThreeComp4_3_TMDD_21_DREAM_MCMC_p_x.mat
 output/PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_ThreeComp4_3_TMDD_21_DREAM_MCMC_x.mat
+output/PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_TwoComp4_2_TMDD_2_red.mat
+output/PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_ThreeComp4_6_TMDD_0.mat
+*.mat
+*.mat
