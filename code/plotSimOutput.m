@@ -70,11 +70,13 @@ for i=1:n_sim
     else
         error = [];
     end
-    title(PI.data(simIndx(i)).Name,'interpreter', 'none')
     if par.indiv
+            title(PI.data(simIndx(i)).Name,'interpreter', 'none')
+
         col_i=treatment_colors(ismember(treatments,PI.data(simIndx(i)).Group),:);
     else
-        col_i = treatment_colors(ismember(treatments,PI.data(simIndx(i)).Name),:);
+        title(PI.observablesPlot(colIndx))
+        col_i = treatment_colors(simIndx(i),:);
     end
     sim.Color=col_i;
     sim.LineWidth= 2;

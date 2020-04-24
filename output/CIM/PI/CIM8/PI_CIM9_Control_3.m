@@ -10,8 +10,8 @@ out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Tool
 % Extract model
 model=out.m1;
 variants = getvariant(model);
-% initialStruct = struct('name', {'MOC1';'MOC2';'MC38'}, 'initialValue', {5; 0.1; 0.1},...
-%     'variant', {variants(1); variants(2); variants(3)});
+initialStruct = struct('name', {'MOC1';'MOC2';'MC38'}, 'initialValue', {5; 0.1; 0.1},...
+    'variant', {variants(1); variants(2); variants(3)});
 
 cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
@@ -58,21 +58,16 @@ PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
 
 %% Optimization setup
 % Hierarchical structure
-PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [1:9] , 'cell_indx',[], 'n_indiv', length(PI.u));
+PI.H = getHierarchicalStruct2(parameters(1:end-1),PI,'n_sigma', length(observables),...
+    'rand_indx', [2 9] , 'cell_indx',[3 6 8], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
-lb=([1e-3    1e-1    1e-3    1e-3     1e-3    1e-3   1e-4    1e-1    1e-1 ])';
+lb=([1e-3    1e-2    1e-3    1e-3     1e-3    1e-3   1e-4    1e-1    1e-1 ])';
 ub=([1e2     10      1e2     1e2      1e2     1e2    1e0     1e3     1e2])';
-PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
+PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
-try
-    finalValues =log([PI.par(:).finalValue]);
-catch
-    finalValues =log([PI.par(:).startValue]);
 
-end
 prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U'};
 
 % Log-ikelihood function
@@ -83,7 +78,12 @@ prior_fun_MCMC=@(p)getPriorPDFMCMC(p,PI, prior);
 
 paramNames = getParamNames(PI,sim, observables);
 %% Objective function
+try
+    finalValues =log([PI.par(:).finalValue]);
+catch
+    finalValues =log([PI.par(:).startValue]);
 
+end
 % Obj function
 obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
 tic
@@ -105,7 +105,7 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
 save('PI_CIM9_Control_3.mat', 'PI')
-load(strjoin({cd 'PI_CIM8_Control_1.mat'},'/'),'PI')
+load(strjoin({cd 'PI_CIM9_Control_3_3.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))

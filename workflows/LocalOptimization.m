@@ -34,5 +34,5 @@ finalValues([PI.H.CellParams.Index...
 
 finalValues([PI.H.PopulationParams PI.H.CellParams.Index...
     PI.H.IndividualParams.Index]) = p_hat;
-%% Estimate sigma
+%% Estimate all parameters
 [finalValues, fval_fminunc] = fminunc(obj_fun, finalValues,options_fminsearch);
