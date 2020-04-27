@@ -46,8 +46,10 @@ PI.AIC = 2*length(PI.par)-2*likelihood_fun(finalValues)*(1);
      
 %% Plotting output
 figure('Position', [10 10 1.5e3 1e3])
+ncol = ceil(sqrt(length(observables)));
+nrow = ceil(length(observables)/ncol);
 for i=1:length(observables)
-%     subplot(3,3,i)
+  subplot(nrow,ncol,i)
 plotSimOutput(PI,i,'all', false, 'indiv', false, 'addErrorVar', false, 'newFig', false)
 end
 %%

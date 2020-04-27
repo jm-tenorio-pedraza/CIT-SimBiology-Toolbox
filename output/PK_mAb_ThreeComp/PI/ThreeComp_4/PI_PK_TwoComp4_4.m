@@ -50,7 +50,7 @@ clear dataset_file_ext  MODEL
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[1:6], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
@@ -84,8 +84,8 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_TwoComp4_4_TMDD_3.mat', 'PI')
-load(strjoin({cd 'PI_PK_TwoComp4_4_TMDD_2.mat'},'/'))
+save('PI_PK_TwoComp4_4_TMDD_13.mat', 'PI')
+load(strjoin({cd 'PI_PK_TwoComp4_4_TMDD_0.mat'},'/'))
 
 save(strjoin({cd '/PI_PK_TwoComp4_3_TMDD_21_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PI_PK_TwoComp4_3_TMDD_21_DREAM_MCMC_p_x.mat'},''), 'p_x')
