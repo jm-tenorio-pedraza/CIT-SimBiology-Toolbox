@@ -19,7 +19,7 @@ MODEL = 'TwoComp_CE';
 variants = get(model,'variants');
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor';'Peripheral';'CL'; 'Q23';'Q12';'PDL1_Tumor'; 'kdeg_PDL1'; 'ID'};
+parameters = {'Blood'; 'Tumor';'Peripheral';'CL_antiPDL1'; 'Q23';'Q12';'PDL1_Tumor'; 'kdeg_PDL1'; 'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_Id_g_Tumor'};
 

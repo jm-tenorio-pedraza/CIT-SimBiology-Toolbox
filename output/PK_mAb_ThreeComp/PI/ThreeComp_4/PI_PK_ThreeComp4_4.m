@@ -19,7 +19,7 @@ MODEL = 'TwoComp_CE';
 variants = get(model,'variants');
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor';'Peripheral';'CL'; 'Q23';'Q12';'PDL1_Tumor'; 'kdeg_PDL1'; 'ID'};
+parameters = {'Blood'; 'Tumor';'Peripheral';'CL_antiPDL1'; 'Q23';'Q12';'PDL1_Tumor'; 'kdeg_PDL1'; 'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_g_Blood_free' 'ID_Id_g_Tumor' 'ID_g_Tumor_free'};
 
@@ -50,7 +50,7 @@ clear dataset_file_ext dose MODEL
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[2], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[2 4], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
@@ -84,8 +84,8 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp4_5_TMDD_0.mat', 'PI')
-load(strjoin({cd 'PI_PK_TwoComp4_3_TMDD_21.mat'},'/'))
+save('PI_PK_ThreeComp4_4_TMDD_0.mat', 'PI')
+load(strjoin({cd 'PI_PK_ThreeComp4_4_TMDD_11.mat'},'/'))
 
 save(strjoin({cd '/PI_PK_ThreeComp4_3_TMDD_21_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PI_PK_ThreeComp4_3_TMDD_21_DREAM_MCMC_p_x.mat'},''), 'p_x')
