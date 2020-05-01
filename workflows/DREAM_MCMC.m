@@ -2,7 +2,7 @@
 finalValues = log([PI.par(:).finalValue]);
 N = length(finalValues);
 
-X0 =[ (finalValues); randn(100,length(finalValues))*0.01 + finalValues];
+X0 =[ (finalValues); randn(100,length(finalValues))*0.001 + finalValues];
 logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
 

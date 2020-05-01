@@ -48,7 +48,7 @@ PI.normIndx = 6:8;
 PI.model = 'CIM Control';
 PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
     'MDSC' 'CD107a' 'PDL1_T' 'PDL1_I'};
-
+plotData(PI, PI.observablesPlot, 'responseGrouping', true, 'kineticGrouping', true)
 % Get initial values
 [PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
     initialStruct);
