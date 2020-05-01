@@ -62,12 +62,12 @@ end
             if all(isnan( PI.data(simIndx(j)).dataValue(:,i)))
                 continue
             else
-                  pi_data=[PI.CI(simIndx(j)).(output_i){'Pred_UB',:}, PI.CI(simIndx(j)).(output_i){'Pred_LB',:}(end:-1:1)];
-            pi_nan=or(isnan(pi_data), pi_data==0);
-                        
-             % Plotting prediction interval
-             pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
-       
+                pi_data=[PI.CI(simIndx(j)).(output_i){'Pred_UB',:}, PI.CI(simIndx(j)).(output_i){'Pred_LB',:}(end:-1:1)];
+                pi_nan=or(isnan(pi_data), pi_data==0);
+                
+                % Plotting prediction interval
+                %pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
+                
             end
 
         end
@@ -137,7 +137,11 @@ end
     if strcmp(p.outputs,'indiv')
     else
         title(output_i,'interpreter', 'none')
-        legend(ax.Children(end:-4:3),[PI.data(:).Name],'Interpreter', 'none')
+        legends = [PI.data(sim_indx).Name];
+        if length(legends)~= length(PI.data)
+            legends = {PI.data(sim_indx).Name};
+        end
+        legend(ax.Children(end:-3:3),legends,'Interpreter', 'none')
     end
 end
 return

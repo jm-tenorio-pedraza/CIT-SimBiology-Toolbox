@@ -112,7 +112,7 @@ for i=1:n_sim
     catch
     end
     
-    %ylim([floor(minX), ceil(maxX)])
+    ylim([floor(minX), ceil(maxX)])
     
     if strcmp(PI.variableUnits{colIndx}, 'Volume [ml]')
         ylim([1e-2, 3])

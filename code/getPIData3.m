@@ -366,49 +366,6 @@ try
 catch
 end
 
-
-
-%% Plot
-nvar = length(stateVar);
-colors = table2cell(table(linspecer(length(PI.data))));
-[PI.data(1:end).colors] = colors{:,:};
- figure('Position', [10 10 1000 900])
-switch case_i
-    case 1
-            
-        ncol = ceil(sqrt(nvar));
-        nrow = ceil(sqrt(nvar/ncol));
-        for i=1:length(stateVar)
-            subplot(nrow, ncol, i)
-            try
-                 arrayfun(@(x)errorbar(x.dataTime, x.dataValue(:,i),x.SD(:,i),'Color',...
-                    x.colors,'Marker','*'),PI.data)
-            catch
-                arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i),'Color',...
-            x.colors,'Marker','*'),PI.data)
-            end
-        legend({PI.data(:).Name},'Interpreter', 'none')
-        end
-        
-    case {2 3 4}
-        ncol = ceil(sqrt(nvar));
-        nrow = ceil((nvar/ncol));
-        for i=1:length(stateVar)
-            subplot(nrow, ncol, i)
-            hold on
-             try
-                 arrayfun(@(x)errorbar(x.dataTime, x.dataValue(:,i),x.SD(:,i),'Color',...
-                    x.colors,'Marker','*'),PI.data)
-            catch
-                arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i),'Color',...
-            x.colors,'Marker','*'),PI.data)
-            end
-         legend({PI.data(:).Name},'Interpreter', 'none')
-        title(stateVar(i))
-        end
-        
-end
-       
 PI.tspan = unique(cat(1,PI.data(:).dataTime));
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},...
     'UniformOutput',true));
@@ -417,6 +374,5 @@ if size(PI.data,1)>size(PI.data,2)
 else
     PI.data=PI.data';
 end
-
 
 return

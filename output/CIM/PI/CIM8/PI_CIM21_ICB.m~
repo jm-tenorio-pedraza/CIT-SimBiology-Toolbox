@@ -50,7 +50,7 @@ plotData(PI,PI.observablesPlot)
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-3),PI,'n_sigma', length(observables),...
-    'rand_indx', [3 4] , 'cell_indx',[1 2], 'n_indiv', length(PI.u));
+    'rand_indx', [1 2 4] , 'cell_indx',[3], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
@@ -95,7 +95,7 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
 save('PI_CIM4_ICB_21_8.mat', 'PI')
-load(strjoin({cd 'PI_CIM4_ICB_21_8.mat'},'/'),'PI')
+load(strjoin({cd 'PI_CIM4_ICB_21_1.mat'},'/'),'PI')
 
 load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
