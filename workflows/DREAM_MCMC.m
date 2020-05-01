@@ -2,7 +2,7 @@
 finalValues = log([PI.par(:).finalValue]);
 N = length(finalValues);
 
-X0 =[ (finalValues); randn(100,length(finalValues))*0.01 + finalValues];
+X0 =[ (finalValues); randn(100,length(finalValues))*0.1 + finalValues];
 logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
 
@@ -11,8 +11,8 @@ w0=X0(I(1:N),:);
 h.IndividualParams=[];
 tic
 [x, p_x,accept,pCR] = dreamHParallel(w0,likelihood_fun,prior_fun_MCMC,...
-    size(w0,1),ceil(5e5/size(w0,1)), length(finalValues), 'BurnIn', ...
-    1e5,'StepSize',2.38,'H', h);
+    size(w0,1),ceil(8e5/size(w0,1)), length(finalValues), 'BurnIn', ...
+    2e5,'StepSize',2.38,'H', h);
 toc
 
 tic
@@ -33,8 +33,8 @@ plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 4e3;
-burnIn=6e5;
+delta = 6e2;
+burnIn=2e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
@@ -52,7 +52,7 @@ logP_thinned=reshape(logP_thinned',1,[]);
 % Population Parameters
 plotBivariateMarginals_2((postSamples(:,[PI.H.PopulationParams PI.H.SigmaParams])),...
     'names',paramNames([PI.H.PopulationParams PI.H.SigmaParams]),'interpreter', 'tex')
-% Individual and population parameters
+% Individual and cell parameters
 plotBivariateMarginals_2((postSamples(:, [PI.H.CellParams.Index PI.H.IndividualParams.Index])),...
     'names',paramNames([PI.H.CellParams.Index PI.H.IndividualParams.Index]))
 plotIIVParams(postSamples, PI,'name', paramNames)
@@ -64,7 +64,6 @@ PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesPlot);
 toc
 PI=getCredibleIntervals(PI,PI.observablesPlot, exp(postSamples),PI.H, 'logit_indx', []);
 plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
-
 %% Posterior credible intervals
 PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
 plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
