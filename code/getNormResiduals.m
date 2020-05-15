@@ -1,4 +1,4 @@
-function [residuals,PI]=getNormResiduals(p,simFun,PI,getPhi,getCovariance,normIndx,varargin)
+function [residuals,PI]=getNormResiduals(p,simFun,PI,getPhi,normIndx,varargin)
 % Calculates normalized residuals with the paramaters (double) input mapping inputFun (handle)
 % simFun (handle), function and the data (table) provided
 par=inputParser;
@@ -13,7 +13,7 @@ end
 phi=getPhi(p);
 
 % Generate Sigma structure
-sigma=getCovariance(p); % 1xp vector
+sigma=p(setdiff(PI.H.SigmaParams, [[PI.H.CellParams.OmegaIndex],[PI.H.IndividualParams.OmegaIndex]])); % 1xp vector
 
 % Simulate model with parameter structure
 try
