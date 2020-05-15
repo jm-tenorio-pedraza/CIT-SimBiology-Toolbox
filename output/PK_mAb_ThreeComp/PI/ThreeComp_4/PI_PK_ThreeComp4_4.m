@@ -84,10 +84,10 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp4_4_TMDD_0.mat', 'PI')
+save('PI_PK_ThreeComp4_4_TMDD_11.mat', 'PI')
 load(strjoin({cd 'PI_PK_ThreeComp4_4_TMDD_11.mat'},'/'))
 
-save(strjoin({cd '/PI_PK_ThreeComp4_3_TMDD_21_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/PI_PK_ThreeComp4_3_TMDD_21_DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x.mat'},''), 'p_x')
 load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_p_x.mat'},''))
 load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_x.mat'},''))
