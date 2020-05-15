@@ -1,4 +1,4 @@
-function [x, p_x,accept,pCR] = dreamHParallel(X0,likelihood,prior,N,T,d,varargin)
+function [x, p_x,accept,pCR,stepSize,J, n_id] = dreamHParallel(X0,likelihood,prior,N,T,d,varargin)
 % Inputs
 % prior = handle to generate initial random samples
 % pdf = handle to log-posterior function
@@ -21,6 +21,10 @@ p.addParameter('StepSize',2.38,@isnumeric); %addParamValue is chose for compatib
 p.addParameter('H',[],@isstruct); % Hierarchical structure with Individual, Population and Sigma parameters
 p.addParameter('BurnIn',0,@(x)(x>=0));
 p.addParameter('Parallel',true, @islogical);
+p.addParameter('pCR',[]);
+p.addParameter('J',[]);
+p.addParameter('n_id',[]);
+
 p.parse(varargin{:});
 p=p.Results;
 
@@ -40,10 +44,17 @@ posterior = @(x)likelihood(x) + prior(x);
 x=nan(d,N,T); p_x = nan(T,N);                               % Preallocate chains and density
 R = nan(N,N-1); p_X = nan(N,1);
 
-[J,n_id] = deal(zeros(1,n_CR));                             % Variables selection prob. crossover
 for i=1:N, R(i, 1:N-1) = setdiff(1:N,i); end                % R-matrix: index of chains for DE
-CR = (1:n_CR)/n_CR; pCR = ones(1,n_CR)/n_CR;                % Crossover values and select. prob.
+CR = (1:n_CR)/n_CR; 
+if isempty(p.pCR)
+pCR = ones(1,n_CR)/n_CR;                % Crossover values and select. prob.
+[J,n_id] = deal(zeros(1,n_CR));                             % Variables selection prob. crossover
 
+else
+    pCR = p.pCR;
+    J = p.J;
+    n_id = p.n_id;
+end
 X = X0;                                                     % Create initial  population
 for i = 1:N, p_X(i,1) = posterior(X(i, :)); end          % Compute density of initial population
 x(1:d, 1:N, 1) = X'; p_x(1,1:N) = p_X';                     % Store initial states and density
@@ -59,7 +70,7 @@ end
 
 D = reshape(randsample(1:delta, N*T, true),T,N);            % Select delta (equal selection probability)
 z = rand(N*T,d);                                            % Draw d values from U[0,1]
-U_ind = log(rand(T,N));                                     % Draw N values from U(0,1)
+% U_ind = log(rand(T,N));                                     % Draw N values from U(0,1)
 U_pop = log(rand(T,N));                                     % Draw N values from U(0,1)
 lambda = unifrnd(-c, c, T,N);                               % Draw N lambda values
 
@@ -68,7 +79,7 @@ accept_ind = zeros(N,1);
 
 for t = 2:T
     [~, draw] = sort(rand(N-1,N));                          % Permute [1, ..., N-1] N times
-    dX = zeros(N,d);                                        % Set N jump vectors to zero
+    dX = zeros(N,d, 'single');                                        % Set N jump vectors to zero
     std_X = std(X);                                         % Compute std each dimension
     Xp = X;
     id = randsample(1:n_CR, N, true, pCR);                  % Select index of crossover value
@@ -91,22 +102,22 @@ for t = 2:T
     end
     
 %      tic                                  % Compute ith proposal for the individual parameters
-    if ~isempty(H.IndividualParams)
-         Xp(:,ind_index) = Xp(:,ind_index)...
-        + dX(:,ind_index);  
-        parfor k=1:N
-            % Check if there are individual parameters to estimate
-            % Evaluate proposal of new individual parameters
-            [X(k,:), p_X(k,1), accept_i]= mcmcstep(X(k,:),...
-                Xp(k,:), p_X(k,1), likelihood, prior,...
-                U_ind(t,k), accept_ind(k));                      % Calculate pdf for ith proposal from individual parameters
-            if accept_i > accept_ind(k)                        % MH criterion
-                accept_ind(k) = accept_ind(k) + 1;
-            else
-                dX(k,ind_index) = 0;                           % Set jump back to 0 for pCR for the individual parameters
-            end
-        end
-    end
+%     if ~isempty(H.IndividualParams)
+%          Xp(:,ind_index) = Xp(:,ind_index)...
+%         + dX(:,ind_index);  
+%         parfor k=1:N
+%             % Check if there are individual parameters to estimate
+%             % Evaluate proposal of new individual parameters
+%             [X(k,:), p_X(k,1), accept_i]= mcmcstep(X(k,:),...
+%                 Xp(k,:), p_X(k,1), likelihood, prior,...
+%                 U_ind(t,k), accept_ind(k));                      % Calculate pdf for ith proposal from individual parameters
+%             if accept_i > accept_ind(k)                        % MH criterion
+%                 accept_ind(k) = accept_ind(k) + 1;
+%             else
+%                 dX(k,ind_index) = 0;                           % Set jump back to 0 for pCR for the individual parameters
+%             end
+%         end
+%     end
     
     Xp(:,param_index) = Xp(:,param_index)...
         + dX(:,param_index);                                    % Compute ith proposal for the individual parameters
@@ -143,7 +154,7 @@ for t = 2:T
         [X, p_X] = check(X, mean((p_x(ceil(t/2):t,1:N))),p_X);  % Outlier detection and correction
         if accept<0.2
             stepSize=stepSize*0.9;
-        elseif accept>0.4
+        elseif accept>0.3
             stepSize=stepSize*1.1;
         end
     end

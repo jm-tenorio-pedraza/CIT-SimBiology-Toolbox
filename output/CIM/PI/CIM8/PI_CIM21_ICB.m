@@ -39,7 +39,7 @@ PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [
 PI.normIndx = [];
 PI.model = 'CIM21 ICB';
 PI.observablesPlot={'TV'};
-plotData(PI,PI.observablesPlot)
+plotData(PI,PI.observablesPlot,'responseGrouping',true, 'kineticGrouping',true)
 % Get initial values
 [PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
     initialStruct, 'parameters', {'kin_MDSC' 'kin_TIC'});
@@ -50,7 +50,7 @@ plotData(PI,PI.observablesPlot)
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-3),PI,'n_sigma', length(observables),...
-    'rand_indx', [3 4] , 'cell_indx',[1 2], 'n_indiv', length(PI.u));
+    'rand_indx', [1:3] , 'cell_indx',[], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
@@ -59,12 +59,10 @@ ub=([.3    8    650    1        1      1e4   1e6     1e3])';
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 
-prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U'};
-
+PI = assignPrior(PI);
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
-prior_fun=@(p)getPriorPDF(p,PI, prior);
-prior_fun_MCMC=@(p)getPriorPDFMCMC(p,PI, prior);
+prior_fun_MCMC=@(p)getPriorPDFMCMC2(exp(p),PI);
 
 paramNames = getParamNames(PI,sim, observables);
 %% Objective function
@@ -75,11 +73,11 @@ catch
 
 end
 % Obj function
-obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun(x)*(-1));
+obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun_MCMC(x)*(-1));
 tic
 obj_fun((finalValues))
 toc
-
+clearvars ans beta doses groups_subset initialStruct lb observables out sigma_prior SigmaNames stateVar ub variants
 %% Parameter selection of inter-cell line varying params
 
 w = arrayfun(@(x) (finalValues(x.Index)), PI.H.CellParams,'UniformOutput', false);
@@ -94,9 +92,12 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
-save('PI_CIM4_ICB_21_8.mat', 'PI')
-load(strjoin({cd 'PI_CIM4_ICB_21_8.mat'},'/'),'PI')
+save('PI_CIM4_ICB_21_1.mat', 'PI')
+load(strjoin({cd 'PI_CIM4_ICB_21_1.mat'},'/'),'PI')
 
-load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_3.mat'},''), 'x3')
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_3.mat'},''), 'p_x3')
+
+load(strjoin({cd 'PI_CIM21_ICB_1_DREAM_MCMC_x_1.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
 

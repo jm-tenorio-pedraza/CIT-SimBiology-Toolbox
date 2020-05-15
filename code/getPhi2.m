@@ -38,16 +38,16 @@ if size(p_cell,1)<length(H.CellParams(1).Index)
         p_cell=p_cell';
 end
 
-cellEtaIndx = [H.CellParams.EtaIndex];
-indivEtaIndx = [H.IndividualParams.EtaIndex];
+% cellEtaIndx = [H.CellParams.EtaIndex];
+% indivEtaIndx = [H.IndividualParams.EtaIndex];
 
 phi = repmat(p(H.PopulationParams),n_sim,1);
 try
-    phi(:,cellEtaIndx) = p_cell;
+    phi(:,[H.CellParams.EtaIndex]) = p_cell;
 catch 
 end
 try
-    phi(:,indivEtaIndx) = p_indiv;
+    phi(:,[H.IndividualParams.EtaIndex]) = p_indiv;
 catch 
 end
 if ~isempty(par.initialValue)

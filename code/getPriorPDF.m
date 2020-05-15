@@ -1,10 +1,4 @@
-function priorPDF = getPriorPDF(p,PI, prior)
-
-priorSigma = repelem({'IG'}, 1,length(PI.H.SigmaParams));
-priorZ = repelem({'N_z'}, 1, length([PI.H.IndividualParams.Index]));
-priorW = repelem({'N_z'}, 1, length([PI.H.CellParams.Index]));
-
-prior = [prior priorW priorZ priorSigma];
+function priorPDF = getPriorPDF(p,PI)
 
 N = @(x,mu,sigma) exp(-(x-mu).^2./(2*sigma.^2))./(2*pi*sigma);
 N_z = @(x,sigma) exp(-(x.^2)./(2*sigma.^2))./(2*pi*sigma);
