@@ -37,15 +37,16 @@ dose = {'Blood.antiPDL1'};
 sim=createSimFunction(model,parameters,observables, dose,variants(1),...
     'UseParallel', false);
 PI.normIndx = [];
-PI.model = 'PK-Two Compartment Model (Human)';
+PI.model = 'PK-Three Compartment Model (Human)';
 % Get initial values
 
 %% Hierarchical model simulation
 PI.H = getHierarchicalStruct(parameters(1:end-3),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[2], 'n_indiv', length(PI.u),'CellField', 'Name');
-KD_antiPDL1 = [0.0467 1.75];
-koff_antiPDL1 = [0.753e-4 1.56e-4];
-PI.x_0 = [[PI.data(:).dose]' PI.H.CellIndx*KD_antiPDL1' PI.H.CellIndx*KD_antiPDL1'];
+    'rand_indx', [],'cell_indx',[2 4], 'n_indiv', length(PI.u),'CellField', 'Name');
+KD_antiPDL1 =   [1.75 0.0467];
+koff_antiPDL1 = [1.56e-4 0.753e-4];
+
+PI.x_0 = [[PI.data(:).dose]' PI.H.CellIndx*KD_antiPDL1' PI.H.CellIndx*koff_antiPDL1'];
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([0.1 0.1 .001], [0.1, 0.1 0.001], [1 1 1], PI);
@@ -79,48 +80,76 @@ toc
 
 
 %% Posterior samples
-PI_Preclinical=load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_ThreeComp4_5_TMDD_0.mat');
+PI_Preclinical=load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_ThreeComp4_4_TMDD_11.mat');
 postSamples_PopParams = (PI_Preclinical.PI.postSamples(:,[1:8])) ;
-omega = (PI_Preclinical.PI.postSamples(:,12));
-sigma = PI_Preclinical.PI.postSamples(:,14);
+omega = (PI_Preclinical.PI.postSamples(:,[15 16]));
+sigma = PI_Preclinical.PI.postSamples(:,17);
 N_pop = 500;
 N_indiv = 2;
 randIndx = randsample(size(postSamples_PopParams,1),N_pop, true);
 
-Z_indiv = (randn(N_indiv*N_pop, 2)).*repmat(omega(randIndx), N_indiv,2);
+Z_indiv = (randn(N_indiv*N_pop, 4)).*repmat(omega(randIndx,:), N_indiv,2);
 % Z = Z_indiv*PI.H.CellIndx';
-scalingExp = [0.9 0.9 0.9 0.9 0.9 0.9 0 0];
-scalingFactor = (77/.022).^(scalingExp);
-Theta1 = [repmat(postSamples_PopParams(randIndx,:), N_indiv, 1) Z_indiv...
-    repmat(omega(randIndx), N_indiv,1) repmat(sigma(randIndx), N_indiv,1) ];
+scalingExp1 = [0.9 0.9 0.9 0.9 0.9 0.9 0 0];
+scalingExp2 = [1 1 1 0.9 0.9 0.9 0 0];
+scalingExp3 = [0.8 0.8 0.8 0.8 0.8 0.8 0 0];
+scalingExp4 = [0.7 0.7 0.7 0.7 0.7 0.8 0 0];
 
-Theta1(:,1:8) = Theta1(:,1:8) + log(scalingFactor);
-%  plotBivariateMarginals_2(exp(Theta1(:,1:7)),...
-%        'names',parameters([1:7]),'interpreter', 'tex')
+scalingFactor = (77/.022).^(scalingExp1);
+scalingFactor2 = (77/.022).^(scalingExp2);
+scalingFactor3 = (77/.022).^(scalingExp3);
+scalingFactor4 = (77/.022).^(scalingExp4);
+
+Theta = [repmat(postSamples_PopParams(randIndx,:), N_indiv, 1) Z_indiv...
+    repmat(omega(randIndx,:), N_indiv,1) repmat(sigma(randIndx), N_indiv,1) ];
+
+Theta1 = [Theta(:,1:8) + log(scalingFactor) Theta(:,9:end)];
+Theta2 = [Theta(:,1:8) + log(scalingFactor2) Theta(:,9:end)];
+Theta3 = [Theta(:,1:8) + log(scalingFactor3) Theta(:,9:end)];
+Theta4 = [Theta(:,1:8) + log(scalingFactor4) Theta(:,9:end)];
+
+% Alternative parametrization
+Delta = repmat(postSamples_PopParams(randIndx,1:6), N_indiv, 1)- mean(repmat(postSamples_PopParams(randIndx,1:6), N_indiv, 1));
+Theta5 = [repmat(log([PI.par(1:6).startValue]), N_pop*N_indiv, 1)+Delta Theta1(:,7:end)];
+
+table({PI.par(1:8).name}', exp(mean(Theta1(:,1:8)))',exp(mean(Theta2(:,1:8)))',...
+    exp(mean(Theta3(:,1:8)))',exp(mean(Theta5(:,1:8)))')
+%% Plot bivariate marginals
+plotBivariateMarginals_2(exp(Theta2(:,1:8)),...
+       'names',parameters([1:8]),'interpreter', 'tex')
 % plotBivariateMarginals_2(Theta(:,8:18),...
 %       'names',{PI.par([8:18]).name},'interpreter', 'tex')
-Delta = repmat(postSamples_PopParams(randIndx,1:4), N_indiv, 1)- mean(repmat(postSamples_PopParams(randIndx,1:4), N_indiv, 1));
-Theta2 = [repmat(log([PI.par(1:4).startValue]), N_pop*N_indiv, 1)+Delta Theta1(:,5:end)];
-plotBivariateMarginals_2((Theta2(:,1:7)),...
-       'names',parameters([1:7]),'interpreter', 'tex')
+%plotBivariateMarginals_2((Theta2(:,1:7)),...
+      % 'names',parameters([1:7]),'interpreter', 'tex')
 %% Posterior predictions
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
-tic
-PI=getPosteriorPredictions(exp(Theta1),PI,simFun,PI.observablesPlot);
-toc
-tic
-PI2 = getPosteriorPredictions(exp(Theta2), PI,simFun, PI.observablesPlot);
-toc
-PI=getCredibleIntervals(PI,PI.observablesPlot, (Theta1),PI.H);
-plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
 
-PI2 = getCredibleIntervals(PI2, PI2.observablesPlot, Theta2, PI.H);
-PI2_subset = PI2;
-PI2_subset.data = PI2.data(5:12);
-plotPosteriorPredictions(PI2_subset, PI.observablesPlot, 'output', 'indiv')
+PI1 = getPosteriorPredictions(exp(Theta1),PI,simFun,PI.observablesPlot);
+PI2 = getPosteriorPredictions(exp(Theta2), PI,simFun, PI.observablesPlot);
+PI3 = getPosteriorPredictions(exp(Theta3), PI,simFun, PI.observablesPlot);
+PI4 = getPosteriorPredictions(exp(Theta4), PI,simFun, PI.observablesPlot);
+
+PI1=getCredibleIntervals(PI1,PI1.observablesPlot, (Theta1),PI1.H);
+PI2=getCredibleIntervals(PI2,PI2.observablesPlot, (Theta2),PI2.H);
+PI3=getCredibleIntervals(PI3,PI3.observablesPlot, (Theta3),PI3.H);
+PI4=getCredibleIntervals(PI4,PI4.observablesPlot, (Theta3),PI4.H);
+
+plotPosteriorPredictions(PI1,PI1.observablesPlot,'output','indiv','central', 'mean')
+plotPosteriorPredictions(PI2,PI2.observablesPlot,'output','indiv', 'central', 'mean')
+plotPosteriorPredictions(PI3,PI3.observablesPlot,'output','indiv', 'central', 'mean')
+plotPosteriorPredictions(PI4,PI4.observablesPlot,'output','indiv', 'central', 'mean')
+
+PI4.postSamples = Theta4;
+PI1.postSamples = Theta1;
 PI2.postSamples = Theta2;
-PI.postSamples = Theta1;
+PI3.postSamples = Theta3;
+
 %% Save
-save(strjoin({cd 'PI_PK_TwoComp4_HuSim_Theta1'}, '/'), 'PI')
-save(strjoin({cd 'PI_PK_TwoComp4_HuSim_Theta2'}, '/'), 'PI2')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_1_2'}, '/'), 'PI1')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_2_2'}, '/'), 'PI2')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_3_2'}, '/'), 'PI3')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_4_2'}, '/'), 'PI4')
+
+load(strjoin({cd 'PI_PK_ThreeComp4_HuSim_3'}, '/'), 'PI3')
+

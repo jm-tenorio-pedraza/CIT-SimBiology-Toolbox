@@ -7,6 +7,7 @@ p.addParameter('simTime',PI.tspan);
 p.addParameter('outputs','indiv');
 p.addParameter('all', false);
 p.addParameter('indx', 1:length(PI.data));
+p.addParameter('central', 'median')
 p.parse(varargin{:});
 p=p.Results;
 
@@ -47,7 +48,11 @@ end
     for j=1:length(simIndx)
         simTime=[p.simTime p.simTime(end:-1:1)];
         ci_data=[PI.CI(simIndx(j)).(output_i){'UB',:}, PI.CI(simIndx(j)).(output_i){'LB',:}(end:-1:1)];
+        if strcmp(p.central, 'median')
         m_data =PI.CI(simIndx(j)).(output_i){'Median',:};
+        elseif strcmp(p.central, 'mean')
+                    m_data =PI.CI(simIndx(j)).(output_i){'Mean',:};
+        end
         ci_nan=or(isnan(ci_data),ci_data==0);
         m_nan=or(isnan(m_data), m_data==0);
        
@@ -122,11 +127,12 @@ end
                     legend(ax.Children, {output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none','Location', 'best')
                 end
             end
-                    ylim([floor(minX), ceil(maxX)])
+            ylim([0 0.1])
+%                     ylim([floor(minX), ceil(maxX)])
 %set(ax, 'YScale', 'log')
     end
     if (strcmp('%',PI.variableUnits{i}))
-        ylim([0 100])
+       % ylim([0 100])
     end
 %     try
 %         ylim(2.^([floor(log2(min(PI.data(j).dataValue(:,i)))) ceil(log2(max(PI.data(j).dataValue(:,i))))]))
