@@ -4,7 +4,7 @@
 clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/HuSim')
+cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output')
 sensitivity = false;
 
 %% Load project 
@@ -109,60 +109,49 @@ PI= assignPrior(PI);
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
 prior_fun_MCMC=@(p)getPriorPDFMCMC2(exp(p),PI);
-
 paramNames = getParamNames(PI,sim, observables);
-%% Objective function
-
-% Obj function
-obj_fun=@(x)(likelihood_fun(x)*(-1)+prior_fun_MCMC(x)*(-1));
-tic
-obj_fun((finalValues))
-toc
-
-
-%% Posterior samples
-PI_Preclinical=load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_ThreeComp4_5_TMDD_0.mat');
-postSamples_PopParams = (PI_Preclinical.PI.postSamples(:,[1:8])) ;
-omega = (PI_Preclinical.PI.postSamples(:,12));
-sigma = PI_Preclinical.PI.postSamples(:,14);
+%% Load PIs and posterior parameter samples
+PI_PK = load(strjoin({cd 'PK_mAb_ThreeComp/PI/ThreeComp_4/PI_PK_ThreeComp4_4_TMDD_11.mat'},'/'));
+PI_CIM = load(strjoin({cd 'CIM/PI/CIM10/PI_CIM21_Control_14.mat'},'/'));
+PI_ICB = load(strjoin({cd 'CIM/PI/CIM8/PI_CIM4_ICB_21_1.mat'},'/'));
+Meta=[];
+Meta(1).Struct = PI_PK;
+Meta(2).Struct = PI_CIM;
+Meta(3).Struct = PI_ICB;
+%% Select which dimensions to sample from 
 N_pop = 500;
-N_indiv = 2;
-randIndx = randsample(size(postSamples_PopParams,1),N_pop, true);
+N_indiv = 10;
+[theta,H] = getTheta(Meta, parameters, N_pop, N_indiv);
+Theta1 = theta;
 
-Z_indiv = (randn(N_indiv*N_pop, 2)).*repmat(omega(randIndx), N_indiv,2);
-% Z = Z_indiv*PI.H.CellIndx';
-scalingExp = [0.9 0.9 0.9 0.9 0.9 0.9 0 0];
-scalingFactor = (77/.022).^(scalingExp);
-Theta1 = [repmat(postSamples_PopParams(randIndx,:), N_indiv, 1) Z_indiv...
-    repmat(omega(randIndx), N_indiv,1) repmat(sigma(randIndx), N_indiv,1) ];
+kpro_Tumor_human = log(0.0072);
+delta = theta(:,14)-mean(theta(:,14));
+Theta1(:,14) = kpro_Tumor_human+delta;
 
-Theta1(:,1:8) = Theta1(:,1:8) + log(scalingFactor);
-%  plotBivariateMarginals_2(exp(Theta1(:,1:7)),...
-%        'names',parameters([1:7]),'interpreter', 'tex')
-% plotBivariateMarginals_2(Theta(:,8:18),...
-%       'names',{PI.par([8:18]).name},'interpreter', 'tex')
-Delta = repmat(postSamples_PopParams(randIndx,1:4), N_indiv, 1)- mean(repmat(postSamples_PopParams(randIndx,1:4), N_indiv, 1));
-Theta2 = [repmat(log([PI.par(1:4).startValue]), N_pop*N_indiv, 1)+Delta Theta1(:,5:end)];
-plotBivariateMarginals_2((Theta2(:,1:7)),...
-       'names',parameters([1:7]),'interpreter', 'tex')
+TV_range = [pi*4/3*.5^3 pi*4/3*2.5^3];
+TV = log((rand(size(theta,1),1)*(TV_range(2)-TV_range(1))+TV_range(1))/0.00153);
+Theta1(:,end) = TV;
+
+scalingExp1 = [0.8 0.8 0.8 0.8 0.8 0.8 0 0 0 0 0 0 0 0 0 -3/4 0 0 0 0 0 0];
+
+scalingFactor1 = (77/.022).^(scalingExp1);
+
+Theta1 = Theta1+log(scalingFactor1);
+table(parameters, exp(mean(Theta1))')
+%% Plot bivariate marginals
+plotBivariateMarginals_2(exp(Theta1(:,1:8)),...
+       'names',parameters([1:8]),'interpreter', 'tex')
+plotCorrMat(Theta1, parameters)
+
 %% Posterior predictions
-simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
-    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
-tic
-PI=getPosteriorPredictions(exp(Theta1),PI,simFun,PI.observablesPlot);
-toc
-tic
-PI2 = getPosteriorPredictions(exp(Theta2), PI,simFun, PI.observablesPlot);
-toc
-PI=getCredibleIntervals(PI,PI.observablesPlot, (Theta1),PI.H);
-plotPosteriorPredictions(PI,PI.observablesPlot,'output','indiv')
+simFun=@(x)getOutput2(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
+    {},PI.normIndx,'Output', 'data');
+dataOutput = simFun(exp(Theta1(1,:)));
+[PI.data(1:end).simValue] = dataOutput{:,:};
+figure
+hold on
+arrayfun(@(x)plot(PI.tspan, x.simValue(:,1), 'Color', x.colors), PI.data, 'UniformOutput', false)
 
-PI2 = getCredibleIntervals(PI2, PI2.observablesPlot, Theta2, PI.H);
-PI2_subset = PI2;
-PI2_subset.data = PI2.data(5:12);
-plotPosteriorPredictions(PI2_subset, PI.observablesPlot, 'output', 'indiv')
-PI2.postSamples = Theta2;
-PI.postSamples = Theta1;
-%% Save
-save(strjoin({cd 'PI_PK_TwoComp4_HuSim_Theta1'}, '/'), 'PI')
-save(strjoin({cd 'PI_PK_TwoComp4_HuSim_Theta2'}, '/'), 'PI2')
+tic
+PI1=getPosteriorPredictions2(exp(Theta1(:,:)),PI,simFun,PI.observablesPlot);
+toc

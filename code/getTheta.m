@@ -30,7 +30,7 @@ for i=1:length(Meta)
     H.par(i).sigmaSamples = repelem(exp(Meta(i).Struct.PI.postSamples(H.par(i).postSampleIndx, H.par(i).sigmaIndx)),N_indiv,1);
     
     eta = randn(N_pop*N_indiv, length(H.par(i).etaIndx)).*(H.par(i).omegaSamples);
-    H.par(i).postSamples(:,H.par(i).etaIndx) = eta;
+    H.par(i).postSamples(:,H.par(i).etaIndx) =  H.par(i).postSamples(:,H.par(i).etaIndx)+eta;
     H.par(i).variables = Meta(i).Struct.PI.observablesPlot;
     
     [theta_indx, theta_order] = ismember(params,  H.par(i).name);
