@@ -55,7 +55,7 @@ SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
 lb=([.07   1.6  150    1e-7     1e-7   1e0   1e3    1e-4])';
-ub=([.3    10    900    1        1      1e4   1e7     1e3])';
+ub=([.3    8    650    1        1      1e4   1e7     1e3])';
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 
@@ -95,12 +95,12 @@ table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 save('PI_CIM4_ICB_21_1.mat', 'PI')
 load(strjoin({cd 'PI_CIM4_ICB_21_1.mat'},'/'),'PI')
 
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_11.mat'},''), 'x11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_11.mat'},''), 'p_x11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_J11.mat'},''), 'J11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_n_id11.mat'},''), 'n_id11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_pCR11.mat'},''), 'pCR11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_stepSize11.mat'},''), 'stepSize11')
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_9.mat'},''), 'x9')
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_9.mat'},''), 'p_x9')
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_J9.mat'},''), 'J9')
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_n_id9.mat'},''), 'n_id9')
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_pCR9.mat'},''), 'pCR9')
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_stepSize9.mat'},''), 'stepSize9')
 
 load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_6.mat'},''))
 load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_6.mat'},''))
