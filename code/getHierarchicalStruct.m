@@ -54,12 +54,15 @@ try
         CellOmegaIndex = mat2cell(reshape(IndivIndex{end,end}(end)+1:...       % Create indexes for the variance parameters of
             IndivIndex{end,end}(end)+n_cell,n_cell,[]),ones(n_cell,1));         % individually-varying params starting at the end of
     end                                                                         % the individual params
-    CellIndx = cellfun(@(x)ismember(cell_groups,x),celltypes,'UniformOutput', false);
-    CellIndx = reshape([CellIndx{:,:}],n_indiv,n_celltypes);
-    H.CellIndx = CellIndx;
+    
 catch
     CellOmegaIndex ={};                                                    % If there are no individual parameters    
 end
+CellIndx = cellfun(@(x)ismember(cell_groups,x),celltypes,'UniformOutput', false);
+CellIndx = reshape([CellIndx{:,:}],n_indiv,n_celltypes);
+
+H.CellIndx = CellIndx;
+H.CellTypes = celltypes;
 H.SigmaParams = [CellOmegaIndex{:,:}];                                 % Add omega indexes to vector of variance indexes
 [H.CellParams(1:n_cell).OmegaIndex] = CellOmegaIndex{:,:};          % Add omega indexes to H
 

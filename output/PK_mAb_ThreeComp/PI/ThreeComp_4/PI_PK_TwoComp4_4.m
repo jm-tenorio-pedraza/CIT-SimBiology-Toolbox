@@ -15,7 +15,7 @@ cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-11);
 set(cs, 'MaximumWallClock', 0.25)
-MODEL = 'TwoComp_CE';
+MODEL = 'TwoComp with TMDD';
 variants = get(model,'variants');
 %% Setting up parameters, data and simulations
 
@@ -36,21 +36,21 @@ dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbo
 % PI.u = PI.u([8 1:7 9:10],1);
 PI.u = PI.u(:,1);
 PI.variableUnits={'%ID/g'  '%ID/g' '%ID/g' '%ID/g' };
-PI.observablesPlot = {'Serum_antiPDL1_Indium' 'Serum_antiPDL1_Free'...
-    'Tumor_antiPDL1_Indium' 'Tumor_antiPDL1_Free' };
+PI.observablesPlot = {'Blood Serum antiPDL1_{Total}' 'Blood Serum antiPDL1_{Free}'...
+    'Tumor antiPDL1_{Total}' 'Tumor antiPDL1_{Free}' };
 
 dose = {'Blood.antiPDL1'};
 sim=createSimFunction(model,parameters,observables, dose,variants(3),...
     'UseParallel', false);
 PI.normIndx = [];
-PI.model = 'PK-Two Compartment Model';
+PI.model = MODEL;
 % Get initial values
 PI.x_0 =[PI.data(:).dose]';
 clear dataset_file_ext  MODEL 
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[1:6], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
@@ -60,14 +60,12 @@ ub = [1e1    2      1e1     1e2   1e6 1e2];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 
-prior = {'U' 'U' 'U' 'U' 'U' 'U'};
-
+PI = assignPrior(PI);
 
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
-% prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma/inverse gamma'}));
-prior_fun=@(p)getPriorPDF(p,PI, prior);
-prior_fun_MCMC=@(p)getPriorPDFMCMC(p,PI, prior);
+prior_fun=@(p)getPriorPDFMCMC2(exp(p),PI);
+
 
 paramNames = getParamNames(PI,sim, observables);
 %% Objective function
@@ -84,7 +82,7 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_TwoComp4_4_TMDD_13.mat', 'PI')
+save('PI_PK_TwoComp4_4_TMDD_0.mat', 'PI')
 load(strjoin({cd 'PI_PK_TwoComp4_4_TMDD_0.mat'},'/'))
 
 save(strjoin({cd '/PI_PK_TwoComp4_3_TMDD_21_DREAM_MCMC_x.mat'},''), 'x')

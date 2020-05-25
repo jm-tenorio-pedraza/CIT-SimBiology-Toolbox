@@ -1,11 +1,13 @@
-function plotSimOutput(PI,colIndx, varargin)
+function plotError2(PI,colIndx, varargin)
 par=inputParser;
 par.addParameter('all', true)
 par.addParameter('indiv', true)
 par.addParameter('addErrorVar', true)
 par.addParameter('newFig', true)
 par.addParameter('interpreter', 'tex')
+par.addParameter('group', 'byDataset')
 par.addParameter('TimeUnit', 'days')
+
 par.parse(varargin{:})
 par = par.Results;
 
@@ -21,24 +23,30 @@ else
     n_col = ceil(sqrt(n_sim));
     n_row = ceil(n_sim/n_col);
 end
-
-treatments=([PI.data(sim_indx).Group]);
-if length(treatments)~=n_sim
-    treatments = unique({PI.data(:).Group});
-else
-    treatments = unique(treatments);
+if strcmp(par.group, 'byDataset')
+    treatments=([PI.data(sim_indx).Group]);
+    treatment_colors=linspecer(length(treatments));
+    if length(treatments)~=n_sim
+        treatments = unique({PI.data(:).Group});
+    else
+        treatments = unique(treatments);
+    end
+elseif strcmp(par.group, 'Cell')
+    treatments = PI.H.CellIndx(:,:);
+    treatment_colors = PI.H.CellIndx(:,:)*linspecer(size(PI.H.CellIndx,2));
+  
 end
+
 if par.indiv
 else
     treatments = {PI.data(:).Name};
 end
 
-treatment_colors=linspecer(length(treatments));
-simIndx = find(sim_indx);
+    simIndx = find(sim_indx);
 
 try
-    minX = min(arrayfun(@(x) min(x.dataValue(:,colIndx)), PI.data, 'UniformOutput', true));
-    maxX = max(arrayfun(@(x) max(x.dataValue(:,colIndx)), PI.data, 'UniformOutput', true));
+    minX = min(arrayfun(@(x) min(x.dataValue(:,colIndx)-x.y_hat(:,colIndx)), PI.data, 'UniformOutput', true));
+    maxX = max(arrayfun(@(x) max(x.dataValue(:,colIndx)-x.y_hat(:,colIndx)), PI.data, 'UniformOutput', true));
 catch
     
 end
@@ -51,27 +59,8 @@ for i=1:n_sim
     else
     end
     hold on
-    sim=plot(PI.data(simIndx(i)).simTime, PI.data(simIndx(i)).simOutput(:,colIndx));
-    try
-        dat = errorbar(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx), PI.data(simIndx(i)).SD(:,colIndx));
-    catch
-        dat=plot(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx));
-        
-    end
-    if par.addErrorVar
-        try
-            X = [PI.data(simIndx(i)).simTime; PI.data(simIndx(i)).simTime(end:-1:1)];
-            Y = [PI.data(simIndx(i)).ub(:,colIndx); PI.data(simIndx(i)).lb(end:-1:1,colIndx)];
-            nanindx = isnan(Y);
-            error = patch('XData', X(~nanindx),...
-                'YData',Y(~nanindx));
-            
-        catch
-            error = [];
-        end
-    else
-        error = [];
-    end
+
+        dat=plot(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx) - PI.data(simIndx(i)).y_hat(:,colIndx));
     if par.indiv
             title(PI.data(simIndx(i)).Name,'interpreter', par.interpreter)
 
@@ -80,21 +69,18 @@ for i=1:n_sim
         title(PI.observablesPlot(colIndx), 'interpreter', par.interpreter)
         col_i = treatment_colors(simIndx(i),:);
     end
-    sim.Color=col_i;
-    sim.LineWidth= 2;
-    dat.LineStyle='none';
+     dat.LineStyle='none';
     dat.Color = col_i;
     dat.MarkerFaceColor=col_i;
     dat.MarkerEdgeColor=col_i;
-    
     dat.Marker='d';
-    error.LineStyle = 'none';
-    error.FaceColor = col_i;
-    error.FaceAlpha = 0.2;
-    
+   
     ylabel(PI.variableUnits(colIndx))
-    xlabel(strjoin({'Time [' par.TimeUnit ']'}, ''))
-  
+    if strcmp(par.TimeUnit, 'days')
+    xlabel('Time [days]')
+    elseif strcmp(par.TimeUnit, 'hours')
+        xlabel('Time [hours]')
+    end
     ax = gca;
     if par.indiv
     try
@@ -114,26 +100,20 @@ for i=1:n_sim
         %ylim(10.^([floor(log10(min(PI.data(simIndx(i)).dataValue(:,colIndx)))) ceil(log2(max(PI.data(simIndx(i)).dataValue(:,colIndx))))]))
     catch
     end
+    ylimit = max(abs([minX maxX]));
     
-    ylim([floor(minX), ceil(maxX)])
+    ylim([floor(-ylimit), ceil(ylimit)])
     
-    if strcmp(PI.variableUnits{colIndx}, 'Volume [ml]')
-        ylim([1e-2, 3])
-        
-    elseif strcmp(PI.variableUnits{colIndx}, 'Percentage [%]')
-        %ylim([1e-1, 30])
-    else
-    end
-    
+  
 end
+        abline = plot(PI.data(simIndx(i)).dataTime, zeros(1, length(PI.data(simIndx(i)).dataTime)));
+
+    abline.Color = 'k';
+
 ax = gca;
 if ~par.indiv
-    if par.addErrorVar
-        legend(ax.Children(end-2:-3:1),{PI.data(simIndx).Name}, 'location', 'best', 'interpreter','none')
-    else
-        legend(ax.Children(end-1:-2:1),{PI.data(simIndx).Name}, 'location', 'best', 'interpreter','none')
-
-    end
-        
+    ncells = 1:size(PI.H.CellIndx,2);
+    dataLegend = PI.H.CellTypes(PI.H.CellIndx(simIndx,:)*ncells');
+        legend(ax.Children(end:-1:2),dataLegend, 'location', 'best', 'interpreter','none')        
 end
 return
