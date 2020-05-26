@@ -45,20 +45,24 @@ PI.AIC = 2*length(PI.par)-2*likelihood_fun(finalValues)*(1);
 
      
 %% Plotting output
-% figure('Position', [10 10 1.5e3 1e3])
-% ncol = ceil(sqrt(length(observables)));
-% nrow = ceil(length(observables)/ncol);
+figure('Position', [10 10 1.5e3 1e3])
+ncol = ceil(sqrt(length(observables)));
+nrow = ceil(length(observables)/ncol);
 for i=1:length(observables)
-%   subplot(nrow,ncol,i)
-plotSimOutput(PI,i,'all', false, 'indiv', true, 'addErrorVar', false, 'newFig', false)
+ subplot(nrow,ncol,i)
+ plotSimOutput(PI,i,'all', false, 'indiv', false, 'addErrorVar', false,...
+     'newFig', false, 'TimeUnit', 'hours')
 end
 %%
 finalValue=num2cell(exp(finalValues'));
 [PI.par(1:end).finalValue]=finalValue{:,:};
 plotFit(PI,'sigma', exp(finalValues(setdiff(PI.H.SigmaParams,[PI.H.IndividualParams.OmegaIndex PI.H.CellParams.OmegaIndex]))))
 %% Plotting errors
+figure('Position', [10 10 1.5e3 1e3])
+ncol = ceil(sqrt(length(observables)));
+nrow = ceil(length(observables)/ncol);
 for i=1:length(observables)
-plotError(exp(finalValues(setdiff(PI.H.SigmaParams,...
-    [PI.H.IndividualParams.OmegaIndex, PI.H.CellParams.OmegaIndex]))),PI,i)
-    legend(observables(i),'Location', 'best')
+ subplot(nrow,ncol,i)
+ plotError2(PI,i,'all', false, 'indiv', false, 'addErrorVar', false, 'newFig', ...
+     false, 'group', 'Cell', 'TimeUnit', 'hours')
 end

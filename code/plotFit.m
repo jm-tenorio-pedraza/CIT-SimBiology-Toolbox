@@ -1,6 +1,7 @@
 function plotFit(PI,varargin)
 input= inputParser;
 input.addParameter('sigma',repelem(1,1,size(PI.data(1).dataValue,2)))
+input.addParameter('newFig', true)
 input.parse(varargin{:})
 input = input.Results;
 
@@ -15,8 +16,12 @@ errors_50 = sum(arrayfun(@(x) sum(sum(abs((x.dataValue-x.y_hat)./x.y_hat)<0.5)),
 
 %
 % Plot data points to fits
+if input.newFig
 figure
+else
+end
 hold on
+
 try
     f=arrayfun(@(x)errorbar(x.dataValue, x.y_hat,x.SD, 'horizontal','s'), PI.data,'UniformOutput', false);
     
