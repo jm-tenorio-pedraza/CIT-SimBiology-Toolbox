@@ -6,7 +6,7 @@ addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM21')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_4.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio projects/CIM_4.sbproj');
 % Extract model
 model=out.m1;
 variants = getvariant(model);
@@ -14,6 +14,8 @@ initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1;},...
     'variant', {variants(5); variants(6)});
 
 cs=model.getconfigset;
+set(cs,'SolverType', 'sundials');
+
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-11);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-9);
 set(cs, 'MaximumWallClock', 0.25)
@@ -94,13 +96,13 @@ table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
 save('PI_CIM4_ICB_21_1.mat', 'PI')
 load(strjoin({cd 'PI_CIM4_ICB_21_1.mat'},'/'),'PI')
-
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_11.mat'},''), 'x11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_11.mat'},''), 'p_x11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_J11.mat'},''), 'J11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_n_id11.mat'},''), 'n_id11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_pCR11.mat'},''), 'pCR11')
-save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_stepSize11.mat'},''), 'stepSize11')
+N='12'
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_' N '.mat'},''), strjoin({'x' N},''))
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_' N '.mat'},''), strjoin({'p_x' N},''))
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_J' N '.mat'},''), strjoin({'J' N},''))
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_n_id' N '.mat'},''), strjoin({'n_id' N},''))
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_pCR' N '.mat'},''), strjoin({'pCR' N},''))
+save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_stepSize' N '.mat'},''), strjoin({'stepSize' N},''))
 
 load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_6.mat'},''))
 load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_6.mat'},''))
@@ -110,7 +112,7 @@ load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_pCR6.mat'},''))
 
 load(strjoin({cd 'PI_CIM21_ICB_1_DREAM_MCMC_x_1.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
-for i=1:9
+for i=10:11
     load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_' num2str(i) '.mat'},''))
     load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_' num2str(i) '.mat'},''))
 
