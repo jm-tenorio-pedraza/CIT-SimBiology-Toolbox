@@ -106,6 +106,8 @@ tic
     0,'StepSize',stepSize10,'H', h, 'pCR', pCR11, 'J', J11, 'n_id', n_id11);
 toc
 
+x = cat(3,x10, x11, x12);
+p_x = [p_x10; p_x11; p_x12];
 %% Save results
 save(strjoin({cd '/PI_CIM21_Control_11_2_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PI_CIM21_Control_11_2_DREAM_MCMC_p_x.mat'},''), 'p_x')
