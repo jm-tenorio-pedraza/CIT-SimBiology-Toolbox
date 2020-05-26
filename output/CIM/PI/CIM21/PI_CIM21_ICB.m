@@ -6,7 +6,7 @@ addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM21')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_4.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio projects/CIM_4.sbproj');
 % Extract model
 model=out.m1;
 variants = getvariant(model);
@@ -14,9 +14,9 @@ initialStruct = struct('name', {'MOC1';'MOC2'}, 'initialValue', {5; 0.1;},...
     'variant', {variants(5); variants(6)});
 
 cs=model.getconfigset;
-set(cs.SolverType, 'ode15s');
+set(cs,'SolverType', 'sundials');
 
-set(cs.Sol, 'AbsoluteTolerance', 1.0e-11);
+set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-11);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-9);
 set(cs, 'MaximumWallClock', 0.25)
 sbioaccelerate(model, cs)
