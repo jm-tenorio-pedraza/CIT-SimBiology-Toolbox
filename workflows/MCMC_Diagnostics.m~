@@ -34,16 +34,14 @@ plotBivariateMarginals_2((postSamples(:, [PI.H.CellParams.Index PI.H.IndividualP
     'names',paramNames([PI.H.CellParams.Index PI.H.IndividualParams.Index]))
 plotIIVParams(postSamples, PI,'name', paramNames)
 %% Posterior predictions
-simTime = unique([PI.tspan', 0:PI.tspan(end)]);
-simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,simTime),x,...
+simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,0:PI.tspan(end)),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H,...
-    'output', 'simoutput', 'simTime', simTime);
+    'output', 'simoutput', 'simTime', 0:PI.tspan(end));
 tic
-PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesFields,...
-    'simTime', simTime);
+PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesFields, 'simTime', 0:PI.tspan(end));
 toc
 PI=getCredibleIntervals(PI,PI.observablesFields, exp(postSamples),PI.H,...
-    'logit_indx', [],'simTime', simTime);
+    'logit_indx', [],'simTime', 0:PI.tspn);
 
 %% Plot all
 figure('Position', [10 10 1.5e3 1e3])

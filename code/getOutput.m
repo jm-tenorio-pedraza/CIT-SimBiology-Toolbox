@@ -1,7 +1,9 @@
-function PI=getOutput(PI,simFun,p,getPhi,normIndx,H,varargin)
+function output=getOutput(PI,simFun,p,getPhi,normIndx,H,varargin)
 par = inputParser;
 par.addParameter('prob', 0.95)
 par.addParameter('n_samples',1e3)
+par.addParameter('output', PI)
+par.addParameter('simTime', PI.tspan)
 
 par.parse(varargin{:})
 par=par.Results;
@@ -25,7 +27,7 @@ simdata=resample(simdata,PI.tspan);
 try
     [PI.data(1:length(T)).('simTime')]=T{:,:};
     [PI.data(1:length(T)).('simValue')]=Y{:,:};
-        [PI.data(1:length(T)).('y_hat')]=Y_data{:,:};
+     [PI.data(1:length(T)).('y_hat')]=Y_data{:,:};
 
 catch
     T= {T};
@@ -49,6 +51,10 @@ dataOutput=arrayfun(@(x)x.y_hat./repmat([ones(1,nVar-length(normIndx)) x.y_hat(e
 % Input into data array
 [PI.data(1:length(simOutput)).('simOutput')]=simOutput{:,:};
 
+simOutput=arrayfun(@(x)x.simOutput(ismember(x.simTime,par.simTime),:),PI.data,...
+    'UniformOutput',false);
+[PI.data(1:length(simOutput)).('simOutput')]=simOutput{:,:};
+
 
 % Input into data array
 [PI.data(1:length(dataOutput)).('yOutput')]=dataOutput{:,:};
@@ -69,5 +75,12 @@ ub = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_
 [PI.data(1:end).lb]= lb{:,:};
 [PI.data(1:end).ub] = ub{:,:};
 catch
+end
+if strcmp(par.output, 'PI')
+    output = PI;
+elseif strcmp(par.output, 'data')
+    output = dataOutput;
+else
+    output = simOutput;
 end
 return
