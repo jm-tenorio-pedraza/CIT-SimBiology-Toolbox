@@ -51,13 +51,13 @@ plotData(PI,PI.observablesPlot,'responseGrouping',true, 'kineticGrouping',true)
 
 %% Optimization setup
 % Hierarchical structure
-PI.H = getHierarchicalStruct(parameters(1:end-3),PI,'n_sigma', length(observables),...
-    'rand_indx', [1:3] , 'cell_indx',[], 'n_indiv', length(PI.u));
+PI.H = getHierarchicalStruct(parameters(1:end-3),PI,'n_sigma', length(PI.observablesPlot),...
+    'rand_indx', [1 2 3] , 'cell_indx',[], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
 lb=([.07   1.6  150    1e-7     1e-7   1e0   1e3    1e-4])';
-ub=([.3    10    900    1        1      1e4   1e7     1e3])';
+ub=([.3    10    1000    1        1      1e4   1e7     1e3])';
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 
@@ -94,9 +94,9 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
-save('PI_CIM4_ICB_21_1.mat', 'PI')
-load(strjoin({cd 'PI_CIM4_ICB_21_1.mat'},'/'),'PI')
-N='12'
+save('PI_CIM4_ICB_21_14.mat', 'PI')
+load(strjoin({cd 'PI_CIM4_ICB_21_14.mat'},'/'),'PI')
+N='17'
 save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_' N '.mat'},''), strjoin({'x' N},''))
 save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_' N '.mat'},''), strjoin({'p_x' N},''))
 save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_J' N '.mat'},''), strjoin({'J' N},''))
@@ -104,15 +104,16 @@ save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_n_id' N '.mat'},''), strjoin({'n_id
 save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_pCR' N '.mat'},''), strjoin({'pCR' N},''))
 save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_stepSize' N '.mat'},''), strjoin({'stepSize' N},''))
 
-load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_6.mat'},''))
-load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_6.mat'},''))
-load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_J6.mat'},''))
-load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_n_id6.mat'},''))
-load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_pCR6.mat'},''))
+load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_' N '.mat'},''))
+load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_' N '.mat'},''))
+load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_J' N '.mat'},''))
+load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_n_id' N '.mat'},''))
+load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_pCR' N '.mat'},''))
+load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_stepSize' N '.mat'},''))
 
 load(strjoin({cd 'PI_CIM21_ICB_1_DREAM_MCMC_x_1.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
-for i=10:11
+for i=14:16
     load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_' num2str(i) '.mat'},''))
     load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_' num2str(i) '.mat'},''))
 
