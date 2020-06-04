@@ -17,6 +17,7 @@ set(cs.SolverOptions, 'RelativeTolerance', 1.0e-9);
 set(cs, 'MaximumWallClock', 0.25)
 MODEL = 'ThreeCompartment with TMDD';
 variants = get(model,'variants');
+sbioaccelerate(model,cs);
 %% Setting up parameters, data and simulations
 
 parameters = {'Blood'; 'Tumor';'Peripheral';'CL_antiPDL1'; 'Q23';'Q12';'PDL1_Tumor'; 'kdeg_PDL1'; 'ID'};
@@ -36,7 +37,7 @@ PI.u = PI.u(:,1);
 PI.variableUnits={'%ID/g'  '%ID/g' '%ID/g' '%ID/g' };
 PI.observablesPlot = {'Blood Serum antiPDL1_{Total}' 'Blood Serum antiPDL1_{Free}'...
     'Tumor antiPDL1_{Total}' 'Tumor antiPDL1_{Free}' };
-
+PI.observablesFields = {'Blood_Serum_Total', 'Blood_Serum_Free', 'Tumor_Total', 'Tumor_Free'};
 dose = {'Blood.antiPDL1'};
 sim=createSimFunction(model,parameters,observables, dose,variants(9),...
     'UseParallel', false);
@@ -84,5 +85,5 @@ load(strjoin({cd 'PI_PK_ThreeComp4_4_TMDD_11.mat'},'/'))
 
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x.mat'},''), 'p_x')
-load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_p_x.mat'},''))
-load(strjoin({cd '/PI_PK_TwoComp4_2_TMDD_2_red_DREAM_MCMC_x.mat'},''))
+load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x.mat'},''))
+load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x.mat'},''))

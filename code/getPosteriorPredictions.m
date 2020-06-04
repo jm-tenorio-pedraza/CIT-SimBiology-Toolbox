@@ -17,20 +17,25 @@ for i=1:length(outputs)
     output_i=char(outputs(i));
     [PI.output(1:end).(output_i)]=out{:,:};
 end
+
 % Obtaining simulations
+OutputStruct = [];
+dataOutput = repelem({'nan'}, size(params,1),1);
+[OutputStruct(1:size(params,1)).dataOutput]=dataOutput{:,:} ;
 for i=1:size(params,1)
-    PI_i=output_handle(params(i,:));
+    OutputStruct(i).dataOutput=output_handle(params(i,:));
+end
+
+
+for j=1:length(outputs)
+    output_j=char(outputs(j));
+    out_j=arrayfun(@(x)cellfun(@(y) y(:,j)',x.dataOutput, 'UniformOutput',false),OutputStruct,'UniformOutput',false);
     
-    for j=1:length(outputs)
-         output_j=char(outputs(j));
-         out_j=arrayfun(@(x)x.yOutput(:,j)',PI_i.data,'UniformOutput',false);
-         for k=1:length(PI.output)
-             if any(out_j{k,:}<0)
-                 PI.output(k).(output_j)(i,:) = nan(1,length(p.simTime));  
-             else
-             PI.output(k).(output_j)(i,:)=out_j{k,:};
-             end
-         end
-         
+    
+    for k=1:length(PI.output)
+        out_jk = cell2mat(cellfun(@(x)x{k,:},out_j, 'UniformOutput',false)');
+        PI.output(k).(output_j) = out_jk;
     end
+    
+end
 end

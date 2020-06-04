@@ -12,7 +12,7 @@ p.addParameter('newFig', true)
 p.addParameter('TimeUnit', 'days')
 p.addParameter('indiv', true);
 p.addParameter('interpreter', 'tex');
-p.addParameter('color', 'group');
+p.addParameter('color'
 p.parse(varargin{:});
 p=p.Results;
 
@@ -136,9 +136,9 @@ for j=1:length(simIndx)
     if strcmp(p.outputs,'indiv')
         title(PI.data(simIndx(j)).Name,'interpreter','none')
         try
-            legend(ax.Children, {'Data' PI.observablesPlot{colIndx} '95% Credible Interval' '95% Prediction Interval'},'interpreter', p.interpreter,'Location', 'best')
+            legend(ax.Children, {'Data' output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none','Location', 'best')
         catch
-            legend(ax.Children, {PI.observablesPlot{colIndx} '95% Credible Interval' '95% Prediction Interval'},'interpreter', p.interpreter,'Location', 'best')
+            legend(ax.Children, {output_i '95% Credible Interval' '95% Prediction Interval'},'interpreter', 'none','Location', 'best')
         end
     end
     ylim([floor(minX), ceil(maxX)])
@@ -157,7 +157,7 @@ if length(legends)~= length(PI.data)
 end
 
 if strcmp(p.outputs,'indiv')
-    %legend(ax.Children(end:-4:4),legends,'Interpreter', 'none','location','best')
+    legend(ax.Children(end:-4:4),legends,'Interpreter', 'none','location','best')
 else
     title(PI.observablesPlot(colIndx),'interpreter', p.interpreter)
     legend(ax.Children(end:-3:3),legends,'Interpreter', 'none', 'location','best')

@@ -57,7 +57,7 @@ for i=1:length(outputs)
         PI.outputPred, 'UniformOutput', false);
     field_i = strjoin({output_i 'predError'}, '_');
     [PI.outputPred(1:end).(field_i)] = postPred{:,:};
-    predError = arrayfun(@(x) x.dataValue(:,i)' -  x.(field_i),...
+    predError = arrayfun(@(x) x.(field_i) - x.dataValue(:,i)',...
         PI.outputPred, 'UniformOutput',false);
     [PI.outputPred(1:end).(field_i)] = predError{:,:};
     

@@ -34,14 +34,34 @@ plotBivariateMarginals_2((postSamples(:, [PI.H.CellParams.Index PI.H.IndividualP
     'names',paramNames([PI.H.CellParams.Index PI.H.IndividualParams.Index]))
 plotIIVParams(postSamples, PI,'name', paramNames)
 %% Posterior predictions
-simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
-    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H);
+simTime = unique([PI.tspan', 0:PI.tspan(end)]);
+simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,simTime),x,...
+    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H,...
+    'output', 'simoutput', 'simTime', simTime);
 tic
-PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesPlot);
+PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesFields,...
+    'simTime', simTime);
 toc
-PI=getCredibleIntervals(PI,PI.observablesPlot, exp(postSamples),PI.H, 'logit_indx', []);
-plotPosteriorPredictions(PI,PI.observablesPlot,'output','group')
+PI=getCredibleIntervals(PI,PI.observablesFields, exp(postSamples),PI.H,...
+    'logit_indx', [],'simTime', simTime);
 
+%% Plot all
+figure('Position', [10 10 1.5e3 1e3])
+ncol = ceil(sqrt(length(PI.observablesFields)));
+nrow = ceil(length(PI.observablesFields)/ncol);
+
+for i=1:length(PI.observablesFields)
+     subplot(nrow,ncol,i)
+
+    plotPosteriorPredictions(PI,i,'outputs','group', 'all', false,...
+        'newFig', false, 'TimeUnit', 'hours','indiv', false,'simTime', 0:PI.tspan(end))
+end
+
+%% Plot individual variables
+for i =1:length(PI.observablesPlot)
+ plotPosteriorPredictions(PI,i,'outputs','indiv', 'all', false,...
+        'newFig', true, 'TimeUnit', 'hours','color', 'dataset','simTime', 0:PI.tspan(end))
+end
 %% Posterior credible intervals
 PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
 plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
