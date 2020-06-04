@@ -159,9 +159,9 @@ toc
 w0=x17(:,:,end)';
 
 tic
-[x18, p_x18, accept18, pCR18, stepSize18, J18, n_id18] = dreamHParallel(w0,likelihood_fun,prior_fun_MCMC,...
+[x18, p_x18, accept17, pCR17, stepSize17, J17, n_id17] = dreamHParallel(w0,likelihood_fun,prior_fun_MCMC,...
     size(w0,1),ceil(3e5/size(w0,1)), length(finalValues), 'BurnIn', ...
-    0,'StepSize',stepSize17,'H', h, 'pCR', pCR17, 'J', J17, 'n_id', n_id17);
+    3e5,'StepSize',stepSize16,'H', h, 'pCR', pCR16, 'J', J16, 'n_id', n_id16);
 toc
 x = cat(3,x14, x15, x16,x17);
 p_x = [p_x14; p_x15; p_x16; p_x17];
