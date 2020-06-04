@@ -114,9 +114,11 @@ for i=1:n_sim
         %ylim(10.^([floor(log10(min(PI.data(simIndx(i)).dataValue(:,colIndx)))) ceil(log2(max(PI.data(simIndx(i)).dataValue(:,colIndx))))]))
     catch
     end
-    
+    if maxX<1
+        ylim([minX, maxX])
+    else
     ylim([floor(minX), ceil(maxX)])
-    
+    end
     if strcmp(PI.variableUnits{colIndx}, 'Volume [ml]')
         ylim([1e-2, 3])
         

@@ -13,7 +13,7 @@ nVar=size(PI.data(1).dataValue,2);
 try
     phi=getPhi(p);
 catch
-    phi = repmat(p, length(PI.data),1);
+    phi = [repmat(p, length(PI.data),1) PI.x_0];
 end
 % Simulate model with parameter structure
 simdata=simFun(phi);
@@ -21,7 +21,7 @@ simdata=simFun(phi);
 % Obtain simulation output at pre-designated time points
 [T,Y,~]=getdata(simdata);
 % Obtain simulation output at pre-designated time points
-simdata=resample(simdata,PI.tspan);
+simdata=resample(simdata,par.simTime);
 [T_data,Y_data,~]=getdata(simdata);
 % Incorporate simulations into data structure array
 try
@@ -51,16 +51,29 @@ dataOutput=arrayfun(@(x)x.y_hat./repmat([ones(1,nVar-length(normIndx)) x.y_hat(e
 % Input into data array
 [PI.data(1:length(simOutput)).('simOutput')]=simOutput{:,:};
 
-simOutput=arrayfun(@(x)x.simOutput(ismember(x.simTime,par.simTime),:),PI.data,...
-    'UniformOutput',false);
-[PI.data(1:length(simOutput)).('simOutput')]=simOutput{:,:};
+simTimeIndx = arrayfun(@(x) uniqueIndx(x.simTime), PI.data, 'UniformOutput', false);
+[PI.data(1:length(simOutput)).simTimeIndx] = simTimeIndx{:,:};
 
+simOutput = repelem({'nan'}, length(PI.data),1);
+for i=1:length(PI.data)
+    dataMat = nan(length(par.simTime), size(PI.data(1).dataValue,2));
+    destinyRowIndx = ismember(par.simTime,PI.data(i).simTime(PI.data(i).simTimeIndx));
+    [originRowIndx, ~] = ismember(PI.data(i).simTime(PI.data(i).simTimeIndx), par.simTime);
+    dataMat(destinyRowIndx,:) = PI.data(i).simOutput(originRowIndx,:);
+    simOutput{i} = dataMat;
+end
+% simOutput=arrayfun(@(x)x.simOutput(ismember(x.simTime(x.simTimeIndx),par.simTime),:),PI.data,...
+%     'UniformOutput',false);
+[PI.data(1:length(simOutput)).('simOutput')]=simOutput{:,:};
+simTime = arrayfun(@(x)x.simTime(ismember(x.simTime(x.simTimeIndx),par.simTime),:),PI.data,...
+    'UniformOutput',false);
+[PI.data(1:length(simOutput)).simTime]=simTime{:,:};
 
 % Input into data array
 [PI.data(1:length(dataOutput)).('yOutput')]=dataOutput{:,:};
 
 % Match observed time points
-dataOutput=arrayfun(@(x)x.yOutput(ismember(PI.tspan,x.dataTime),:),PI.data,...
+dataOutput=arrayfun(@(x)x.yOutput(ismember(par.simTime,x.dataTime),:),PI.data,...
     'UniformOutput',false);
 [PI.data(1:length(dataOutput)).('y_hat')]=dataOutput{:,:};
 

@@ -30,17 +30,24 @@ catch
     
 end
 try
+    cellColors = linspecer(length(PI.H.CellTypes));
+            figure
+    n_col = ceil(sqrt(length(PI.H.CellParams)));
+    n_row = ceil(length(PI.H.CellParams)/n_col);
      for j=1:length(PI.H.CellParams)
-        figure
-        hold on
+        subplot(n_row, n_col,j)
+         hold on
         
         for i=1:length(PI.H.CellParams(j).Index)
             histogram((postSamples(:,PI.H.CellParams(j).Index(i))),...
-                'FaceColor',PI.data(i).colors,'FaceAlpha', 0.5, 'Normalization',...
+                'FaceColor',cellColors(i,:),'FaceAlpha', 0.5, 'Normalization',...
                 'probability')
             
         end
-        legend(inputs.cellnames,'interpreter', 'none')
+        cellIndx = 1:3;
+        cellIndx = PI.H.CellIndx*cellIndx';
+        cellIndx = unique(cellIndx, 'stable');
+        legend(PI.H.CellTypes(cellIndx),'interpreter', 'none')
         ylabel('prob')
         xlabel('Deviations wrt mean parameter [log scale]')
         title(strjoin({'Inter-model variation in', name_beta{j}},' '))
