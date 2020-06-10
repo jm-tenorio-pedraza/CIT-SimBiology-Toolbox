@@ -6,7 +6,7 @@ addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
 cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM21')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio projects/CIM_4.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_4.sbproj');
 % Extract model
 model=out.m1;
 variants = getvariant(model);
@@ -52,7 +52,7 @@ plotData(PI,PI.observablesPlot,'responseGrouping',true, 'kineticGrouping',true)
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-3),PI,'n_sigma', length(PI.observablesPlot),...
-    'rand_indx', [1 2 3] , 'cell_indx',[], 'n_indiv', length(PI.u));
+    'rand_indx', [2 3] , 'cell_indx',[1], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
@@ -96,7 +96,7 @@ table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
 save('PI_CIM4_ICB_21_14.mat', 'PI')
 load(strjoin({cd 'PI_CIM4_ICB_21_14.mat'},'/'),'PI')
-N='17'
+N='18'
 save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_' N '.mat'},''), strjoin({'x' N},''))
 save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_' N '.mat'},''), strjoin({'p_x' N},''))
 save(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_J' N '.mat'},''), strjoin({'J' N},''))
@@ -113,7 +113,7 @@ load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_stepSize' N '.mat'},''))
 
 load(strjoin({cd 'PI_CIM21_ICB_1_DREAM_MCMC_x_1.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
-for i=14:16
+for i=14:17
     load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_' num2str(i) '.mat'},''))
     load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_' num2str(i) '.mat'},''))
 
