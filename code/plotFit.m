@@ -33,7 +33,7 @@ x_lim = ax.XLim;
 y_lim = ax.YLim;
 xl = min([x_lim(1) y_lim(1)]);
 xu = max([x_lim(2) y_lim(2)]);
-if xl==0
+if xl<=0
     xl = 1e-3;
 end
 rx = ((xl):((xu-xl)/1e3):(xu));

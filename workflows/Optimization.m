@@ -39,8 +39,10 @@ end
 
 
 %% Simulation output
-PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),exp(finalValues),...
-    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0), PI.normIndx,PI.H);
+simTime = unique([PI.tspan', 1:PI.tspan(end)]);
+PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u, simTime),exp(finalValues),...
+    @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),...
+    PI.normIndx,PI.H,'output', 'PI', 'simTime', simTime);
 PI.AIC = 2*length(PI.par)-2*likelihood_fun(finalValues)*(1);
 
      
@@ -50,8 +52,8 @@ ncol = ceil(sqrt(length(observables)));
 nrow = ceil(length(observables)/ncol);
 for i=1:length(observables)
  subplot(nrow,ncol,i)
- plotSimOutput(PI,i,'all', false, 'indiv', false, 'addErrorVar', false,...
-     'newFig', false, 'TimeUnit', 'hours')
+ plotSimOutput(PI,i,'all', false, 'indiv', true, 'addErrorVar', true,...
+     'newFig', true, 'TimeUnit', 'hours')
 end
 %%
 finalValue=num2cell(exp(finalValues'));

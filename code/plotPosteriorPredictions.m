@@ -41,7 +41,7 @@ if strcmp(p.color, 'dataset')
     treatment_colors=linspecer(length(treatments));
 
 elseif strcmp(p.color, 'cell')
-    cellIndx = 1:length(PI.CellTypes);
+    cellIndx = 1:length(PI.H.CellTypes);
     treatments = PI.H.CellIndx*cellIndx';
     treatment_colors= PI.H.CellIndx*linspecer(length(cellIndx));
 else
@@ -135,16 +135,25 @@ for j=1:length(simIndx)
     ax=gca;
     if strcmp(p.outputs,'indiv')
         title(PI.data(simIndx(j)).Name,'interpreter','none')
-        try
-            legend(ax.Children, {'Data' PI.observablesPlot{colIndx} '95% Credible Interval' '95% Prediction Interval'},'interpreter', p.interpreter,'Location', 'best')
-        catch
-            legend(ax.Children, {PI.observablesPlot{colIndx} '95% Credible Interval' '95% Prediction Interval'},'interpreter', p.interpreter,'Location', 'best')
-        end
+%         try
+%             legend(ax.Children, {'Data' PI.observablesPlot{colIndx}...
+%                 '95% Credible Interval' '95% Prediction Interval'},...
+%             'interpreter', p.interpreter,'Location', 'best')
+%         catch
+%             legend(ax.Children, {PI.observablesPlot{colIndx}...
+%                 '95% Credible Interval' '95% Prediction Interval'},...
+%                 'interpreter', p.interpreter,'Location', 'best')
+%         end
     end
-    ylim([floor(minX), ceil(maxX)])
+    if maxX<1
+        ylim([(minX), (maxX)])
+        %set(gca,'YScale','log')
+    else
+        ylim([floor(minX), ceil(maxX)])
+    end
     %set(ax, 'YScale', 'log')
     if max(m_data)/min(m_data)>1e1
-        % set(gca,'YScale','log')
+       % set(gca,'YScale','log')
     end
 end
 

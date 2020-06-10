@@ -10,8 +10,8 @@ plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 1e3;
-burnIn=6e5;
+delta = 7e2;
+burnIn=2e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
@@ -34,15 +34,15 @@ plotBivariateMarginals_2((postSamples(:, [PI.H.CellParams.Index PI.H.IndividualP
     'names',paramNames([PI.H.CellParams.Index PI.H.IndividualParams.Index]))
 plotIIVParams(postSamples, PI,'name', paramNames)
 %% Posterior predictions
-simTime = unique([PI.tspan', 0:PI.tspan(end)]);
+simTime = unique([PI.tspan', 1:PI.tspan(end)]);
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,simTime),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H,...
     'output', 'simoutput', 'simTime', simTime);
 tic
-PI=getPosteriorPredictions(exp(postSamples),PI,simFun,PI.observablesFields,...
+PI=getPosteriorPredictions(exp(postSamples(1:end,:)),PI,simFun,PI.observablesFields,...
     'simTime', simTime);
 toc
-PI=getCredibleIntervals(PI,PI.observablesFields, exp(postSamples),PI.H,...
+PI=getCredibleIntervals(PI,PI.observablesFields, exp(postSamples(1:end,:)),PI.H,...
     'logit_indx', [],'simTime', simTime);
 
 %% Plot all
@@ -54,13 +54,19 @@ for i=1:length(PI.observablesFields)
      subplot(nrow,ncol,i)
 
     plotPosteriorPredictions(PI,i,'outputs','group', 'all', false,...
-        'newFig', false, 'TimeUnit', 'hours','indiv', false,'simTime', 0:PI.tspan(end))
+        'newFig', false, 'TimeUnit', 'hours','color', 'dataset','simTime', simTime)
 end
 
 %% Plot individual variables
 for i =1:length(PI.observablesPlot)
  plotPosteriorPredictions(PI,i,'outputs','indiv', 'all', false,...
-        'newFig', true, 'TimeUnit', 'hours','color', 'dataset','simTime', 0:PI.tspan(end))
+        'newFig', true, 'TimeUnit', 'hours','color', 'dataset','simTime', simTime)
+end
+
+%% Plot prediction errors
+for i =1:length(PI.observablesPlot)
+plotPosteriorErrors(PI, i, 'outputs','indiv', 'newFig', true, 'TimeUnit' ,...
+    'hours', 'color', 'dataset')
 end
 %% Posterior credible intervals
 PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');

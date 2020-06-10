@@ -8,7 +8,7 @@ cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_T
 sensitivity = false;
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/ThreeComp_4.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio projects/ThreeComp_4.sbproj');
 % Extract model
 model=out.m1;
 cs=model.getconfigset;
@@ -80,7 +80,7 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp4_4_TMDD_13.mat', 'PI')
+save('PI_PK_ThreeComp4_4_TMDD_1`.mat', 'PI')
 load(strjoin({cd 'PI_PK_ThreeComp4_4_TMDD_11.mat'},'/'))
 
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x.mat'},''), 'x')
