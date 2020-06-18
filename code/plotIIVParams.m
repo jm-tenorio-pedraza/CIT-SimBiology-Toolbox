@@ -7,16 +7,17 @@ inputs=inputs.Results;
 
 name_eta = inputs.name([PI.H.IndividualParams(:).EtaIndex]);
 name_beta = inputs.name([PI.H.CellParams(:).EtaIndex]);
-
+indivColors = linspecer(length(PI.data));
 try
+figure
+n_col = ceil(sqrt(length(PI.H.IndividualParams)));
+n_row = ceil(length(PI.H.IndividualParams)/n_col);
     for j=1:length(PI.H.IndividualParams)
-        figure
+        subplot(n_row, n_col,j)
         hold on
-        
         for i=1:length(PI.data)
             histogram((postSamples(:,PI.H.IndividualParams(j).Index(i))),...
-                'FaceColor',PI.data(i).colors,'FaceAlpha', 0.7, 'Normalization', 'probability')
-            
+                'FaceColor',indivColors(i,:),'FaceAlpha', 0.7, 'Normalization', 'probability')
         end
         legend({PI.data(:).Name},'interpreter', 'none')
 ylabel('prob')

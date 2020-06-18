@@ -163,8 +163,8 @@ tic
     size(w0,1),ceil(3e5/size(w0,1)), length(finalValues), 'BurnIn', ...
     0,'StepSize',stepSize17,'H', h, 'pCR', pCR17, 'J', J17, 'n_id', n_id17);
 toc
-x = cat(3,x14, x15, x16,x17);
-p_x = [p_x14; p_x15; p_x16; p_x17];
+x = cat(3,x14, x15, x16,x17, x18);
+p_x = [p_x14; p_x15; p_x16; p_x17; p_x18];
 
 %% Save results
 save(strjoin({cd '/PI_CIM21_Control_11_2_DREAM_MCMC_x.mat'},''), 'x')

@@ -27,7 +27,8 @@ end
 
 for j=1:length(outputs)
     output_j=char(outputs(j));
-    out_j=arrayfun(@(x)cellfun(@(y) y(:,j)',x.dataOutput, 'UniformOutput',false),OutputStruct,'UniformOutput',false);
+    out_j=arrayfun(@(x)cellfun(@(y) y(:,j)',x.dataOutput, 'UniformOutput',false),...
+        OutputStruct,'UniformOutput',false);
     
     
     for k=1:length(PI.output)

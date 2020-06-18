@@ -61,7 +61,7 @@ TV = (rand(size(Theta1,1),1)*(TV_range(2)-TV_range(1))+TV_range(1))/0.00153;
 Theta1 = [Theta1 TV];
 Theta2 = [Theta2 TV];
 %% Load project
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_3.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio projects/CIM_3.sbproj');
 % Extract model
 model=out.m1;
 variants = get(model,'variants');
@@ -69,9 +69,9 @@ human = variants(2);
 % Solver configuration
 cs=model.getconfigset;
 cs.StopTime = 365;
-set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
-set(cs.SolverOptions, 'RelativeTolerance', 1.0e-12);
-set(cs, 'MaximumWallClock', 0.25)
+set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
+set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
+set(cs, 'MaximumWallClock', 2.5)
 
 %% Parameter setup
 parameters = [par([pop_indx eta_indx]) 'T_0'];
@@ -98,6 +98,7 @@ PI.H.PopulationParams = 1:15;
 PI.H.SigmaParams = 16;
 PI.H.IndividualParams.OmegaIndex = [];
 PI.H.CellParams.OmegaIndex = [];
+PI.x_0 = [];
 % Get simulation function
 sim = createSimFunction(model,parameters,observables, doses,human);
 
@@ -121,8 +122,8 @@ antiPDL1_mono = table(dosing_times_antiPDL1_mono', repelem(10*doseScalingFactor,
     repelem(10*doseScalingFactor/60, n_doses_antiPDL1_mono,1),'VariableNames',{'Time' 'Amount' 'Rate'});
 
 antiCTLA4_mono = table(dosing_times_antiCTLA4_mono',...
-    repelem(10*doseScalingFactor,n_doses_antiCTLA4_mono,1),...
-    repelem(10*doseScalingFactor/60, n_doses_antiCTLA4_mono,1),...
+    repelem(1*doseScalingFactor,n_doses_antiCTLA4_mono,1),...
+    repelem(1*doseScalingFactor/60, n_doses_antiCTLA4_mono,1),...
     'VariableNames',{'Time' 'Amount' 'Rate'});
 
 antiPDL1_combi = table(dosing_times_antiPDL1_combi',...
@@ -147,20 +148,20 @@ PI.u(3, 1:2) = {control antiCTLA4_mono};
 PI.u(4, 1:2) = {antiPDL1_combi antiCTLA4_combi};
 
 %% Posterior predictions
-simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
-    {},PI.normIndx, PI.H);
-PI = simFun(Theta2(5,:));
+simFun=@(x)getOutput2(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
+    {},PI.normIndx,'Output', 'data');
+dataOutput = simFun(exp(mean(log(Theta2(:,:)))));
+[PI.data(1:end).simValue] = dataOutput{:,:};
 figure
 hold on
-arrayfun(@(x)plot(x.simTime, x.simValue(:,1), 'Color', x.colors), PI.data, 'UniformOutput', false)
+arrayfun(@(x)plot(PI.tspan, x.simValue(:,1), 'Color', x.colors), PI.data, 'UniformOutput', false)
 
-legend({PI.data(:).Name})
 tic
-PI1=getPosteriorPredictions(Theta1,PI,simFun,PI.observablesPlot);
+PI1=getPosteriorPredictions2(Theta1,PI,simFun,PI.observablesPlot);
 toc
 
 tic
-PI2=getPosteriorPredictions(Theta2,PI,simFun,PI.observablesPlot);
+PI2=getPosteriorPredictions2(Theta2,PI,simFun,PI.observablesPlot);
 toc
 
 %% Plot posterior predictions (Tumor growth scaling exponent: 0]
@@ -462,15 +463,15 @@ end
 
 %% PFS in theta1
 % Calculate SLD and response %
-[PI1, response1] = getPFS(PI1, groups, 364);
-[PI1,T, censor] = getSurvivalTime(PI1, 364, groups, Theta1);
+[PI1, response1] = getPFS(PI1, groups);
+[PI1,T, censor] = getSurvivalTime(PI1,groups, Theta1);
 plotSurvival(T,censor,Theta1,groups)
 subplot(1,2,1)
 plotSurvivalFunction(PI1,364,groups)
 title('Progresson-free survival at 6 months (kill_{CD8} \propto M^{0})')
 
-[PI2, response2] = getPFS(PI2, groups, 364);
-[PI2,T2, censor2] = getSurvivalTime(PI2, 364, groups, Theta2);
+[PI2, response2] = getPFS(PI2, groups);
+[PI2,T2, censor2] = getSurvivalTime(PI2, groups, Theta2);
 
 
 surv = table(groups', log(2)*[sum(T2(1:5e3))/sum(~censor2(1:5e3)); sum(T2(5e3+1:1e4))/sum(~censor2(5e3+1:1e4));...
