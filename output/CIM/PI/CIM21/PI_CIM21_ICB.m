@@ -41,6 +41,7 @@ PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [
 PI.normIndx = [];
 PI.model = 'CIM21 ICB';
 PI.observablesPlot={'TV'};
+PI.observablesFields = {'TV'};
 plotData(PI,PI.observablesPlot,'responseGrouping',true, 'kineticGrouping',true)
 % Get initial values
 [PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
@@ -52,7 +53,7 @@ plotData(PI,PI.observablesPlot,'responseGrouping',true, 'kineticGrouping',true)
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-3),PI,'n_sigma', length(PI.observablesPlot),...
-    'rand_indx', [2 3] , 'cell_indx',[1], 'n_indiv', length(PI.u));
+    'rand_indx', [ 1 2 3] , 'cell_indx',[], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
 
@@ -113,7 +114,7 @@ load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_stepSize' N '.mat'},''))
 
 load(strjoin({cd 'PI_CIM21_ICB_1_DREAM_MCMC_x_1.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
-for i=14:17
+for i=14:18
     load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_x_' num2str(i) '.mat'},''))
     load(strjoin({cd '/PI_CIM21_ICB_1_DREAM_MCMC_p_x_' num2str(i) '.mat'},''))
 

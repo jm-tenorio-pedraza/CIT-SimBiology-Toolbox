@@ -1,5 +1,8 @@
-function [theta, H] = getTheta(Meta,params, N_pop, N_cell,N_indiv)
-
+function [theta, H] = getTheta(Meta,params, N_pop, N_cell,N_indiv, varargin)
+inputs = inputParser;
+inputs.addParameter('covStructure', 'dependent')
+inputs.parse(varargin{:})
+inputs = inputs.Results;
 % Inputs:
 %   - PI: Structure of PIs from the different optimizations to be used
 %   - N_pop: Number of samples for the population-distributed parameters
@@ -55,6 +58,7 @@ for i=1:length(Meta)
     catch
     end
     %% Sample cell and individual parameters
+    if strcmp(inputs.covStructure,'dependent')
     if N_cell_i~=0
         cellSampleIndx  = (randsample(1:size(PI.H.CellIndx,2),...
                 N_tot,1));
@@ -68,15 +72,15 @@ for i=1:length(Meta)
             indivSampleIndx( cellSampleIndx_j,:) = randsample(find(PI.H.CellIndx(:,j)),...
                 sum(cellSampleIndx_j),1);
             for k=1:N_indiv_i
-                
-            indivSampleIndxMat(cellSampleIndx_j,k) = ...
-                ismember(indivSampleIndx( cellSampleIndx_j,:), k);
+                indivSampleIndxMat(cellSampleIndx_j,k) = ...
+                    ismember(indivSampleIndx( cellSampleIndx_j,:), k);
             end
         end
     elseif N_indiv_i ~=0
         indivSampleIndxMat = nan(N_tot, N_indiv_i);
 
-        indivSampleIndx = randsample(1:length([PI.H.IndividualParams(:).Index]),N_tot,1);
+        indivSampleIndx = randsample(1:length([PI.H.IndividualParams(1).Index]),...
+            N_tot,1);
         for k=1:N_indiv_i
                 
             indivSampleIndxMat(:,k) = ...
@@ -84,23 +88,24 @@ for i=1:length(Meta)
         end
     end
     
-    try
+    if ~isempty(PI.H.IndividualParams(1).name)
         indivPostSamples = nan(N_tot, length(PI.H.IndividualParams));
-                indx = 1:length(PI.H.IndividualParams(1).Index);
+        indx = 1:length(PI.H.IndividualParams(1).Index);
 
         for j=1:length(PI.H.IndividualParams)
-            indivPostSamples=H.par(i).indivPostSamples(:,indx);
+            indivPostSamples_j=H.par(i).indivPostSamples(:,indx);
 
-            indivPostSamples(:,j) =sum(indivPostSamples.*cellSampleIndxMat,2);
-             indx = indx+length(PI.H.IndividualParams(1).Index);
+            indivPostSamples(:,j) =sum(indivPostSamples_j.*indivSampleIndxMat,2);
+            indx = indx+length(PI.H.IndividualParams(1).Index);
 
         end
-    catch
+    else
          indivPostSamples = [];
 
     end
     
-    try
+    if ~isempty(PI.H.CellParams(1).name)
+
         cellPostSamples = nan(N_tot, length(PI.H.CellParams));
         indx = 1:length(PI.H.CellParams(1).Index);
 
@@ -109,14 +114,20 @@ for i=1:length(Meta)
             cellPostSamples(:,j) = sum(cellPostSamples_j.*cellSampleIndxMat,2);
             indx = indx+length(PI.H.CellParams(1).Index);
         end
-    catch
+    else
                 cellPostSamples = [];
 
     end
   
     H.par(i).postSamples(:,H.par(i).etaIndx) =  ...
-         H.par(i).postSamples(:,H.par(i).etaIndx) +[cellPostSamples indivPostSamples];
-    H.par(i).variables = Meta(i).Struct.PI.observablesPlot;
+        H.par(i).postSamples(:,H.par(i).etaIndx) +[cellPostSamples indivPostSamples];
+    else
+        Z = randn(N_tot, length(H.par(i).etaIndx));
+        H.par(i).postSamples(:,H.par(i).etaIndx) = ...
+            H.par(i).postSamples(:,H.par(i).etaIndx) + Z.*H.par(i).omegaSamples;
+    end
+     
+     H.par(i).variables = Meta(i).Struct.PI.observablesPlot;
     
     [theta_indx, theta_order] = ismember(params,  H.par(i).name);           % Compare parameters against the required ones
     theta_order = theta_order(theta_order~=0);                              % Identify non-zero indexes

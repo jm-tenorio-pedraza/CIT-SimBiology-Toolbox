@@ -144,15 +144,12 @@ sigma(:,2) = PI_CIM.PI.postSamples(sigma_indx,end-6);
 sigma_indx = randsample(size(PI_ICB.PI.postSamples,1),N_pop*N_indiv*N_cell,true);
 sigma(:,1) = PI_ICB.PI.postSamples(sigma_indx,end);
 sigma = exp(sigma);
-clearvars beta delta doses finalValues groups_subset lb MODEL PI_CIM PI_ICB PI_PK...
-    sigma_indx sigmga_prior ub variants scalingExp1 scalingExp2 scalingExp3 ...
-    scalingExp4 scalingExp5 scalingExp6 scalingExp7 scalingExp8 scalingExp9 ...
-    scalingExp10 scalingExp11 
 %% Plot bivariate marginals
 plotBivariateMarginals_2(exp(Theta3(:,:)),...
        'names',parameters,'interpreter', 'tex')
 plotCorrMat(Theta2, parameters)
-
+clearvars beta delta doses finalValues groups_subset lb MODEL PI_CIM PI_ICB PI_PK...
+    sigma_indx sigmg
 %% Posterior predictions
 simFun=@(x)getOutput2(PI,@(p)sim(p,PI.tspan(end),PI.u,PI.tspan),x,...
     {},PI.normIndx,'Output', 'data');
@@ -160,7 +157,7 @@ dataOutput = simFun(exp(mean(Theta3(:,:))));
 [PI.data(1:end).simValue] = dataOutput{:,:};
 figure
 hold on
-arrayfun(@(x)plot(PI.tspan, x.simValue(:,1), 'Color', x.colors), PI.data, 'UniformOutput', false)
+arrayfun(@(x)plot(PI.tspan, x.simValue(:,5), 'Color', x.colors), PI.data, 'UniformOutput', false)
 title('IAR')
 
 tic
