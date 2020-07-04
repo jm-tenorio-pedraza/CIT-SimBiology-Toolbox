@@ -126,14 +126,15 @@ Theta5 = [Theta(:,1:8) + log(scalingFactor5)];
 Theta6 = [Theta(:,1:8) + log(scalingFactor6)];
 
 %% Alternative parametrization
-Delta = theta(:,1:6) - mean(theta(:,1:6));
+Phi = repelem(PI_Preclinical.PI.postSamples(randIndx,1:8),N_indiv*N_cell);
+Delta = Phi(:,1:6) - mean(Phi(:,1:6));
 priorMu = mean(log(priorPK(1:4,:)),2);
 Mu = [priorMu(1) log(PI.par(2).startValue)...
     priorMu(2:3)' log(PI.par(5).startValue)...
     priorMu(4)];
 Eta = reshape((log(priorPK(1:4,:)) - priorMu)',1,[]);
 
-Theta7 = [repmat(Mu, N_pop*N_indiv*N_cell, 1)+Delta, theta(:,7:8),...
+Theta7 = [repmat(Mu, N_pop*N_indiv*N_cell, 1)+Delta, Phi(:,7:8),...
     repmat(Eta, N_pop*N_indiv*N_cell,1), sigma];
 plotBivariateMarginals_2((Theta7(:,1:8)),...
        'names',parameters([1:8]),'interpreter', 'tex')
@@ -157,20 +158,20 @@ PI6 = getPosteriorPredictions(exp(Theta6), PI,simFun, PI.observablesFields, 'sim
 PI7 = getPosteriorPredictions(exp(Theta7), PI,simFun2, PI.observablesFields, 'simTime', simTime);
 
 PI1=getCredibleIntervals(PI1,PI1.observablesFields, Theta1,PI1.H, 'sigma', sigma);
-PI2=getCredibleIntervals(PI2,PI2.observablesFields, Theta2,PI2.H);
-PI3=getCredibleIntervals(PI3,PI3.observablesFields, Theta3,PI3.H);
-PI4=getCredibleIntervals(PI4,PI4.observablesFields, Theta4,PI4.H);
-PI5=getCredibleIntervals(PI5,PI5.observablesFields, Theta5,PI5.H);
-PI6=getCredibleIntervals(PI6,PI6.observablesFields, Theta6,PI6.H);
-PI7=getCredibleIntervals(PI7,PI7.observablesFields, Theta7,PI7.H);
+PI2=getCredibleIntervals(PI2,PI2.observablesFields, Theta2,PI2.H,'sigma', sigma);
+PI3=getCredibleIntervals(PI3,PI3.observablesFields, Theta3,PI3.H,'sigma', sigma);
+PI4=getCredibleIntervals(PI4,PI4.observablesFields, Theta4,PI4.H,'sigma', sigma);
+PI5=getCredibleIntervals(PI5,PI5.observablesFields, Theta5,PI5.H,'sigma', sigma);
+PI6=getCredibleIntervals(PI6,PI6.observablesFields, Theta6,PI6.H,'sigma', sigma);
+PI7=getCredibleIntervals(PI7,PI7.observablesFields, Theta7,PI7.H, 'sigma', Theta7(:,end));
 
 plotPosteriorPredictions(PI1,1,'output','indiv','central', 'median','color', 'cell','simTime', simTime)
-plotPosteriorPredictions(PI2,1,'output','indiv','central', 'median','color', 'cell')
-plotPosteriorPredictions(PI3,1,'output','indiv','central', 'median','color', 'cell')
-plotPosteriorPredictions(PI4,1,'output','indiv','central', 'median','color', 'dataset')
-plotPosteriorPredictions(PI5,1,'output','indiv','central', 'median','color', 'dataset')
-plotPosteriorPredictions(PI6,1,'output','indiv','central', 'median','color', 'dataset')
-plotPosteriorPredictions(PI7,1,'output','indiv','central', 'median','color', 'cell')
+plotPosteriorPredictions(PI2,1,'output','indiv','central', 'median','color', 'cell', 'simTime', simTime)
+plotPosteriorPredictions(PI3,1,'output','indiv','central', 'mean','color', 'cell','simTime', simTime)
+plotPosteriorPredictions(PI4,1,'output','indiv','central', 'median','color', 'cell','simTime', simTime)
+plotPosteriorPredictions(PI5,1,'output','indiv','central', 'median','color', 'cell','simTime', simTime)
+plotPosteriorPredictions(PI6,1,'output','indiv','central', 'median','color', 'cell','simTime', simTime)
+plotPosteriorPredictions(PI7,1,'output','indiv','central', 'median','color', 'cell', 'simTime', simTime)
 
 PI4.postSamples = Theta4;
 PI1.postSamples = Theta1;
@@ -180,19 +181,19 @@ PI5.postSamples = Theta5;
 PI6.postSamples = Theta6;
 PI7.postSamples = Theta7;
 
-%% Calculate MSRE
+%% Calculate MSE
 table([mean(PI1.MSE); mean(PI2.MSE); mean(PI3.MSE); mean(PI4.MSE);mean(PI5.MSE);
     mean(PI6.MSE); mean(PI7.MSE)], 'RowNames',{'scaling1' 'scaling2' 'scaling3'...
     'scaling4' 'scaling5' 'scaling6' 'scaling7'}, 'VariableNames', {'Mean_Squared_Error'})
 
 %% Save
-save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_1_2'}, '/'), 'PI1')
-save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_2_2'}, '/'), 'PI2')
-save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_3_2'}, '/'), 'PI3')
-save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_4_2'}, '/'), 'PI4')
-save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_5_2'}, '/'), 'PI5')
-save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_6_2'}, '/'), 'PI6')
-save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_7_2'}, '/'), 'PI7')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_1_3'}, '/'), 'PI1')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_2_3'}, '/'), 'PI2')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_3_3'}, '/'), 'PI3')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_4_3'}, '/'), 'PI4')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_5_3'}, '/'), 'PI5')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_6_3'}, '/'), 'PI6')
+save(strjoin({cd 'PI_PK_ThreeComp4_HuSim_7_3'}, '/'), 'PI7')
 
 load(strjoin({cd 'PI_PK_ThreeComp4_HuSim_3'}, '/'), 'PI3')
 

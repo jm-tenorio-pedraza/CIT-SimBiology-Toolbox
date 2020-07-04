@@ -7,22 +7,28 @@ p = inputParser;
 p.addParameter('allVariables', true);
 p.addParameter('initialValue', false);
 p.addParameter('uniqueGroups', false);
+p.addParameter('timedelta', 1);
 
 p.parse(varargin{:})
 p=p.Results;
 PI.sensitivity = struct('simValue', repelem({nan(length(time),...
     length(observables))},size(inputs,1),1));
 
-% Simulate model at inputs
-simdata = sim(inputs);               % Simulate model and resample simulation results
+simdata = sim(inputs);                                                      % Simulate model and resample simulation results
 simdata = resample(simdata, time);
 [~,y_i,~] = getdata(simdata);
+varIndx = ismember(simdata(1).DataNames, observables);                      % Detect desired outputs
+
 try
-    [PI.sensitivity(1:end).simValue] = y_i{:,:}; % for the case when there is more than 1 output
+    [PI.sensitivity(1:end).simValue] = y_i{:,:};                            % for the case when there is more than 1 output
 catch
-    y_i={y_i};                        % for the case when there is only 1 output
+    y_i={y_i};                                                              % for the case when there is only 1 output
     [PI.sensitivity(1:end).simValue] = y_i{:,:};
-end % Add another row to the initial parameter vector 
+end  
+simValue = arrayfun(@(x) x.simValue(:, varIndx), PI.sensitivity,...         % Input simulated values under no perturbartion
+    'UniformOutput', false);
+[PI.sensitivity(1:end).simValue] = simValue{:,:};
+
 groups = [PI.data(:).Group];
 if ischar((groups))
     groups = {PI.data(:).Group};
@@ -49,6 +55,10 @@ for i=1:length(parameters)
         y_i={y_i};                        % for the case when there is only 1 output
          [PI.sensitivity(1:end).y_i] = y_i{:,:};
     end
+    y_i = arrayfun(@(x) x.y_i(:, varIndx), PI.sensitivity, 'UniformOutput', false);
+    [PI.sensitivity(1:end).y_i] = y_i{:,:};
+ 
+    
     phi_i = mat2cell(phi_i, repelem(1,size(phi_i,1)));
     [PI.sensitivity(1:end).phi] = phi_i{:,:};
 
