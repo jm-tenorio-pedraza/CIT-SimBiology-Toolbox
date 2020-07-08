@@ -1,4 +1,4 @@
-ope%% DREAM MCMC
+%% DREAM MCMC
 finalValues = log([PI.par(:).finalValue]);
 N = length(finalValues);
 

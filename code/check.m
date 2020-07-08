@@ -5,9 +5,9 @@ p_X_indx = p_X_mean<(p_X_iqr(1) - 2*(p_X_iqr(2)-p_X_iqr(1)));
 
 if any(p_X_indx)
     p_X_max_indx = ismember(p_X,max(p_X));
-    X_max = X(p_X_max_indx,:);
+    X_max = X(:,p_X_max_indx);
     p_X_max = p_X(p_X_max_indx);
-    X(p_X_indx,:) = repmat(X_max(1,:),sum(p_X_indx),1);
+    X(:,p_X_indx) = repmat(X_max(:,1),1,sum(p_X_indx));
     p_X(p_X_indx,1) = repelem(p_X_max(1), sum(p_X_indx),1);
 else
 end
