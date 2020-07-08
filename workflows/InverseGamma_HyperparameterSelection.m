@@ -1,7 +1,7 @@
 %% Inverse gamma prior
 invgamma_prior= @(x,a,b)((b.^a./gamma(a).*x.^(-a-1).*exp(-b./x)));
 x = 0.1:0.01:5;
-y = invgamma_prior(x.^2,.01,0.01);
+y = invgamma_prior(x.^2,.1,.1);
 plot(x,y)
 hold on
 log(y(1))

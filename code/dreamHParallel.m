@@ -1,4 +1,4 @@
-function [x, p_x,accept,pCR,stepSize,J, n_id] = dreamHParallel(X0,likelihood,prior,N,T,d,varargin)
+function [x, posteriorL,accept,pCR,StepSize,J, n_id] = dreamHParallel(X0,likelihood,prior,N,T,d,varargin)
 % Inputs
 % prior = handle to generate initial random samples
 % pdf = handle to log-posterior function
@@ -33,15 +33,10 @@ if p.ProgressBar
 else
     progress=@noaction;
 end
-BurnIn=p.BurnIn;
-delta = p.delta;                                            % Default parameter values
-c = p.c;
-c_star = p.c_star;
-n_CR = p.n_CR;
-p_g = p.p_g;
-stepSize=p.StepSize;
+[BurnIn, delta, c, c_star, n_CR, p_g, StepSize] = ...
+    deal(p.BurnIn, p.delta, p.c, p.c_star, p.n_CR, p.p_g, p.StepSize);
 posterior = @(x)likelihood(x) + prior(x);
-x=nan(d,N,T); p_x = nan(T,N);                               % Preallocate chains and density
+x=nan(d,N,T); posteriorL = nan(T,N);                             % Preallocate chains and density
 R = nan(N,N-1); p_X = nan(N,1);
 
 for i=1:N, R(i, 1:N-1) = setdiff(1:N,i); end                % R-matrix: index of chains for DE
@@ -57,7 +52,7 @@ else
 end
 X = X0;                                                     % Create initial  population
 for i = 1:N, p_X(i,1) = posterior(X(i, :)); end          % Compute density of initial population
-x(1:d, 1:N, 1) = X'; p_x(1,1:N) = p_X';                     % Store initial states and density
+x(1:d, 1:N, 1) = X'; posteriorL(1,1:N) = p_X';                     % Store initial states and density
 
 H = p.H;
 try
@@ -79,7 +74,7 @@ accept_ind = zeros(N,1);
 
 for t = 2:T
     [~, draw] = sort(rand(N-1,N));                          % Permute [1, ..., N-1] N times
-    dX = zeros(N,d, 'single');                                        % Set N jump vectors to zero
+    dX = zeros(N,d);                                        % Set N jump vectors to zero
     std_X = std(X);                                         % Compute std each dimension
     Xp = X;
     id = randsample(1:n_CR, N, true, pCR);                  % Select index of crossover value
@@ -93,12 +88,11 @@ for t = 2:T
         if d_star == 0, [~, A] = min(z((t-1)*N+i,:));
             d_star = 1; end                                 % A must contain at least 1 value
          
-        gamma_d = stepSize/sqrt(2*D(t,i)*d_star);           % Calculate jump rate
+        gamma_d = StepSize/sqrt(2*D(t,i)*d_star);           % Calculate jump rate
         g=randsample([gamma_d 1], 1, true, [1-p_g p_g]);    % Select gamma: 80/20 mix [default 1]
        
         dX(i,A) = c_star*randn(1, d_star) + ...
-            (1+lambda(t,i))*g*sum(X(a,A)-X(b,A),1);         % Compute ith jump diff. evol.
-       
+            (1+lambda(t,i))*g*sum(X(a,A)-X(b,A),1);         % Compute ith jump diff. evol.    
     end
     
 %      tic                                  % Compute ith proposal for the individual parameters
@@ -143,7 +137,7 @@ for t = 2:T
     progress((t-1)/T,mean(X)',...
        accept)       % Print out progress status
     
-   x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                    % Append current X and density
+   x(1:d, 1:N, t) = X'; posteriorL(t, 1:N) = p_X';                    % Append current X and density
    for i=1:N
    J(id(i)) = J(id(i)) + sum((dX(i,:)./std_X).^2);  % Update jump distance crossover idx
    n_id(id(i)) = n_id(id(i)) + 1;
@@ -151,12 +145,12 @@ for t = 2:T
     if BurnIn>t*N
         if (sum(J)>0), pCR = J./n_id;
             pCR = pCR/sum(pCR); end                             % update selection prob. crossover
-        [X, p_X] = check(X, mean((p_x(ceil(t/2):t,1:N))),p_X);  % Outlier detection and correction
-        if accept<0.2
-            stepSize=stepSize*0.9;
-        elseif accept>0.3
-            stepSize=stepSize*1.1;
-        end
+        [X, p_X] = check(X, mean((posteriorL(ceil(t/2):t,1:N))),p_X);  % Outlier detection and correction
+%         if accept<0.2
+%             StepSize=StepSize*(1-1/N);
+%         elseif accept>0.4
+%             StepSize=StepSize*(1+1/N);
+%         end
     end
 end
 

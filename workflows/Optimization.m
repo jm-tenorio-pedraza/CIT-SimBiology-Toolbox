@@ -53,7 +53,7 @@ nrow = ceil(length(observables)/ncol);
 for i=1:length(observables)
  subplot(nrow,ncol,i)
  plotSimOutput(PI,i,'all', false, 'indiv', false, 'addErrorVar', false,...
-     'newFig', false, 'TimeUnit', 'hours')
+     'newFig', false, 'TimeUnit', 'days')
 end
 %%
 finalValue=num2cell(exp(finalValues'));

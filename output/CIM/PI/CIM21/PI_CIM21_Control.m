@@ -3,10 +3,10 @@
 warning on
 clear all
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM10')
+cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM21')
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/sbio projects/CIM_4.sbproj');
+out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_4.sbproj');
 % Extract model
 model=out.m1;
 variants = getvariant(model);
@@ -14,9 +14,9 @@ initialStruct = struct('name', {'MOC1';'MOC2';'MC38'}, 'initialValue', {5; 0.1; 
     'variant', {variants(1); variants(2); variants(3)});
 
 cs=model.getconfigset;
-set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-12);
-set(cs.SolverOptions, 'RelativeTolerance', 1.0e-10);
-set(cs, 'MaximumWallClock', 0.25)
+set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
+set(cs.SolverOptions, 'RelativeTolerance', 1.0e-8);
+set(cs, 'MaximumWallClock', 2.5)
 sbioaccelerate(model, cs)
 %% Parameter setup
 parameters = {'kin_CD8';'K_IFNg';'KDE_MDSC';'K_MDSC'; ...
@@ -44,6 +44,8 @@ PI.tspan = unique([PI1.tspan; PI2.tspan]);
 PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [%]' ...
      'Percentage [%]'   'Relative units []' ...
     'Relative units []' 'Relative units []'};
+PI.observablesFields = {'TV'  'CD8'  'Treg' 'DCm'...
+    'MDSC' 'CD8_E' 'PDL1_T' 'PDL1_I'};
 PI.normIndx = 6:8;
 PI.model = 'CIM Control';
 PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
@@ -54,27 +56,25 @@ plotData(PI, PI.observablesPlot, 'responseGrouping', true, 'kineticGrouping', tr
     initialStruct);
 
 % Get simulation function
-[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
+[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1_2','doseUnits', 'mole');
 
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
     'rand_indx', [7:9] , 'cell_indx',[5:6], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
-[beta, sigma_prior] = getVarValues([1 1 .001], [1, 1 0.001], [1 1 1], PI);
+[beta, sigma_prior] = getVarValues([.1 .1 .1], [.1, .1 0.1], [1 1 1], PI);
 
 lb=([1e-3   1e-3    1e-4 1e-3   1e-4    1e-3    1e-2   1e-2     1e-3])';
-ub=([1e2     1e2     1e1 1e1    1e2     1e2     1e1    1e2  1e3])';
+ub=([1e2     1e2     1e1 1e1    1e2     1e2     1e1    1e2      1e3])';
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 
-prior = {'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U' 'U'};
-
+PI = assignPrior(PI);
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
-% prior_fun=@(p)(createPriorDistribution3(exp(p),PI,PI.H,'type',{'uniform/normal/inverse gamma/inverse gamma'}));
-prior_fun=@(p)getPriorPDF(p,PI, prior);
-prior_fun_MCMC=@(p)getPriorPDFMCMC(p,PI, prior);
+prior_fun=@(p)getPriorPDFMCMC2(exp(p),PI);
+
 
 paramNames = getParamNames(PI,sim, observables);
 %% Objective function
@@ -106,7 +106,26 @@ table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
 save('PI_CIM21_Control_14.mat', 'PI')
 load(strjoin({cd 'PI_CIM21_Control_14.mat'},'/'),'PI')
+N_i='3';
+save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_x_' N_i '.mat'},''), strjoin({'x' N_i},''))
+save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_p_x_' N_i '.mat'},''), strjoin({'p_x' N_i},''))
+save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_J' N_i '.mat'},''), strjoin({'J' N_i},''))
+save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_n_id' N_i '.mat'},''), strjoin({'n_id' N_i},''))
+save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_pCR' N_i '.mat'},''), strjoin({'pCR' N_i},''))
+save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_stepSize' N_i '.mat'},''), strjoin({'stepSize' N_i},''))
 
-load(strjoin({cd 'DREAM_MCMC_p.mat'},'/'))
+load(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_J' N_i '.mat'},''))
+load(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_n_id' N_i '.mat'},''))
+load(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_pCR' N_i '.mat'},''))
+load(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_stepSize' N_i '.mat'},''))
+
+for i=1:3
+    load(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_x_' num2str(i) '.mat'},''))
+    load(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_p_x_' num2str(i) '.mat'},''))
+    
+
+end
+
+load(strjoin({cd 'CIM22_Control_14_DREAM_MCMC_x.mat'},'/'))
 load(strjoin({cd 'DREAM_MCMC_logP.mat'},'/'))
 
