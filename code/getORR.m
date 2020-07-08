@@ -1,18 +1,12 @@
 function [PI, ORR] = getORR(PI, treatments,varargin)
 inputs=inputParser;
 inputs.addParameter('TV_0', PI.output(1).TV(:,1))
+inputs.addParameter('N', size(PI.output(1).TV,1))
 inputs.parse(varargin{:})
 inputs=inputs.Results;
 
-ORR = table({'PD'; 'SD'; 'PR'; 'CR'},zeros(4,1));
 colors = linspecer(4);
 colors_i = zeros(size(PI.output(1).SLD,1),3);
-
-for i=2:length(treatments)
-    ORR{:,end+1} = zeros(4,1);
-end
-ORR.Properties.VariableNames = ['Response' treatments];
-ORR = ORR;
 for i=1:length(treatments)
     pd = and(any(PI.output(i).SLD>20,2),...
         any(PI.output(i).TV/(4/3*pi).^(1/3)...
@@ -20,9 +14,7 @@ for i=1:length(treatments)
     pr = and((and(any(PI.output(i).SLD<=-30,2), ...
         ~any(PI.output(i).SLD<-99,2))),~pd);
     cr = and((any(PI.output(i).SLD<-99,2)),~pd);
-    sd = and(and(~pd,~pr), ~cr);
-    ORR{1:4,i+1} = [mean(pd); mean(sd); mean(pr); mean(cr)];
-   
+    sd = and(and(~pd,~pr), ~cr);   
     pd_sigma =and(any(PI.output(i).SLD_sigma>20,2),...
         any(PI.output(i).TV_sigma/(4/3*pi).^(1/3)...
         -inputs.TV_0./(4/3*pi).^(1/3)>0.5,2));
@@ -41,4 +33,24 @@ for i=1:length(treatments)
     PI.output(i).colors = colors_i;
 
 end
+
+ORR2 = cell2mat(arrayfun(@(x)mean(x.Response), PI.output,'UniformOutput', false));
+ORR2_sigma =  cell2mat(arrayfun(@(x)mean(x.Response_sigma), PI.output,'UniformOutput', false));
+ORR2_SE = sqrt(ORR2_sigma.*(1-ORR2_sigma)/inputs.N);
+ORR2_CI_UB = round(ORR2+1.96*ORR2_SE,3);
+ORR2_CI_LB = round(ORR2-1.96*ORR2_SE,3);
+
+ORR = table({'PD'; 'SD'; 'PR'; 'CR'}, 'VariableNames', {'Response'});
+
+for i=1:length(treatments)
+    indx = (i-1)*2+2;
+    ORR{:,indx} = ORR2(i,:)';
+    ORR{:,indx+1} = [cellfun(@num2str, num2cell(ORR2_CI_LB(i,:)), 'UniformOutput', false)',...
+        cellfun(@num2str, num2cell(ORR2_CI_UB(i,:)), 'UniformOutput', false)'];
+    ORR.Properties.VariableNames(indx) = treatments(i);
+    ORR.Properties.VariableNames(indx+1) = {strjoin({treatments{i} 'CI'}, '_')};
+end
+
+
+
 return

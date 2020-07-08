@@ -1,4 +1,4 @@
-function [PI,T, censor] = getSurvivalTime(PI,groups, theta,varargin)
+function [PI,T, censor] = getSurvivalTime(PI,groups,varargin)
 inputs=inputParser;
 inputs.addParameter('TV_0', PI.output(1).TV(:,1))
 inputs.addParameter('cutoff_value', PI.tspan(end))

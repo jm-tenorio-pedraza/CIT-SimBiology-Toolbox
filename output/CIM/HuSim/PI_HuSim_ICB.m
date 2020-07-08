@@ -1,5 +1,4 @@
 %% PK general setup
-
 % Search paths
 clear all
 warning off
@@ -105,6 +104,8 @@ scalingExp8 =   [0 0 0    0   0   0     0   0       0 0 0 .9    0 0 0 0         
 scalingExp9 =   [0 0 0    0   0   0     0   -.25    0 0 0 .9    0 0 0 0         -.25   .9  .9 0 0 -.25  0]; % Volume params and killing rate w/o kpro_Tumor_Linear
 scalingExp10 =  [0 0 0    0   0   0     0   -.25    0 0 0 .9    0 0 0 .65       -.25   .9  .9 0 0 -.25  0]; % Volume params and killing rate w/o kpro_Tumor_Linear
 scalingExp11 =  [0 0 0    0   0   0     0   -.25    0 0 0 .8    0 0 0 .55       -.25   .8  .8 0 0 -.25  0]; % Volume params and killing rate w/o kpro_Tumor_Linear
+scalingExp12 =  [0 0 0    0   0   0     0   -.25    0 0 0 .8    0 0 0 .55       0      .8  .8 0 0 0     0]; % Volume params and killing rate w/o kpro_Tumor_Linear
+scalingExp13 =  [0 0 0    0   0   0     0   -.25    0 0 0 1     0 0 0 1         0      1   1  0 0 0     0]; % Volume params and killing rate w/o kpro_Tumor_Linear
 
 scalingFactor1 = (77/.022).^(scalingExp1);
 scalingFactor2 = (77/.022).^(scalingExp2);
@@ -117,6 +118,8 @@ scalingFactor8 = (77/.022).^(scalingExp8);
 scalingFactor9 = (77/.022).^(scalingExp9);
 scalingFactor10 = (77/.022).^(scalingExp10);
 scalingFactor11 = (77/.022).^(scalingExp11);
+scalingFactor12 = (77/.022).^(scalingExp12);
+scalingFactor13 = (77/.022).^(scalingExp13);
 
 Theta1 = Theta + log(scalingFactor1);
 Theta2 = Theta + log(scalingFactor2);
@@ -130,13 +133,16 @@ Theta8 = Theta + log(scalingFactor8);
 Theta9 = Theta + log(scalingFactor9);
 Theta10 = Theta + log(scalingFactor10);
 Theta11 = Theta + log(scalingFactor11);
+Theta12 = Theta + log(scalingFactor12);
+Theta13 = Theta + log(scalingFactor13);
 
 table( exp(mean((Theta1))'),exp(mean((Theta2))'),exp(mean((Theta3))'),...
     exp(mean((Theta4))'),exp(mean((Theta5))'),exp(mean((Theta6))'),...
     exp(mean((Theta7))'),exp(mean((Theta8))'),exp(mean((Theta9))'),...
-    exp(mean((Theta10))'),exp(mean((Theta11))'),exp(mean((theta))'),'VariableNames', ...
+    exp(mean((Theta10))'),exp(mean((Theta11))'),exp(mean((Theta12))'),...
+    exp(mean((Theta13))'), exp(mean((theta))'),'VariableNames', ...
     {'Human1' 'Human2' 'Human3' 'Human4' 'Human5' 'Human6' 'Human7' 'Human8'...
-    'Human9' 'Human10' 'Human11' 'Mouse'}, 'RowNames', parameters)
+    'Human9' 'Human10' 'Human11' 'Human12' 'Human13' 'Mouse'}, 'RowNames', parameters)
 sigma = nan(N_pop*N_indiv*N_cell,2);
 
 sigma_indx = randsample(size(PI_CIM.PI.postSamples,1),N_pop*N_indiv*N_cell,true);
@@ -207,6 +213,11 @@ tic
 PI11=getPosteriorPredictions2(exp(Theta11(1:end,:)),PI,simFun,PI.observablesPlot);
 toc
 
+
+PI12=getPosteriorPredictions2(exp(Theta12(1:end,:)),PI,simFun,PI.observablesPlot);
+
+PI13=getPosteriorPredictions2(exp(Theta13(1:end,:)),PI,simFun,PI.observablesPlot);
+
 %% Plot posterior predictions
 treatments = {'Control' 'antiPDL1' 'antiCTLA4' 'antiPDL1_antiCTLA4'};
 
@@ -233,18 +244,26 @@ PI10 = getSLD(PI10, sigma, 'TV_0', exp(Theta10(:,end))*.00153);
 [PI10, ORR10] = getORR(PI10, treatments,'TV_0', exp(Theta10(:,end))*.00153);
 PI11 = getSLD(PI11, sigma, 'TV_0', exp(Theta11(:,end))*.00153);
 [PI11, ORR11] = getORR(PI11, treatments,'TV_0', exp(Theta11(:,end))*.00153);
+PI12 = getSLD(PI12, sigma, 'TV_0', exp(Theta12(:,end))*.00153);
+[PI12, ORR12] = getORR(PI12, treatments,'TV_0', exp(Theta12(:,end))*.00153);
+PI13 = getSLD(PI13, sigma, 'TV_0', exp(Theta13(:,end))*.00153);
+[PI13, ORR13] = getORR(PI13, treatments,'TV_0', exp(Theta13(:,end))*.00153);
+
+%%
 % Plot SLD
 plotORR(PI1, treatments,'output', {'SLD'  })
 plotORR(PI2, treatments,'output', {'SLD'  })
 plotORR(PI3, treatments,'output', {'SLD' })
 plotORR(PI4, treatments,'output', {'SLD' })
-plotORR(PI5, treatments,'output', {'SLD' 'Tumor_antiPDL1'})
+plotORR(PI5, treatments,'output', {'SLD' })
 plotORR(PI6, treatments,'output', {'SLD' })
 plotORR(PI7, treatments,'output', {'SLD' })
 plotORR(PI8, treatments,'output', {'SLD' })
 plotORR(PI9, treatments,'output', {'SLD' })
 plotORR(PI10, treatments,'output', {'SLD' })
 plotORR(PI11, treatments,'output', {'SLD' })
+plotORR(PI12, treatments,'output', {'SLD' })
+plotORR(PI13, treatments,'output', {'SLD' })
 
 % Plot individual time courses
 plotORR(PI2, treatments, 'output', {'SLD'},'lines', 'individual')
@@ -255,47 +274,60 @@ plotORR(PI5, treatments, 'output', {'SLD'},'lines', 'individual')
 % Calculate SLD and response %
 [PI1, response1] = getPFS(PI1, treatments);
 [PI1,~, ~] = getSurvivalTime(PI1, treatments, Theta2);
-plotSurvivalFunction(PI1,364,treatments)
 
 [PI2, response2] = getPFS(PI2, treatments);
-[PI2,~, ~] = getSurvivalTime(PI2, treatments, Theta2);
-plotSurvivalFunction(PI2,364,treatments)
+[PI2,T2, censor2] = getSurvivalTime(PI2, treatments);
 
 [PI3, response3] = getPFS(PI3, treatments);
 [PI3,~, ~] = getSurvivalTime(PI3, treatments, Theta2);
-plotSurvivalFunction(PI3,364,treatments)
 
 [PI4, response4] = getPFS(PI4, treatments);
 [PI4,~, ~] = getSurvivalTime(PI4, treatments, Theta5);
-plotSurvivalFunction(PI4,364,treatments)
 
 [PI5, response5] = getPFS(PI5, treatments);
 [PI5,~, ~] = getSurvivalTime(PI5, treatments, Theta5);
-plotSurvivalFunction(PI5,364,treatments)
 
 [PI6, response6] = getPFS(PI6, treatments);
 [PI6,~, ~] = getSurvivalTime(PI6, treatments, Theta6);
-plotSurvivalFunction(PI6,364,treatments)
 
 [PI7, response7] = getPFS(PI7, treatments);
 [PI7,~, ~] = getSurvivalTime(PI7, treatments, Theta7);
-plotSurvivalFunction(PI7,364,treatments)
 
 [PI8, response8] = getPFS(PI8, treatments);
 [PI8,~, ~] = getSurvivalTime(PI8, treatments, Theta8);
-plotSurvivalFunction(PI8,364,treatments)
 
 [PI9, response9] = getPFS(PI9, treatments);
-[PI9,~, ~] = getSurvivalTime(PI9, treatments, Theta9);
-plotSurvivalFunction(PI9,364,treatments)
+[PI9,T9, censor9] = getSurvivalTime(PI9, treatments);
 
 [PI10, response10] = getPFS(PI10, treatments);
-[PI10,~, ~] = getSurvivalTime(PI10, treatments, Theta9);
-plotSurvivalFunction(PI10,364,treatments)
+[PI10,~, ~] = getSurvivalTime(PI10, treatments);
 
 [PI11, response11] = getPFS(PI11, treatments);
-[PI11,~, ~] = getSurvivalTime(PI11, treatments, Theta9);
+[PI11,T11, censor11] = getSurvivalTime(PI11, treatments);
+
+[PI12, response12] = getPFS(PI12, treatments);
+[PI12,~, ~] = getSurvivalTime(PI12, treatments, Theta9);
+
+[PI13, response13] = getPFS(PI13, treatments);
+[PI13,~, ~] = getSurvivalTime(PI13, treatments, Theta9);
+
+
+%% Survival functions
+plotSurvivalFunction(PI1,364,treatments)
+plotSurvivalFunction(PI2,364,treatments)
+plotSurvivalFunction(PI3,364,treatments)
+plotSurvivalFunction(PI4,364,treatments)
+plotSurvivalFunction(PI5,364,treatments)
+plotSurvivalFunction(PI6,364,treatments)
+plotSurvivalFunction(PI7,364,treatments)
+plotSurvivalFunction(PI8,364,treatments)
+plotSurvivalFunction(PI9,364,treatments)
+grid on
+plotSurvivalFunction(PI10,364,treatments)
 plotSurvivalFunction(PI11,364,treatments)
+plotSurvivalFunction(PI12,364,treatments)
+plotSurvivalFunction(PI13,364,treatments)
+
 %% Analysing parameter-output relations
 corrInOut = plotInputToOutput(Theta2, {'SLD'}, PI2, treatments, parameters);
 corrInOut2 = plotInputToOutput(PI1.Theta, {'SLD'}, PI1, treatments, parameters,'plotOutput', true);
@@ -303,9 +335,9 @@ figure
 hold on
 arrayfun(@(x)plot((x.CD8(:,end)),(x.TV(:,end)), '+'), PI2.output)
 %% Comparing ORR
-ORR = {ORR1 ORR2 ORR3 ORR4 ORR5 ORR6 ORR7 ORR8 ORR9 ORR10 ORR11};
+ORR = {ORR1 ORR2 ORR3 ORR4 ORR5 ORR6 ORR7 ORR8 ORR9 ORR10 ORR11 ORR12 ORR13};
 parametrizationNames =   {'Par1' 'Par2' 'Par3' 'Par4' 'Par5' 'Par6' 'Par7' 'Par8' 'Par9' 'Par10'...
-        'Par11'};
+        'Par11' 'Par12' 'Par13'};
 controlORR = array2table(cell2mat(cellfun(@(x) x{:,2}, ORR,...
     'UniformOutput', false)), 'RowNames', {'PD' 'SD' 'PR' 'CR'}, 'VariableNames',...
   parametrizationNames);
@@ -318,8 +350,68 @@ antiCTLA4ORR = array2table(cell2mat(cellfun(@(x) x{:,4}, ORR,...
 antiPDL1_antiCTLA4ORR = array2table(cell2mat(cellfun(@(x) x{:,5}, ORR, ...
     'UniformOutput', false)),'RowNames', {'PD' 'SD' 'PR' 'CR'}, 'VariableNames',...
   parametrizationNames);
+
+
+%% 
+pfs2 = getMedianPFS(PI2,T2, censor2,treatments);
+pfs9 = getMedianPFS(PI9,T9, censor9,treatments);
+pfs11 = getMedianPFS(PI11,T11, censor11,treatments);
+
+%% Plot predictions of ORR against realized values
+ORR_Clinical = table({'PD' 'SD' 'PR' 'CR'}', 'VariableNames', {'Response'});
+ORR_Clinical(:, end+1) = {nan(1,1)};
+ORR_Clinical(:, end+1) = {64.6  6.2     9.2 0}';
+ORR_Clinical(:, end+1) = {69.8  0       1.6 0}';
+ORR_Clinical(:, end+1) = {64.3  5.4     7.8 0}';
+ORR_Clinical.Properties.VariableNames(2:end) = treatments;
+ORR_Preclinical = ORR9;
+figure
+hold on
+markers = {'d' 'o' 's' '*'};
+for i=1:length(treatments)
+    indx = (i-1)*2+2;
+    CI = cellfun(@(x)str2double(x), ORR_Preclinical{:, indx+1});
+
+    for j=1:4
+    h = errorbar(ORR_Clinical{j,i+1}, ORR_Preclinical{j, indx}*100,...
+        (CI(j,1)-ORR_Preclinical{j, indx})*100,(CI(j,2)-ORR_Preclinical{j, indx})*100);
+    try
+    h.Color = PI1.data(i).colors;
+    h.LineStyle = 'none';
+    h.Marker = markers{j};
+    h.MarkerEdgeColor = PI1.data(i).colors;
+    h.MarkerFaceColor = PI1.data(i).colors;
+    h.MarkerSize = 12;
+    catch
+    end
+    end
+end
+ax = gca;
+plot(0:10:100, 0:10:100, '-k')
+grid on
+legend(ax.Children(3:4:end),treatments(end:-1:1),'interpreter', 'none')
+title('RECIST 1.1. Classification comparison between simulations and realized clinical values')
+xlabel('Clinical estimates [% of patients]')
+ylabel('Clinical simulation [% of simulations]')
+
+
+%% MEdian PFS
+PFS_Clinical = table(treatments');
+PFS_Clinical(:,end+1) = {nan 1.9 2 1.9}';
+PFS_Clinical(:,end+1) = {nan 1.8 1.8 1.9}';
+PFS_Clinical(:,end+1) = {nan 2.8 2 2.1}';
+figure
+hold on
+for i=1:4
+
+h=errorbar(PFS_Clinical{i,2}, pfs9{i,2}, PFS_Clinical{i,2}-PFS_Clinical{i,3},...
+    PFS_Clinical{i,2}-PFS_Clinical{i,4}, pfs9{i,2}-pfs9{i,3}, pfs9{i,2}-pfs9{i,4});
+h.MarkerFaceColor = [PI.data(i).colors];
+
+end
+
 %% Save output
-for i=1:11
+for i=1:13
     num_i = num2str(i);
     save(strjoin({cd '/CIM/HuSim/CIM21/PI' num_i '.mat'},''),strjoin({'PI', num_i}, ''))
 end
