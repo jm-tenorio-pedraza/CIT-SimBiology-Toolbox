@@ -54,12 +54,14 @@ for i=1:length(observables)
  subplot(nrow,ncol,i)
  plotSimOutput(PI,i,'all', false, 'indiv', false, 'addErrorVar', false,...
      'newFig', false, 'TimeUnit', 'days')
+%  set(gca, 'YScale','log')
 end
 %%
 finalValue=num2cell(exp(finalValues'));
 [PI.par(1:end).finalValue]=finalValue{:,:};
-plotFit(PI,'sigma', exp(finalValues(setdiff(PI.H.SigmaParams,[PI.H.IndividualParams.OmegaIndex PI.H.CellParams.OmegaIndex]))))
-%% Plotting errors
+plotFit(PI,'sigma', exp(finalValues(setdiff(PI.H.SigmaParams,...
+    [PI.H.IndividualParams.OmegaIndex PI.H.CellParams.OmegaIndex]))),'newFig', false)
+                                                                                                                                                                  %% Plotting errors
 figure('Position', [10 10 1.5e3 1e3])
 ncol = ceil(sqrt(length(observables)));
 nrow = ceil(length(observables)/ncol);

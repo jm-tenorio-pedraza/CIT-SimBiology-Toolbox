@@ -4,7 +4,7 @@
 clear all
 warning off
 addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/PI/ThreeComp_4')
+cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/PI/ThreeComp_6')
 
 %% Load project 
 out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/ThreeComp_4.sbproj');
@@ -13,14 +13,14 @@ model=out.m1;
 cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-11);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-9);
-set(cs, 'MaximumWallClock', 0.25)
+set(cs, 'MaximumWallClock',2.5)
 MODEL = 'ThreeCompartment with TMDD';
 variants = get(model,'variants');
 sbioaccelerate(model,cs);
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor';'Peripheral';'CL_antiPDL1'; 'Q23';'Q12';...
-    'PDL1_Tumor'; 'kdeg_PDL1'; 'ID'};
+parameters = {'Blood'; 'Tumor';'Peripheral';'CL_antiPDL1'; 'Q23'; 'Q12';...
+     'PDL1_Tumor'; 'kdeg_PDL1'; 'PDL1_Blood'; 'PDL1_Peripheral';'kint';'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_g_Blood_free' 'ID_Id_g_Tumor' 'ID_g_Tumor_free'};
 
@@ -49,13 +49,13 @@ clear dataset_file_ext dose MODEL
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[2 4], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([.1 .1 .001], [.1 .1 0.001], [1 1 1], PI);
-lb = [1e-1   1e-3   1e-3    1e-2    1e-3   1e-3     1e1     1e-2];
-ub = [1e1    2      1e1     1e1     1e1    1e1      1e6     1e1];
+lb = [1e-1   1e-3   1e-3    1e-4    1e-4   1e-4     1e0 1e-3 1e0 1e0 1e-3];
+ub = [1e1    2      1e1     1e1     1e1    1e1      1e6 1e0  1e6 1e6 1e1];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 PI = assignPrior(PI);
@@ -80,8 +80,8 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp4_4_TMDD_11.mat', 'PI')
-load(strjoin({cd 'PI_PK_ThreeComp4_4_TMDD_11.mat'},'/'))
+save('PI_PK_ThreeComp4_6_TMDD_25.mat', 'PI')
+load(strjoin({cd 'PI_PK_ThreeComp4_6_TMDD_0.mat'},'/'))
 
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x.mat'},''), 'x')
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x.mat'},''), 'p_x')

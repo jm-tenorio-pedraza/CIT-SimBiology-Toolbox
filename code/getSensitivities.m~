@@ -69,7 +69,7 @@ for i=1:length(parameters)
         (log(x.phi(:,i))-log(x.inputs(:,i))), PI.sensitivity,'UniformOutput',false);
     end
     delta = reshape([y_i{:,:}],[],1);
-    sensmatrix(:,i) = real(delta);
+    sensmatrix(:,i) = delta;
 end
 sensmatrix=sensmatrix*1/sqrt(time(end));
 
