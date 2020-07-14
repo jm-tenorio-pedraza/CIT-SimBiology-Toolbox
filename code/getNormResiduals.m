@@ -31,6 +31,7 @@ simdata=resample(simdata,PI.tspan);
 [T,Y,~]=getdata(simdata);
 catch
     residuals = 1e9;
+    return
 end
 % Incorporate simulations into data structure array
 [PI.data(1:length(T)).('simTime')]=T{:,:};

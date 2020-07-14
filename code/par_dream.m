@@ -87,7 +87,7 @@ for t = 2:T
            r = propL-p_X(i,1);
            if U(t,i)<=min(r,0)
                p_X(i,1) = propL;
-               X(:,i) = Xp(:,i);
+               X(:,i) = prop_p;
                accept(i,1)=accept(i,1)+1;
            else 
                dX(i,:) = 0;
