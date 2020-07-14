@@ -2,10 +2,13 @@ function pars = plotPSS(pcs,pc_indx,parameters,varargin)
 
 p=inputParser;
 p.addParameter('threshold', -1);
+p.addParameter('newFig',true);
+
 p.parse(varargin{:})
 p=p.Results;
-
+if p.newFig
 figure;
+end
 colors=linspecer(pc_indx);
 [~,I_col] = sort(log10(abs(pcs(:,1:pc_indx))),1,'descend');
 % [~, I_row] = sort(log10(abs(pcs(:,1:pc_indx))),2,'descend');

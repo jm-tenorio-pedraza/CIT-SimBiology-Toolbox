@@ -15,6 +15,7 @@ end
 if size(p.Sigma,1)>size(p.Sigma,2)
     sigma = p.Sigma';
 else
+    sigma= p.Sigma;
 end
 
 lhssample = lhsdesign(nsamples, n_p);

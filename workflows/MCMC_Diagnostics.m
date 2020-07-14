@@ -32,7 +32,8 @@ plotBivariateMarginals_2((postSamples(:,[PI.H.PopulationParams PI.H.SigmaParams]
 % Individual and population parameters
 plotBivariateMarginals_2((postSamples(:, [PI.H.CellParams.Index PI.H.IndividualParams.Index])),...
     'names',paramNames([PI.H.CellParams.Index PI.H.IndividualParams.Index]))
-plotIIVParams(postSamples, PI,'name', paramNames)
+plotIIVParams(postSamples, PI,'name', paramNames,'newFig', false,...
+    'n_row', 2,'n_col',2,'figIndx', 3:4,'panel', true,'dim',true)
 %% Posterior predictions
 simTime = unique([PI.tspan', 1:PI.tspan(end)]);
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,simTime),x,...

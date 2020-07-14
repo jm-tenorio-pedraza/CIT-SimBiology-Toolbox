@@ -11,16 +11,13 @@ par=par.Results;
 time = par.time;
 
 %% Plot results
+ncol = ceil(sqrt(length(PI.u)));
+nrow = ceil(length(PI.u)/ncol);
 colors = linspecer(length(parameters));
 styles = repmat({'-'; '--'}, ceil(length(parameters)/2),1);
-
 for i = 1:length(observables)
-
+figure
 if strcmp(par.output, 'individual')
-    figure
-    ncol = ceil(sqrt(length(PI.u)));
-    nrow = ceil(length(PI.u)/ncol);
-
     for k=1:length(PI.u)
         index = (k-1)*length(time)+1:(k-1)*length(time)+length(time);
         subplot(nrow, ncol, k)
@@ -40,30 +37,19 @@ if strcmp(par.output, 'individual')
         ylim([-1 1])
         
     end
-    legend(parameters)
 else
-    if i==1
-        figure
-    end
-    ncol = ceil(sqrt(length(observables)));
-    nrow = ceil(length(observables)/ncol);
-    subplot(nrow,ncol,i)
-    hold on
+        index = (k-1)*length(time)+1:(k-1)*length(time)+length(time);
+        
+        hold on
         for j = 1:length(parameters)
             prcc_j= reshape(PI.prcc(:,j,i), [], length(PI.u));
             h= plot(time, mean(prcc_j,2));
 
             line_j =  styles{j};
-            set(h, 'Color', colors(j,:),'LineWidth', 2,'LineStyle', line_j)
+            set(h(j), 'Color', colors(j,:),'LineWidth', 2,'LineStyle', line_j)
         end
-        title(PI.observablesPlot(i), 'interpreter', 'tex')
-        xlabel(strjoin({'Time [' par.timeUnit ']'}, ''))
-        ylabel('Partial correlation coefficient')
-        
-        ylim([-1 1])
-        
 end
-    
+    legend(parameters)
 end
 
 legend(parameters)

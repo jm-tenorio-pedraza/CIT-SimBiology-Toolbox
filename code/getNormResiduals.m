@@ -48,7 +48,8 @@ catch
 end
 % Normalizing to final value for DCm, ISC and PDL1
 
-simOutput=cellfun(@(x)x./([ones(1,nVar-length(normIndx)) x(end,normIndx)]),simOutput,'UniformOutput',false);
+simOutput=cellfun(@(x)x./([ones(1,nVar-length(normIndx)) x(end,normIndx)]),...
+    simOutput,'UniformOutput',false);
 
 % Input into data array
 [PI.data(1:length(simOutput)).('y_hat')]=simOutput{:,:};
