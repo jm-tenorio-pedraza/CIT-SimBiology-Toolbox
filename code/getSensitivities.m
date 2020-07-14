@@ -65,13 +65,13 @@ for i=1:length(parameters)
     [PI.sensitivity(1:end).phi] = phi_i{:,:};
 
     if p.allVariables                       % Check if all output variables are to be considered
-    y_i = arrayfun(@(x) ((log(x.y_i) - log(x.simValue)))./...
+    y_i = arrayfun(@(x) (((x.y_i) - (x.simValue)))./...
         (log(x.phi(:,i))-log(x.inputs(:,i))), PI.sensitivity,'UniformOutput',false);
     end
     delta = reshape([y_i{:,:}],[],1);
     sensmatrix(:,i) = real(delta);
 end
-sensmatrix=sensmatrix*1/sqrt(time(end));
+sensmatrix=sensmatrix*sqrt(p.timedelta/time(end));
 
 if p.initialValue
     sensmatrix = sensmatrix(:,1:end-1);
