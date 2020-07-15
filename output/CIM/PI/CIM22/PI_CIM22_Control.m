@@ -61,7 +61,7 @@ plotData(PI, PI.observablesPlot, 'responseGrouping', true, 'kineticGrouping', tr
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [7] , 'cell_indx',[1 6 10 12], 'n_indiv', length(PI.u));
+    'rand_indx', [13] , 'cell_indx',[1 2 10 14], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([.1 .1 .1], [.1 .1 .1], [1 1 1], PI);
 
@@ -108,7 +108,7 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
 save('PI_CIM22_Control_14.mat', 'PI')
-load(strjoin({cd 'PI_CIM22_Control_12.mat'},'/'),'PI')
+load(strjoin({cd 'PI_CIM22_Control_0.mat'},'/'),'PI')
 N_i='3';
 save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_x_' N_i '.mat'},''), strjoin({'x' N_i},''))
 save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_p_x_' N_i '.mat'},''), strjoin({'p_x' N_i},''))
