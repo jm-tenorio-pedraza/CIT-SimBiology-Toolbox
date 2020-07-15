@@ -1,4 +1,4 @@
-function plotPRCC(PI,parameters,observables,varargin)
+function ranking = plotPRCC(PI,parameters,observables,varargin)
 
 par=inputParser;
 par.addParameter('n',1)
@@ -13,7 +13,8 @@ time = par.time;
 %% Plot results
 colors = linspecer(length(parameters));
 styles = repmat({'-'; '--'}, ceil(length(parameters)/2),1);
-
+ranking = table(repelem({'nan'},length(parameters),1));
+prcc_mean = nan(length(time), length(parameters));
 for i = 1:length(observables)
 
 if strcmp(par.output, 'individual')
@@ -51,11 +52,14 @@ else
     hold on
         for j = 1:length(parameters)
             prcc_j= reshape(PI.prcc(:,j,i), [], length(PI.u));
-            h= plot(time, mean(prcc_j,2));
+            prcc_mean(:,j) = mean(prcc_j,2);
+            h= plot(time, prcc_mean(:,j));
 
             line_j =  styles{j};
             set(h, 'Color', colors(j,:),'LineWidth', 2,'LineStyle', line_j)
         end
+        [~, prcc_mean_indx] = sort(abs(mean(prcc_mean)),'descend');
+        ranking(:,i) = parameters(prcc_mean_indx);
         title(PI.observablesPlot(i), 'interpreter', 'tex')
         xlabel(strjoin({'Time [' par.timeUnit ']'}, ''))
         ylabel('Partial correlation coefficient')
@@ -65,6 +69,7 @@ else
 end
     
 end
+ranking.Properties.VariableNames = observables;
 
 legend(parameters)
 
