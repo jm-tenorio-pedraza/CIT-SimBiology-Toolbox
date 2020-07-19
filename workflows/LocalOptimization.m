@@ -33,3 +33,5 @@ finalValues([PI.H.PopulationParams PI.H.CellParams.Index...
     PI.H.IndividualParams.Index]) = p_hat;
 %% Estimate all parameters
 [finalValues, fval_fminunc] = fminunc(obj_fun, finalValues,options_fminsearch);
+%% 
+clearvars residuals_fn residuals_indiv 
