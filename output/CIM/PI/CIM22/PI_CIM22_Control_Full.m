@@ -20,7 +20,9 @@ set(cs, 'MaximumWallClock', 2.5)
 sbioaccelerate(model, cs)
 %% Parameter setup
 parameters = {'kin_CD8'; 'kin_Treg';'K_IFNg';'KDE_MDSC';'K_MDSC'; 'kin_DC';'S_L'; ...
-    'S_R'; 'kill_Treg';'kin_MDSC';'kin_TIC';'kpro_Tumor'; 'kpro_Tumor_Linear';'kill_CD8'; };
+    'S_R'; 'kill_Treg';'kin_MDSC';'kin_TIC';'kpro_Tumor'; 'kpro_Tumor_Linear';'kill_CD8'; 
+    'K_DC'; 'ks_PDL1_Tumor'; 'ks_PDL1_Immune'; 'K_CTLA4'; 'K_PDL1'; 'T_max'; 
+    'kel_Tumor'; 'kel_Effector'; 'kel_Naive'; 'kel_Treg';'kpro_CD8'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -61,12 +63,12 @@ plotData(PI, PI.observablesPlot, 'responseGrouping', true, 'kineticGrouping', tr
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [ 12 14 13] , 'cell_indx',[1 2 10], 'n_indiv', length(PI.u));
+    'rand_indx', [ ] , 'cell_indx',[], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([.4 .4 .05], [.1 .1 .1], [1 1 1], PI);
+lb=([1e-3   1e-3    1e-3    1e-4 1e-3   1e-3   1e-3 1e-3    1e-6    1e-4    1e-3    1e-2   1e-2     1e-3    .01     1e1     1e1     1e0     1e0     1e1     1e-4    1e-2    1e-2    1e-2    1e-2])';
+ub=([1e2    1e2     1e2     1e1 1e1    1e2     1e3  1e3     1e3     1e3     1e2     1e1    1e2      1e3     1e1     1e5     1e5     1e3     1e6     1e4     1e1     1e1     1e1     1e1     1e1])';
 
-lb=([1e-3   1e-3    1e-3    1e-4 1e-3   1e-3   1e-3 1e-3    1e-6    1e-4    1e-3    1e-2   1e-2     1e-3])';
-ub=([1e2    1e2     1e2     1e1 1e1    1e2     1e3  1e3     1e3     1e3     1e2     1e1    1e2      1e3])';
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 

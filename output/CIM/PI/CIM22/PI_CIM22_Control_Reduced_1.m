@@ -19,8 +19,10 @@ set(cs.SolverOptions, 'RelativeTolerance', 1.0e-8);
 set(cs, 'MaximumWallClock', 2.5)
 sbioaccelerate(model, cs)
 %% Parameter setup
-parameters = {'kin_CD8'; 'kin_Treg';'K_IFNg';'KDE_MDSC';'K_MDSC'; 'kin_DC';'S_L'; ...
-    'S_R'; 'kill_Treg';'kin_MDSC';'kin_TIC';'kpro_Tumor'; 'kpro_Tumor_Linear';'kill_CD8'; };
+parameters = {'kin_CD8'; 'kin_Treg';'kin_DC';'kin_MDSC';'kin_TIC';...
+    'KDE_MDSC';'K_MDSC';'K_DC';'K_CTLA4'; 'K_PDL1'; 'S_L'; 'S_R'; 'kill_Treg';...
+    'kpro_Tumor'; 'kpro_Tumor_Linear';'kill_CD8'; 
+     'ks_PDL1_Tumor'; 'ks_PDL1_Immune'; };
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -61,12 +63,12 @@ plotData(PI, PI.observablesPlot, 'responseGrouping', true, 'kineticGrouping', tr
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [] , 'cell_indx',[], 'n_indiv', length(PI.u));
+    'rand_indx', [14 15 16 ] , 'cell_indx',[1 2 4], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
-[beta, sigma_prior] = getVarValues([.1 .1 .1], [.1 .1 .1], [1 1 1], PI);
+[beta, sigma_prior] = getVarValues([.4 .4 .05], [.1 .1 .1], [1 1 1], PI);
+lb=([1e-3   1e-3    1e-3    1e-3 1e-3  1e-4   1e-3 1e-3    1e0    1e0    1e-4    1e-4   1e-6     1e-3    1e-3    1e-6    1e1     1e1])';
+ub=([1e2    1e2     1e2     1e2 1e2    1e1    1e1  1e1     1e4    1e6    1e2     1e2    1e2      1e1     1e2     1e3     1e6     1e6])';
 
-lb=([1e-3   1e-3    1e-3    1e-4 1e-3   1e-3   1e-3 1e-4    1e-3    1e-2   1e-2     1e-3])';
-ub=([1e2    1e2     1e2     1e1 1e1    1e2     1e3     1e2     1e1    1e2      1e3])';
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
 
@@ -107,8 +109,8 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
-save('PI_CIM22_Control_1.mat', 'PI')
-load(strjoin({cd 'PI_CIM22_Control_14.mat'},'/'),'PI')
+save('PI_CIM22_Control_Reduced_1_1.mat', 'PI')
+load(strjoin({cd 'PI_CIM22_Control_Reduced_1_0.mat'},'/'),'PI')
 N_i='3';
 save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_x_' N_i '.mat'},''), strjoin({'x' N_i},''))
 save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_p_x_' N_i '.mat'},''), strjoin({'p_x' N_i},''))
