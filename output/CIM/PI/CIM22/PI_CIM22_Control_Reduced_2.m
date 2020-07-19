@@ -110,7 +110,7 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
 save('PI_CIM22_Control_Reduced_2_6.mat', 'PI')
-load(strjoin({cd 'PI_CIM22_Control_Reduced_2_0.mat'},'/'),'PI')
+load(strjoin({cd 'PI_CIM22_Control_Reduced_2_2.mat'},'/'),'PI')
 N_i='3';
 save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_x_' N_i '.mat'},''), strjoin({'x' N_i},''))
 save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_p_x_' N_i '.mat'},''), strjoin({'p_x' N_i},''))
