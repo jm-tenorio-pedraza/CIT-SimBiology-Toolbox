@@ -1,5 +1,5 @@
 function h = plotTrace(p_hat,varargin)
-if nargin<2
+if nargin<1
     error('GWMCMC:toofewinputs','AMCMC requires atleast 2 inputs.')
 end
 p=inputParser;
@@ -32,8 +32,8 @@ n_col=ceil(sqrt(n_p));
 n_row=ceil(n_p/n_col);
 
 % Limits of plots
-max_y=max(max(p_hat(:,:)));
-min_y=min(min(p_hat(:,:)));
+max_y=max(max(p_hat(:,:)'));
+min_y=min(min(p_hat(:,:)'));
 % Plotting trace plots
 switch n_dim
     case 2
@@ -58,7 +58,7 @@ elseif strcmp(p.type, 'individual')
              legend(strjoin({'ESS=' num2str(p.ESS(i))},''),'Location','best')
          end
 
-              ylim([min_y max_y])
+%               ylim([min_y max_y])
 %              
     end
 

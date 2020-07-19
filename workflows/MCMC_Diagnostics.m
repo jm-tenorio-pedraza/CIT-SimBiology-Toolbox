@@ -2,16 +2,16 @@
 %% Diagnostics
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
-plotMCMCDiagnostics(x([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
-    p_x,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
+plotMCMCDiagnostics(x1([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
+    p_x1,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
     'model', PI.model, 'interpreter', 'tex');
 plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],:,:),...
     p_x,'name', paramNames([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index]),...
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 2e2;
-burnIn=1e5;
+delta = 6e2;
+burnIn=4e5;
 indx = ceil(burnIn/size(x1,1)+1):delta:size(x1,3);
 
 [mean_w, w_indx] = sort(mean(p_x1(indx,:)));
@@ -59,12 +59,15 @@ for i=1:length(PI.observablesFields)
         'simTime', simTime, 'YScale', 'log', 'interpreter', 'none','plot','data')
 end
 
+for i=1:9
+    subplot(3,3,i)
+    set(gca, 'YScale', 'linear')
+end
 %% Plot individual variables
 for i =1:length(PI.observablesPlot)
  plotPosteriorPredictions(PI,i,'outputs','indiv', 'all', false,...
         'newFig', true, 'TimeUnit', 'days','color', 'cell','simTime', simTime)
 end
-
 %% Plot prediction errors
 for i =1:length(PI.observablesPlot)
 plotPosteriorErrors(PI, i, 'outputs','indiv', 'newFig', true, 'TimeUnit' ,...

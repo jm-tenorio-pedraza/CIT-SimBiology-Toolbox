@@ -49,7 +49,7 @@ for i=1:N, R(i, 1:N-1) = setdiff(1:N,i); end                % R-matrix: index of
 
 X = X0; % dxN                                                     % Create initial  population
 for i = 1:N, p_X(i,1) = likelihood(X(:,i))+prior(X(:,i)); end                 % Compute density of initial population
-x(1:d, 1:N,1) =X0'; p_x(1,1:N) = p_X';    % Store initial states and density
+x(1:d, 1:N,1) =X0; p_x(1,1:N) = p_X';    % Store initial states and density
 
 % Defining static inputs outside of loop
 D = reshape(randsample(1:delta,N*T, true),T,N);                   % Select delta (equal selection probability)

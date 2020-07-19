@@ -1,8 +1,8 @@
-ope%% DREAM MCMC
+%% DREAM MCMC
 finalValues = log([PI.par(:).finalValue]);
 N = length(finalValues);
 
-X0 =[ (finalValues); randn(100,length(finalValues))*0.0015 + finalValues];
+X0 =[ (finalValues); randn(100,length(finalValues))*0.1 + finalValues];
 logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
 w0 = X0(I(1:N),:);
@@ -10,8 +10,8 @@ h.IndividualParams=[];
 p=parpool('local');
 tic
 [x1, p_x1,accept1,pCR1,stepSize1, J1, n_id1] = par_dream(w0',likelihood_fun,prior_fun,...
-    N,ceil(6e5/N), N, 'BurnIn', ...
-    6e5,'stepSize',2.38);
+    N,ceil(1e6/N), N, 'BurnIn', ...
+    2e5,'stepSize',2.38);
 toc
 
 w0 = x1(:,:,end);

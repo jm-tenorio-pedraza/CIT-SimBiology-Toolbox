@@ -49,13 +49,13 @@ clear dataset_file_ext dose MODEL
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[1], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[ 2], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
-[beta, sigma_prior] = getVarValues([.1 .1 .001], [.1 .1 0.001], [1 1 1], PI);
-lb = [1e-1   1e-3   1e-3    1e-5    1e-5   1e-3 1e0 ];
-ub = [1e1    2      1e1     1e1     1e1    1e0  1e6 ];
+[beta, sigma_prior] = getVarValues([.4 .4 .05], [.1 .1 .1], [1 1 1], PI);
+lb = [1e-3   1e-3   1e-3    1e-4    1e-4   1e-3 1e0 ];
+ub = [1e1    2      1e1     1e1     1e1    1e1  1e6 ];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 PI = assignPrior(PI);
@@ -63,7 +63,6 @@ PI = assignPrior(PI);
 % Log-ikelihood function
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
 prior_fun=@(p)getPriorPDFMCMC2(exp(p),PI);
-
 
 paramNames = getParamNames(PI,sim, observables);
 %% Objective function
@@ -80,10 +79,11 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp4_6_TMDD_reduced_2_0.mat', 'PI')
-load(strjoin({cd 'PI_PK_ThreeComp4_6_TMDD_0.mat'},'/'))
+save('PI_PK_ThreeComp4_6_TMDD_reduced_2_2.mat', 'PI')
+%% LOAD RESULTS
+load(strjoin({cd 'PI_PK_ThreeComp4_6_TMDD_reduced_2_2.mat'},'/'))
 
-save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x.mat'},''), 'x')
-save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x.mat'},''), 'p_x')
+save(strjoin({cd '/PI_PK_ThreeComp4_6_TMDD_reduced_2_9_x1.mat'},''), 'x1')
+save(strjoin({cd '/PI_PK_ThreeComp4_6_TMDD_reduced_2_9_p_x1.mat'},''), 'p_x1')
 load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x.mat'},''))
 load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x.mat'},''))
