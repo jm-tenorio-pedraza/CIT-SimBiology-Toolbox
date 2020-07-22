@@ -81,7 +81,7 @@ for t = 2:T
         prop_p = Xp(:,i);
         p_Xp_i= prior(prop_p);
         if isinf(p_Xp_i) || ~isreal(p_Xp_i) || isnan(p_Xp_i)
-            dX(i,:) = 0;
+            dX(:,i) = 0;
         else
            propL = likelihood(prop_p)+p_Xp_i;                        % Compute density of ith proposal
            r = propL-p_X(i,1);
@@ -90,12 +90,12 @@ for t = 2:T
                X(:,i) = prop_p;
                accept(i,1)=accept(i,1)+1;
            else 
-               dX(i,:) = 0;
+               dX(:,i) = 0;
            end
         end
     end
 for i=1:N 
-    J(id(i)) = J(id(i)) +sum(dX(i,:)./std_X').^2;
+    J(id(i)) = J(id(i)) +sum(dX(:,i)./std_X).^2;
     n_id(id(i)) = n_id(id(i))+1;
 end
     x(1:d,1:N,t) = X; p_x(t, 1:N) = p_X'; % Append current X and density
@@ -115,6 +115,8 @@ end
     progress((t-1)/T,mean(Xp,2),(mean(accept)/(t)))            % Print out progress status
     if mod(t,20)==0
     plot(p_x)
+    hold on
+    plot(mean(p_x,2), 'LineWidth', 4)
     end
 end
 
