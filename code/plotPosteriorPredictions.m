@@ -179,7 +179,7 @@ else
                 pi_nan=or(isnan(pi_data), pi_data==0);
                 
                 %Plotting prediction interval
-                pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
+%                 pi=patch('XData', simTime(~pi_nan),'YData',pi_data(~pi_nan));
             end
         else
             
@@ -257,6 +257,8 @@ else
         title(PI.observablesPlot(colIndx),'interpreter', p.interpreter)
         legend(ax.Children(end:-3:3),legends,'Interpreter', 'none', 'location','best')
     end
+    
+    ax.FontSize = 14;
 end
 
 return
