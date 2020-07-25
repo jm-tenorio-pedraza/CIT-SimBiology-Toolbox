@@ -42,5 +42,6 @@ for i=1:pc_indx
 end
 legend_i(end+1) = {'Threshold'};
 legend(legend_i,'Location','northeast');
-
+ax=gca;
+ax.FontSize =10;
 return

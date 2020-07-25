@@ -114,6 +114,9 @@ ax = gca;
 if ~par.indiv
     ncells = 1:size(PI.H.CellIndx,2);
     dataLegend = PI.H.CellTypes(PI.H.CellIndx(simIndx,:)*ncells');
-        legend(ax.Children(end:-1:2),dataLegend, 'location', 'best', 'interpreter','none')        
+    [dataLegend_Unique, uniqueIndx] = unique(dataLegend,'stable');
+    legendIndx = uniqueIndx+1;
+    legend(ax.Children(legendIndx),dataLegend_Unique, 'location', 'best', 'interpreter','none')        
 end
+ax.FontSize = 14;
 return

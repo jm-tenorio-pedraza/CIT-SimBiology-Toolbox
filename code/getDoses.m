@@ -5,6 +5,7 @@ p.addParameter('MW', 1.5e5);
 p.addParameter('t0', 0);
 p.addParameter('doses', [])
 p.addParameter('species', 'mouse')
+p.addParameter('ApplicationRateConstant', 60)
 p.parse(varargin{:})
 p=p.Results;
 

@@ -5,6 +5,11 @@ par.addParameter('n',1)
 par.addParameter('time',1:1:PI.tspan(end))
 par.addParameter('timeUnit', 'days')
 par.addParameter('output', 'individual')
+par.addParameter('kpi', 'mean')
+par.addParameter('newFig', true)
+par.addParameter('plotIndx', 1:length(observables))
+par.addParameter('ncol', ceil(sqrt(length(observables))))
+par.addParameter('nrow', ceil(length(observables)/ceil(sqrt(length(observables)))))
 
 par.parse(varargin{:})
 par=par.Results;
@@ -43,12 +48,13 @@ if strcmp(par.output, 'individual')
     end
     legend(parameters)
 else
-    if i==1
+    if i==1 && par.newFig
         figure
     end
-    ncol = ceil(sqrt(length(observables)));
-    nrow = ceil(length(observables)/ncol);
-    subplot(nrow,ncol,i)
+    ncol = par.ncol;
+    nrow = par.nrow;
+    plotIndx = par.plotIndx;
+    subplot(nrow,ncol,plotIndx(i))
     hold on
         for j = 1:length(parameters)
             prcc_j= reshape(PI.prcc(:,j,i), [], length(PI.u));
@@ -60,17 +66,20 @@ else
         end
         plot(time, ones(1,length(time))*0.5, 'Linewidth', 2, 'Color', 'black');
         plot(time, ones(1,length(time))*(-0.5), 'Linewidth', 2, 'Color', 'black');
+        if strcmp(par.kpi, 'mean')
+        [~, prcc_mean_indx] = sort(mean(abs(prcc_mean)),'descend');
+        elseif strcmp(par.kpi,'max')
+        [~, prcc_mean_indx] = sort(max(abs(prcc_mean)),'descend');
 
-        [~, prcc_mean_indx] = sort(abs(mean(prcc_mean)),'descend');
+        end
         ranking(:,i) = parameters(prcc_mean_indx);
         title(PI.observablesPlot(i), 'interpreter', 'tex')
         xlabel(strjoin({'Time [' par.timeUnit ']'}, ''))
         ylabel('Partial correlation coefficient')
-        
         ylim([-1 1])
-        
 end
-    
+    ax = gca;
+    ax.FontSize = 14;
 end
 ranking.Properties.VariableNames = observables;
 

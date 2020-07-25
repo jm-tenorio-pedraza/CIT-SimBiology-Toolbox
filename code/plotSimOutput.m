@@ -129,6 +129,7 @@ for i=1:n_sim
     
 end
 ax = gca;
+
 if ~par.indiv
     if par.addErrorVar
         legend(ax.Children(end-2:-3:1),{PI.data(simIndx).Name}, 'location', 'best', 'interpreter','none')
@@ -138,4 +139,5 @@ if ~par.indiv
     end
         
 end
+ax.FontSize = 14;
 return
