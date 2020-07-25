@@ -2,22 +2,22 @@
 %% Diagnostics
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
-plotMCMCDiagnostics(x1([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
-    p_x1,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
+plotMCMCDiagnostics(x2([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
+    p_x2,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
     'model', PI.model, 'interpreter', 'tex');
 plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],:,:),...
     p_x,'name', paramNames([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index]),...
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 6e2;
-burnIn=4e5;
-indx = ceil(burnIn/size(x1,1)+1):delta:size(x1,3);
+delta = 9e2;
+burnIn=1e5;
+indx = ceil(burnIn/size(x2,1)+1):delta:size(x2,3);
 
-[mean_w, w_indx] = sort(mean(p_x1(indx,:)));
+[mean_w, w_indx] = sort(mean(p_x2(indx,:)));
 
-postSamples =x1(:,w_indx(1:end),indx);
-logP_thinned = p_x1(indx,w_indx(1:end));
+postSamples =x2(:,w_indx(1:end),indx);
+logP_thinned = p_x2(indx,w_indx(1:end));
 
 plotMCMCDiagnostics(postSamples([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
     logP_thinned,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
@@ -77,4 +77,5 @@ end
 PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
 plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
 PI.postSamples = postSamples;
+PI.logP = logP_thinned;
 plotHistogram(PI.postSamples(:,[PI.H.PopulationParams]), paramNames([PI.H.PopulationParams]))

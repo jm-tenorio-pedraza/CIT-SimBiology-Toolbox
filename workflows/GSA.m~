@@ -45,7 +45,7 @@ parameters_hat = unique(parameters_hat,'stable');
 
 %% Global PRCC SA
 PI = globalSA2(sim,PI,observables,'nsamples',1e4,'time',1:1:PI.tspan(end),...
-    'sigma', 1,'inputs', exp(finalValues(PI.H.PopulationParams)),'variation', 0.5);
+    'sigma', 1,'inputs', exp(finalValues(PI.H.PopulationParams)),'variation', 0.1);
 paramRanking = plotPRCC(PI,parameters(1:end-1),observables,'time',...
     1:1:PI.tspan(end),'output', 'mean');
 %% Save results to cd

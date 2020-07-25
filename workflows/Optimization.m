@@ -1,5 +1,6 @@
 %% Optimization
-options_fminsearch=optimset('Display','iter','MaxFunEvals', 5e4, 'MaxIter',5e4, 'TolFun', 1e-4);
+options_fminsearch=optimset('Display','iter','MaxFunEvals', 5e4, 'MaxIter',...
+    5e4, 'TolFun', 1e-4);
 options_anneal.Verbosity=2;
 options_anneal.InitTemp=100;
 %% Partitioned optimisation

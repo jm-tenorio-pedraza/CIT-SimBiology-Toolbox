@@ -4,6 +4,7 @@ par.addParameter('prob', 0.95)
 par.addParameter('n_samples',1e3)
 par.addParameter('output', PI)
 par.addParameter('simTime', PI.tspan)
+par.addParameter('logTransform',true)
 
 par.parse(varargin{:})
 par=par.Results;
@@ -80,11 +81,19 @@ dataOutput=arrayfun(@(x)x.yOutput(ismember(par.simTime,x.dataTime),:),PI.data,..
 try
 % Get lower and upper boudariestry
 sigma = p(setdiff(H.SigmaParams, [H.CellParams(:).OmegaIndex H.IndividualParams(:).OmegaIndex]));
-
+if par.logTransfrom
 lb = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),1-par.prob,3),...
     PI.data,'UniformOutput',false);
 ub = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),par.prob,3),...
     PI.data,'UniformOutput',false);
+
+else
+    lb = arrayfun(@(x)quantile(((x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),1-par.prob,3),...
+    PI.data,'UniformOutput',false);
+ub = arrayfun(@(x)quantile(((x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),par.prob,3),...
+    PI.data,'UniformOutput',false);
+    
+end
 [PI.data(1:end).lb]= lb{:,:};
 [PI.data(1:end).ub] = ub{:,:};
 catch

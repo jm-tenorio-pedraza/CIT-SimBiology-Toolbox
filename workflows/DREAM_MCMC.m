@@ -9,16 +9,16 @@ w0 = X0(I(1:N),:);
 h.IndividualParams=[];
 p=parpool('local');
 tic
-[x1, p_x1,accept1,pCR1,stepSize1, J1, n_id1] = par_dream(w0',likelihood_fun,prior_fun,...
-    N,ceil(5e6/N), N, 'BurnIn', ...
-    5e6,'stepSize',2.38);
+[x1, p_x1,accept1,pCR1,stepSize1, J1, n_id1] = par_H_dream(w0',likelihood_fun,prior_fun,...
+    N,ceil(5e5/N), N, 'BurnIn', ...
+    1e5,'stepSize',2.38,'H', PI.H);
 toc
 
 w0 = x1(:,:,end);
 tic
 [x2, p_x2,accept2,pCR2,stepSize2,J2,n_id2] = par_dream(w0,likelihood_fun,prior_fun,...
     N,ceil(1e6/N), N, 'BurnIn', ...
-    0,'StepSize',stepSize1,'pCR', pCR1, 'J', J1, 'n_id', n_id1);
+    1e5,'StepSize',stepSize1,'pCR', pCR1, 'J', J1, 'n_id', n_id1);
 toc
 w0 = x2(:,:,end);
 

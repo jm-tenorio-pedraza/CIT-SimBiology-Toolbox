@@ -32,8 +32,8 @@ else
     progress=@noaction;
 end
 
-[delta, c,c_star,n_CR, p_g,stepSize, BurnIn] = ...
-    deal(p.delta, p.c, p.c_star, p.n_CR, p.p_g, p.stepSize,p.BurnIn);
+[delta, c,c_star,n_CR, p_g,stepSize, BurnIn,H] = ...
+    deal(p.delta, p.c, p.c_star, p.n_CR, p.p_g, p.stepSize,p.BurnIn, p.H);
 if isempty(p.pCR)
     pCR = ones(1,n_CR)/n_CR;                % Crossover values and select. prob.
     [J,n_id] = deal(zeros(1,n_CR));                             % Variables selection prob. crossover
@@ -79,8 +79,8 @@ for t = 2:T
         g = randsample([gamma_d 1], 1, true, [1-p_g p_g]);    % Select gamma: 80/20 mix [default 1]
         dX(A,i) = c_star*randn(1, d_star)' + ...             
             (1+lambda(t,i))*g*sum(X(A,a)-X(A,b),2);           % Compute ith jump diff. evol.
-
     end
+    Xp = X;
     Xp(popParamIndx,:) = X(popParamIndx,:) + dX(popParamIndx,:);                   % Compute ith proposal
     
     parfor i = 1:N
@@ -100,32 +100,31 @@ for t = 2:T
            end
         end
     end
-    
     if ~isempty(indivParamIndx)
-            Xp(indivParamIndx,:) = X(indivParamIndx,:) + dX(indivParamIndx,:);                   % Compute ith proposal
-    
-    parfor i = 1:N
-        prop_p = Xp(:,i);
-        p_Xp_i= prior(prop_p);
-        if isinf(p_Xp_i) || ~isreal(p_Xp_i) || isnan(p_Xp_i)
-            dX(indivParamIndx,i) = 0;
-        else
-           propL = likelihood(prop_p)+p_Xp_i;                        % Compute density of ith proposal
-           r = propL-p_X(i,1);
-           if U(t,i)<=min(r,0)
-               p_X(i,1) = propL;
-               X(indivParamIndx,i) = prop_p(indivParamIndx);
-               accept(i,1)=accept(i,1)+1;
-           else 
-               dX(indivParamIndx,i) = 0;
-           end
+        Xp(popParamIndx,:) = X(popParamIndx,:);
+        Xp(indivParamIndx,:) = X(indivParamIndx,:) + dX(indivParamIndx,:);                   % Compute ith proposal
+        parfor i = 1:N
+            prop_p = Xp(:,i);
+            p_Xp_i= prior(prop_p);
+            if isinf(p_Xp_i) || ~isreal(p_Xp_i) || isnan(p_Xp_i)
+                dX(indivParamIndx,i) = 0;
+            else
+                propL = likelihood(prop_p)+p_Xp_i;                        % Compute density of ith proposal
+                r = propL-p_X(i,1);
+                if U(t,i)<=min(r,0)
+                    p_X(i,1) = propL;
+                    X(indivParamIndx,i) = prop_p(indivParamIndx);
+                    accept(i,1)=accept(i,1)+1;
+                else
+                    dX(indivParamIndx,i) = 0;
+                end
+            end
         end
-    end
-    
+        
         
     end
 for i=1:N 
-    J(id(i)) = J(id(i)) +sum(dX(:,i)./std_X').^2;
+    J(id(i)) = J(id(i)) +sum(dX(:,i)./std_X).^2;
     n_id(id(i)) = n_id(id(i))+1;
 end
     x(1:d,1:N,t) = X; p_x(t, 1:N) = p_X'; % Append current X and density
@@ -145,6 +144,8 @@ end
     progress((t-1)/T,mean(Xp,2),(mean(accept)/(t)))            % Print out progress status
     if mod(t,20)==0
     plot(p_x)
+    hold on
+    plot(mean(p_x,2), 'LineWidth', 4)
     end
 end
 
