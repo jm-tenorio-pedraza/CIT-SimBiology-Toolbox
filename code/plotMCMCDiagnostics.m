@@ -49,7 +49,7 @@ for i=1:size(logP,2)
 end
 % Param traceplot
 figure('Renderer', 'painters', 'Position', [10 10 1500 600])
-plotTrace(params,'names', p.name,'ESS',ESS,'interpreter', p.interpreter)
+plotTrace( params,'names', p.name,'ESS',ESS,'interpreter', p.interpreter)
 end
 % Autocorrelation
 if ismember('autocorr', p.plots)

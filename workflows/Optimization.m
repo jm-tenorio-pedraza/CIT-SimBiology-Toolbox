@@ -48,8 +48,7 @@ end
 %%
 finalValue=num2cell(exp(finalValues'));
 [PI.par(1:end).finalValue]=finalValue{:,:};
-plotFit(PI,'sigma', exp(finalValues(setdiff(PI.H.SigmaParams,...
-    [PI.H.IndividualParams.OmegaIndex PI.H.CellParams.OmegaIndex]))),'newFig', false)
+plotFit(PI)
 %%                                                                                                                                                                 %% Plotting errors
 figure('Position', [10 10 1.5e3 1e3])
 ncol = ceil(sqrt(length(observables)));

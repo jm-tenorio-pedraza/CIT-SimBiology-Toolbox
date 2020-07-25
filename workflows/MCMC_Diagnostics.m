@@ -10,8 +10,8 @@ plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 6e2;
-burnIn=4e5;
+delta = 3e2;
+burnIn=1e5;
 indx = ceil(burnIn/size(x1,1)+1):delta:size(x1,3);
 
 [mean_w, w_indx] = sort(mean(p_x1(indx,:)));
@@ -33,7 +33,7 @@ plotBivariateMarginals_2((postSamples(:,[PI.H.PopulationParams PI.H.SigmaParams]
 plotBivariateMarginals_2((postSamples(:, [PI.H.CellParams.Index PI.H.IndividualParams.Index])),...
     'names',paramNames([PI.H.CellParams.Index PI.H.IndividualParams.Index]))
 plotIIVParams(postSamples, PI,'name', paramNames,'newFig', false,...
-    'n_row', 2,'n_col',2,'figIndx', 3:4,'panel', true,'dim',true)
+    'n_row', 1,'n_col',1,'figIndx', 1,'panel', true,'dim',true)
 %% Posterior predictions
 simTime = unique([PI.tspan', 1:PI.tspan(end)]);
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,simTime),x,...
@@ -45,18 +45,16 @@ PI=getPosteriorPredictions2(exp(postSamples(1:end,:)),PI,simFun,PI.observablesFi
 toc
 PI=getCredibleIntervals(PI,PI.observablesFields, exp(postSamples(1:end,:)),PI.H,...
     'logit_indx', [],'simTime', simTime);
-
 %% Plot all
-% figure('Position', [10 10 1.5e3 1e3])
-% ncol = ceil(sqrt(length(PI.observablesFields)));
-% nrow = ceil(length(PI.observablesFields)/ncol);
+figure('Position', [10 10 1.5e3 1e3])
+ncol = ceil(sqrt(length(PI.observablesFields)));
+nrow = ceil(length(PI.observablesFields)/ncol);
 
 for i=1:length(PI.observablesFields)
-%      subplot(nrow,ncol,i)
-
-    plotPosteriorPredictions(PI,i,'outputs','indiv',...
-       'newFig', true, 'TimeUnit', 'days','color', 'dataset',...
-        'simTime', simTime, 'YScale', 'log', 'interpreter', 'none','plot','data')
+     subplot(nrow,ncol,i)
+    plotPosteriorPredictions(PI,i,'outputs','group',...
+       'newFig', false, 'TimeUnit', 'days','color', 'dataset',...
+        'simTime', simTime, 'YScale', 'linear', 'interpreter', 'tex','plot','data')
 end
 
 for i=1:9
@@ -77,4 +75,5 @@ end
 PI=mcmcCI(PI, (postSamples), logP_thinned', 0.95,'method', 'symmetric');
 plotCI(PI, 'TwoComp', 'name', paramNames, 'interpreter', 'tex')
 PI.postSamples = postSamples;
+PI.logP = logP_thinned;
 plotHistogram(PI.postSamples(:,[PI.H.PopulationParams]), paramNames([PI.H.PopulationParams]))
