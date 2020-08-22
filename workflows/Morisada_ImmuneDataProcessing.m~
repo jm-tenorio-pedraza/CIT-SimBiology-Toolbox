@@ -108,19 +108,18 @@ load('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Tumor
     PI.data(i).dataValue = data_i;
     PI.data(i).dataTime = time_i;
     end
-    end
+end
 else
     for i=1:length(simBioData)
-        data_i = simBioData(i).dataValue;
-        group_i = simBioData(i).Group;
-        simBioData(i).dataValue = [nan(size(data_i,1),1) ,data_i];
-        simBioData(i).Group = strjoin({group_i 'Immune'}, '_');
+        data_i = SimBioData(i).dataValue;
+        group_i = SimBioData(i).Group;
+        simBioData(i).dataValue = [nan(size(data_i,1),1 data_i];
+        simmBioData(i).Group = strjoin({group_i 'Immune'}, '_');
     end
-    PI.data = simBioData;
 end
 %%
 PI.stateVar = {'Tumor' 'CD8' 'CD107a_Rel' 'Treg' 'GMDSC' 'DC' 'Tumor_PDL1_Rel'...
     'Myeloid_PDL1_Rel' 'MMDSC' 'M1_MO' 'M2_MO' 'CTLA4_Rel' 'CD107a'};
 
 %% Save output
-save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Morisada_Immune.mat', 'PI')
+save('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Morisada.mat', 'PI')
