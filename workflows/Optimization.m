@@ -41,9 +41,9 @@ figure('Position', [10 10 1.5e3 1e3])
 ncol = ceil(sqrt(length(observables)));
 nrow = ceil(length(observables)/ncol);
 for i=1:length(observables)
- %subplot(nrow,ncol,i)
- plotSimOutput(PI,i,'all', false, 'indiv', true, 'addErrorVar', false,...
-     'newFig', true, 'TimeUnit', 'days')
+ subplot(nrow,ncol,i)
+ plotSimOutput(PI,i,'all', false, 'indiv', false, 'addErrorVar', false,...
+     'newFig', false, 'TimeUnit', 'days')
 %  set(gca, 'YScale','log')
 end
 %%
