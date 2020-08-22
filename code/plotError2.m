@@ -59,8 +59,9 @@ for i=1:n_sim
     else
     end
     hold on
-
-        dat=plot(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx) - PI.data(simIndx(i)).y_hat(:,colIndx));
+    nanIndx = isnan(PI.data(simIndx(i)).dataValue(:,colIndx));
+        dat=plot(PI.data(simIndx(i)).dataTime(~nanIndx),...
+            PI.data(simIndx(i)).dataValue(~nanIndx,colIndx) - PI.data(simIndx(i)).y_hat(~nanIndx,colIndx));
     if par.indiv
             title(PI.data(simIndx(i)).Name,'interpreter', par.interpreter)
 
@@ -69,7 +70,7 @@ for i=1:n_sim
         title(PI.observablesPlot(colIndx), 'interpreter', par.interpreter)
         col_i = treatment_colors(simIndx(i),:);
     end
-     dat.LineStyle='none';
+     dat.LineStyle='-';
     dat.Color = col_i;
     dat.MarkerFaceColor=col_i;
     dat.MarkerEdgeColor=col_i;

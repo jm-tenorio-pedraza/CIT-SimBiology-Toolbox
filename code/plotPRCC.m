@@ -70,6 +70,8 @@ else
         [~, prcc_mean_indx] = sort(mean(abs(prcc_mean)),'descend');
         elseif strcmp(par.kpi,'max')
         [~, prcc_mean_indx] = sort(max(abs(prcc_mean)),'descend');
+        else
+            [~, prcc_mean_indx] = sort(sum(abs(prcc_mean)),'descend');
 
         end
         ranking(:,i) = parameters(prcc_mean_indx);

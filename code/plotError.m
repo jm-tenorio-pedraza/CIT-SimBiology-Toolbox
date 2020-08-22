@@ -28,7 +28,7 @@ for i=1:n_sim
     
     col_i=treatment_colors(ismember(treatments,PI.data(i).Group),:);
     sim.Color=col_i;
-    dat.LineStyle='none';
+    dat.LineStyle='-';
     dat.MarkerFaceColor=col_i;
     dat.MarkerEdgeColor=col_i;
 

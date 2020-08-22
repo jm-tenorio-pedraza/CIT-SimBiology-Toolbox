@@ -20,7 +20,7 @@ end
 %% Figure 6-2
 PI_full = load(strjoin({cd 'PI_PK_ThreeComp4_6_TMDD_0.mat'},'/'));
 figure('Position', [10 10 1.5e3 1e3])
-subplot(2,3,[1 4])
+subplot(3,2,[1 4])
 pc = plotPSS(PI_full.PI.pcs,4,PI_full.PI.paramNames(1:10),'threshold',-1,'newFig', false);
 plotPRCC(PI_full.PI,PI_full.PI.paramNames(1:10),PI_full.PI.observablesPlot,'time',...
     1:1:PI.tspan(end),'output', 'mean','kpi', 'max', 'nrow', 2, 'ncol', 3,...
@@ -48,3 +48,18 @@ for i=1:4
 end
 
 %% Figure 6-5
+
+
+%% Figure 6-12
+PI_CIM = load(strjoin({cd 'PI_CIM22_Control_Reduced_1_0.mat'},'/'),'PI');
+ncol = 3;
+nrow=4;
+figure('Position', [10 10 1.5e3 1e3])
+subplot(nrow,nrow,[1:3])
+pc = plotPSS(PI_CIM.PI.pcs,4,PI_CIM.PI.paramNames(PI_CIM.PI.H.PopulationParams),'threshold',-1,'newFig', false);
+ax=gca;
+ax.FontSize = 14;
+ylabel('Relative PC weight')
+plotPRCC(PI_CIM.PI,PI_CIM.PI.paramNames(PI_CIM.PI.H.PopulationParams),PI_CIM.PI.observablesPlot,'time',...
+    1:1:PI_CIM.PI.tspan(end),'output', 'mean','kpi', 'max', 'nrow', nrow, 'ncol',ncol,...
+    'plotIndx', [4:12],'newFig', false,'timeUnit', 'days')

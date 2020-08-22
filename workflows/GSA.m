@@ -37,18 +37,20 @@ s=shmPlot2(F,group,time,observables,'tau',0.1);
 %% Get PSS
 pcs = V*S;
 pcs = (pcs/max(max(abs(pcs))));
-figure
-pc = plotPSS(pcs,3,paramNames(PI.H.PopulationParams),'threshold',-1,'newFig', false);
 PI.pcs = pcs;
+
+figure
+pc = plotPSS(PI.pcs,8,PI.paramNames(PI.H.PopulationParams),'threshold',-1,'newFig', false);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');
 
 %% Global PRCC SA
 PI = globalSA2(sim,PI,observables,'nsamples',1e4,'time',1:1:PI.tspan(end),...
-    'sigma', 1,'inputs', exp(finalValues(PI.H.PopulationParams)),'variation', 0.1);
-paramRanking = plotPRCC(PI,parameters(1:end-1),observables,'time',...
-    1:1:PI.tspan(end),'output', 'mean');
+    'sigma', 1,'inputs', exp(finalValues(PI.H.PopulationParams)),'variation', 0.5);
+paramRanking = plotPRCC(PI,PI.paramNames(PI.H.PopulationParams),PI.observablesPlot,'time',...
+    1:1:PI.tspan(end),'output', 'mean','kpi', 'sum');
+unique(paramRanking{1:5,:}, 'stable')
 %% Save results to cd
 save(strjoin({cd 'parameters_hat_2.mat'},'/'), 'parameters_hat')
 sensitivity = false;

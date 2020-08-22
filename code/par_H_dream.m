@@ -58,8 +58,13 @@ U = log(rand(T,N));
 accept = zeros(N,1);
 lambda = unifrnd(-c, c,T, N);                           % Draw N lambda values
 try
-    popParamIndx = [H.PopulationParams H.SigmaParams];
-    indivParamIndx = [H.CellParams.Index H.IndividualParams.Index];
+    if ~isempty(H.CellParams(1).Index) 
+    popParamIndx = [H.PopulationParams H.CellParams.Index H.SigmaParams];
+    indivParamIndx = [H.IndividualParams.Index];
+    else
+        popParamIndx = [H.PopulationParams  H.SigmaParams];
+    indivParamIndx = [H.IndividualParams.Index];
+    end
 catch
     popParamIndx = 1:d;
     indivParamIndx = [];
