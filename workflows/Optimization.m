@@ -28,8 +28,8 @@ finalValues([PI.H.CellParams.Index PI.H.IndividualParams.Index]) = p_hat_indiv;
 delta = abs(fval_anneal - fval_fminsearch);
 end
 %% Joint optimization
-[finalValues, fval_anneal]=anneal(obj_fun, finalValues, options_anneal);
-[finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
+ [finalValues, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
+ [finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 %% Simulation output
 simTime = unique([PI.tspan', 1:PI.tspan(end)]);
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u, simTime),exp(finalValues),...
@@ -41,9 +41,9 @@ figure('Position', [10 10 1.5e3 1e3])
 ncol = ceil(sqrt(length(observables)));
 nrow = ceil(length(observables)/ncol);
 for i=1:length(observables)
- subplot(nrow,ncol,i)
- plotSimOutput(PI,i,'all', false, 'indiv', false, 'addErrorVar', false,...
-     'newFig', false, 'TimeUnit', 'days')
+ %subplot(nrow,ncol,i)
+ plotSimOutput(PI,i,'all', false, 'indiv', true, 'addErrorVar', false,...
+     'newFig', true, 'TimeUnit', 'days')
 %  set(gca, 'YScale','log')
 end
 %%

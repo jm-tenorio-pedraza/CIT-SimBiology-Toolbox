@@ -80,24 +80,24 @@ for i=1:length(unique_groups)
     
     switch case_i
         case 1
-        case 2
+        case 3
             time_end =  cellfun(@(x) x(end), dataTime_i);
             kinIndx = time_end<median(time_end);
             
-            mean_i_f = NaN(length(time),length(observables));
-            sd_i_f = NaN(length(time),length(observables));                     % Allocate space for mean of all variables (fast growing tumors matrix)
-            mean_i_s = NaN(length(time),length(observables));
-            sd_i_s = NaN(length(time),length(observables));                     % Allocate space for mean of all variables (slow growing tumors matrix)
+            mean_i_f = NaN(length(time),length(stateVar));
+            sd_i_f = NaN(length(time),length(stateVar));                     % Allocate space for mean of all variables (fast growing tumors matrix)
+            mean_i_s = NaN(length(time),length(stateVar));
+            sd_i_s = NaN(length(time),length(stateVar));                     % Allocate space for mean of all variables (slow growing tumors matrix)
             
             kinetic = repelem({'NaN'}, n_i,1);
-            kinetic(kineticIndx) = {'Fast'};
-            kinetic(~kineticIndx) = {'Slow'};
+            kinetic(kinIndx) = {'Fast'};
+            kinetic(~kinIndx) = {'Slow'};
             
-        case 3
-            respIndx = cellfun(@(x) x(end)>0.01 || all(isnan(x)), TV_i);
+        case 2
+            respIndx = cellfun(@(x) x(end)>0.1 || all(isnan(x)) || x(end-1)>0.1, TV_i);
             
-            mean_i_r = NaN(length(time),length(observables));
-            sd_i_r = NaN(length(time),length(observables));                     % Allocate space for mean of all variables (Responders, slow growing tumors matrix)
+            mean_i_r = NaN(length(time),length(stateVar));
+            sd_i_r = NaN(length(time),length(stateVar));                     % Allocate space for mean of all variables (Responders, slow growing tumors matrix)
             
             response = repelem({'NaN'}, n_i,1);
             response(respIndx) = {'Non-responder'};
@@ -128,8 +128,8 @@ for i=1:length(unique_groups)
             end
             endValueIndx_r = cellfun(@(x) x(end)==0, TV_i(~respIndx));
 
-            kinIndx_p = (time_end_p<=median(time_end_p)+3);
-            kinIndx_r = or(time_end_r<=median(time_end_r+3), endValueIndx_r);
+            kinIndx_p = (time_end_p<=median(time_end_p));
+            kinIndx_r = or(time_end_r<=median(time_end_r), endValueIndx_r);
             
             mean_i_f_p = NaN(length(time),length(stateVar));
             sd_i_f_p = NaN(length(time),length(stateVar));
@@ -187,7 +187,7 @@ for i=1:length(unique_groups)
                     mean_i_p(:,j) = mean(mat_ij(:,respIndx),2, 'omitnan');
                     mean_i_r(:,j) = mean(mat_ij(:,~respIndx),2, 'omitnan');
                     if n_i==1
-                        sd_i_p(:,j) = (matSD_ij{:,:});
+                        sd_i_p(:,j) = (matSD_ij);
                     else
                         sd_i_p(:,j) = std(mat_ij(:,respIndx),[],2, 'omitnan');
                         try

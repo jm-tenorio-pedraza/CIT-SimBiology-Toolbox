@@ -2,22 +2,22 @@
 %% Diagnostics
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
-plotMCMCDiagnostics(x2([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
-    p_x2,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
+plotMCMCDiagnostics(x1([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
+    p_x1,'name', PI.paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
     'model', PI.model, 'interpreter', 'tex');
 plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],:,:),...
     p_x,'name', paramNames([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index]),...
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 9e2;
-burnIn=1e5;
-indx = ceil(burnIn/size(x2,1)+1):delta:size(x2,3);
+delta = 5e2;
+burnIn=5e5;
+indx = ceil(burnIn/size(x1,1)+1):delta:size(x1,3);
 
-[mean_w, w_indx] = sort(mean(p_x2(indx,:)));
+[mean_w, w_indx] = sort(mean(p_x1(indx,:)));
 
-postSamples =x2(:,w_indx(1:end),indx);
-logP_thinned = p_x2(indx,w_indx(1:end));
+postSamples =x1(:,w_indx(1:end),indx);
+logP_thinned = p_x1(indx,w_indx(1:end));
 
 plotMCMCDiagnostics(postSamples([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
     logP_thinned,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
@@ -59,10 +59,10 @@ for i=1:length(PI.observablesFields)
         'simTime', simTime, 'YScale', 'log', 'interpreter', 'none','plot','data')
 end
 
-for i=1:9
-    subplot(3,3,i)
-    set(gca, 'YScale', 'linear')
-end
+% for i=1:9
+%     subplot(3,3,i)
+%     set(gca, 'YScale', 'linear')
+% end
 %% Plot individual variables
 for i =1:length(PI.observablesPlot)
  plotPosteriorPredictions(PI,i,'outputs','indiv', 'all', false,...
