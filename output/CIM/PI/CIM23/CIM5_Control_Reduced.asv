@@ -129,7 +129,7 @@ table([ind_params(indCell_indx)], z_Cell)
 %% Save results
 save('PI_CIM5_Control_Reduced_14.mat', 'PI')
 if ispc
-    load(strjoin({cd 'PI_CIM5_Control_Reduced_0.mat'},'\'),'PI')
+    load(strjoin({cd 'PI_CIM5_Control_Reduced_0.mat'},'/'),'PI')
 
 else
 load(strjoin({cd 'PI_CIM5_Control_Reduced_0.mat'},'/'),'PI')
