@@ -18,8 +18,8 @@ variants = get(model,'variants');
 sbioaccelerate(model,cs);
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor';'Peripheral';'CL_antiPDL1'; 'Q23'; 'Q12';...
-     'PDL1_Tumor'; 'kdeg_PDL1'; 'PDL1_Blood';'PDL1_Peripheral';'kint';'ID'};
+parameters = {'Blood'; 'Tumor';'CL_antiPDL1'; 'Q23'; ...
+     'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_g_Blood_free' 'ID_Id_g_Tumor' 'ID_g_Tumor_free'};
 
@@ -38,23 +38,23 @@ PI.observablesPlot = {'Blood Serum antiPDL1_{Total}' 'Blood Serum antiPDL1_{Free
     'Tumor antiPDL1_{Total}' 'Tumor antiPDL1_{Free}' };
 PI.observablesFields = {'Blood_Serum_Total', 'Blood_Serum_Free', 'Tumor_Total', 'Tumor_Free'};
 dose = {'Blood.antiPDL1'};
-sim=createSimFunction(model,parameters,observables, dose,variants(2),...
+sim=createSimFunction(model,parameters,observables, dose,variants(6),...
     'UseParallel', false);
 PI.normIndx = [];
-PI.model ='Three-Compartment model with TMDD';
+PI.model ='Two-Compartment model with TMDD';
 % Get initial values
 PI.x_0 =[PI.data(:).dose]';
 clear dataset_file_ext dose MODEL 
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[ 2], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([.1 .1 .001], [.1 .1 0.001], [1 1 1], PI);
-lb = [1e-3   1e-3   1e-3    1e-4    1e-4   1e-4     1e0 1e-3 1e0 1e0 1e-4];
-ub = [1e1    2      1e1     1e1     1e1    1e1      1e6 1e1  1e6 1e6 1e1];
+lb = [1e-3   1e-3    1e-4    1e-4   ];
+ub = [1e1    2      1e1     1e1    ];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 PI = assignPrior(PI);
@@ -63,8 +63,8 @@ PI = assignPrior(PI);
 likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
 prior_fun=@(p)getPriorPDFMCMC2(exp(p),PI);
 
+
 paramNames = getParamNames(PI,sim, observables);
-PI.paramNames = paramNames;
 %% Objective function
 try
     finalValues =log([PI.par(:).finalValue]);
@@ -79,10 +79,10 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp4_6_TMDD_2.mat', 'PI')
-load(strjoin({cd 'PI_PK_ThreeComp4_6_TMDD_2.mat'},'/'))
+save('PI_PK_TwoComp4_6_wo_TMDD_0.mat', 'PI')
+load(strjoin({cd 'PI_PK_TwoComp4_6_wo_TMDD_0.mat'},'/'))
 
-save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x2.mat'},''), 'x2')
-save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x2.mat'},''), 'p_x2')
-load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x1.mat'},''))
-load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x1.mat'},''))
+save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x.mat'},''), 'x')
+save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x.mat'},''), 'p_x')
+load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x.mat'},''))
+load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x.mat'},''))
