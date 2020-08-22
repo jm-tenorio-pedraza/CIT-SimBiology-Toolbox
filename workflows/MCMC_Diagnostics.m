@@ -2,22 +2,22 @@
 %% Diagnostics
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
-plotMCMCDiagnostics(x2([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
-    p_x2,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
+plotMCMCDiagnostics(x([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
+    p_x,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
     'model', PI.model, 'interpreter', 'tex');
 plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],:,:),...
     p_x,'name', paramNames([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index]),...
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 9e2;
+delta = 5e2;
 burnIn=1e5;
-indx = ceil(burnIn/size(x2,1)+1):delta:size(x2,3);
+indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 
-[mean_w, w_indx] = sort(mean(p_x2(indx,:)));
+[mean_w, w_indx] = sort(mean(p_x(indx,:)));
 
-postSamples =x2(:,w_indx(1:end),indx);
-logP_thinned = p_x2(indx,w_indx(1:end));
+postSamples =x(:,w_indx(1:end),indx);
+logP_thinned = p_x(indx,w_indx(1:end));
 
 plotMCMCDiagnostics(postSamples([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
     logP_thinned,'name', paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
@@ -47,16 +47,16 @@ PI=getCredibleIntervals(PI,PI.observablesFields, exp(postSamples(1:end,:)),PI.H,
     'logit_indx', [],'simTime', simTime);
 
 %% Plot all
-% figure('Position', [10 10 1.5e3 1e3])
-% ncol = ceil(sqrt(length(PI.observablesFields)));
-% nrow = ceil(length(PI.observablesFields)/ncol);
+figure('Position', [10 10 1.5e3 1e3])
+ncol = ceil(sqrt(length(PI.observablesFields)));
+nrow = ceil(length(PI.observablesFields)/ncol);
 
 for i=1:length(PI.observablesFields)
-%      subplot(nrow,ncol,i)
+      subplot(nrow,ncol,i)
 
-    plotPosteriorPredictions(PI,i,'outputs','indiv',...
-       'newFig', true, 'TimeUnit', 'days','color', 'dataset',...
-        'simTime', simTime, 'YScale', 'log', 'interpreter', 'none','plot','data')
+    plotPosteriorPredictions(PI,i,'outputs','group',...
+       'newFig', false, 'TimeUnit', 'hours','color', 'dataset',...
+        'simTime', simTime, 'YScale', 'linear', 'interpreter', 'tex','plot','data')
 end
 
 for i=1:9

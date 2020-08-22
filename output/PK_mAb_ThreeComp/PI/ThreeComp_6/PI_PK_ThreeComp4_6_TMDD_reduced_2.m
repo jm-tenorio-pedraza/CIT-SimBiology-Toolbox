@@ -39,7 +39,7 @@ PI.observablesPlot = {'Blood Serum antiPDL1_{Total}' 'Blood Serum antiPDL1_{Free
     'Tumor antiPDL1_{Total}' 'Tumor antiPDL1_{Free}' };
 PI.observablesFields = {'Blood_Serum_Total', 'Blood_Serum_Free', 'Tumor_Total', 'Tumor_Free'};
 dose = {'Blood.antiPDL1'};
-sim=createSimFunction(model,parameters,observables, dose,variants(9),...
+sim=createSimFunction(model,parameters,observables, dose,variants(2),...
     'UseParallel', false);
 PI.normIndx = [];
 PI.model ='ThreeCompartment with TMDD';
@@ -49,7 +49,7 @@ clear dataset_file_ext dose MODEL
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[ 2], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[ ], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
@@ -65,6 +65,7 @@ likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',false);
 prior_fun=@(p)getPriorPDFMCMC2(exp(p),PI);
 
 paramNames = getParamNames(PI,sim, observables);
+PI.paramNames=paramNames;
 %% Objective function
 try
     finalValues =log([PI.par(:).finalValue]);
@@ -79,7 +80,7 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp4_6_TMDD_reduced_2_2.mat', 'PI')
+save('PI_PK_ThreeComp4_6_TMDD_reduced_2_0.mat', 'PI')
 %% LOAD RESULTS
 load(strjoin({cd 'PI_PK_ThreeComp4_6_TMDD_reduced_2_2.mat'},'/'))
 
