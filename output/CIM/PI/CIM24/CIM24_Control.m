@@ -4,12 +4,12 @@ warning on
 clear all
 if ispc
     addpath(genpath('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox'))
-    cd('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\output\CIM\PI\CIM23')
+    cd('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\output\CIM\PI\CIM24')
     out = sbioloadproject('\Users\jmten\OneDrive\Dokumente\GitHub\sbio-projects\CIM_5.sbproj');
 
 else
     addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM23')
+    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM24')
     out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_5.sbproj');
 
 end
@@ -28,7 +28,7 @@ sbioaccelerate(model, cs)
 %% Parameter setup
 parameters = {'kin_CD8'; 'kin_Treg';'K_IFNg';'KDE_MDSC';'K_MDSC'; 'kin_DC';...
     'kin_MDSC';'kpro_Tumor'; 'kpro_Tumor_Linear';'kill_CD8'; 
-    'K_DC'; 'ks_PDL1_Tumor'; 'ks_PDL1_Immune'; 'K_dif'; 'K_PDL1'; 'K_CTLA4'};
+    'K_DC'; 'ks_PDL1_Tumor'; 'ks_PDL1_Immune'; 'K_dif'; };
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs

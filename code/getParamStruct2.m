@@ -48,7 +48,7 @@ param = [simFun.Parameters.Value(H.PopulationParams)];       %
 % concatenating all params
 if ~isempty(inputs.LB)
         % Min                                   Max                                 Start                       % Mu           
-p=[ inputs.LB                             inputs.UB                          param                       param 
+p=[ inputs.LB(1:length(param))            inputs.UB(1:length(param))         param                       param 
     ones(size(param_cell))*1e-3           ones(size(param_cell))*1e2         ones(size(param_cell))      ones(size(param_cell))
     ones(size(param_indiv))*1e-3          ones(size(param_indiv))*1e2          ones(size(param_indiv))     ones(size(param_indiv))     
     sigmaParams*0.1                       sigmaParams*1000                   inputs.startSigma           sigmaParams];

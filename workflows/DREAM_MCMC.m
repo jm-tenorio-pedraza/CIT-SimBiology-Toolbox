@@ -2,7 +2,7 @@
 finalValues = log([PI.par(:).finalValue]);
 N = length(finalValues);
 
-X0 =[ (finalValues); randn(100,length(finalValues))*0.1 + finalValues];
+X0 =[ (finalValues); randn(N*3,length(finalValues))*0.1 + finalValues];
 logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
 w0 = X0(I(1:N),:);
@@ -10,14 +10,14 @@ h.IndividualParams=[];
 p=parpool('local');
 tic
 [x1, p_x1,accept1,pCR1,stepSize1, J1, n_id1] = par_dream(w0',likelihood_fun,prior_fun,...
-    N,ceil(5e5/N), N, 'BurnIn', ...
-    1e5,'stepSize',2.38);
+    N,ceil(1e6/N), N, 'BurnIn', ...
+    6e5,'stepSize',0.6);
 toc
 
 w0 = x1(:,:,end);
 tic
 [x2, p_x2,accept2,pCR2,stepSize2,J2,n_id2] = par_dream(w0,likelihood_fun,prior_fun,...
-    N,ceil(5e5/N), N, 'BurnIn', ...
+    N,ceil(1e6/N), N, 'BurnIn', ...
     0,'StepSize',stepSize1,'pCR', pCR1, 'J', J1, 'n_id', n_id1);
 toc
 w0 = x2(:,:,end);
@@ -25,7 +25,7 @@ w0 = x2(:,:,end);
 tic
 [x3, p_x3,accept3,pCR3,stepSize3,J3,n_id3] = par_dream(w0,likelihood_fun,prior_fun,...
     N,ceil(1e6/size(w0,1)), N, 'BurnIn', ...
-    0,'StepSize',stepSize2,'pCR', pCR2,'J', J2, 'n_id', n_id2);
+    2e5,'StepSize',stepSize2,'pCR', pCR2,'J', J2, 'n_id', n_id2);
 toc
 
 w0 = x3(:,:,end);
