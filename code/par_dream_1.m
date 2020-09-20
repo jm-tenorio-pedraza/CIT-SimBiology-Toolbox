@@ -1,0 +1,80 @@
+function [x, p_x] = par_dream_1(X,prior, likelihood, N, T,d, varargin)
+par = inputParser;
+par.addParameter('delta', 3);
+par.addParameter('c', 0.1);
+par.addParameter('c_star', 1e-12);
+par.addParameter('n_CR', 3);
+par.addParameter('p_g', 0.2);
+par.addParameter('stepSize', 2.38);
+par.addParameter('burnIn', 0);
+par.parse(varargin{:});
+par=par.Results;
+
+[delta, c, c_star, n_CR, p_g, stepSize,burnIn] = deal(par.delta, par.c, par.c_star,...
+    par.n_CR, par.p_g, par.stepSize, par.burnIn);
+x = nan(N,d,T); p_x = nan(T,N);
+CR = [1:n_CR]/n_CR; p_CR = ones(1,n_CR)/n_CR;
+[J, n_id] = deal(zeros(1,n_CR));
+for i=1:N, R(i, 1:N-1) = setdiff(1:N,i); end
+
+%%X = prior(N,d);
+pdf = @(x)(prior(x) + likelihood(x));
+for i=1:N, p_X(i, 1) = pdf(X(i, 1:d)); end
+x(1:N, 1:d,1) = X; p_x(1,1:N) = p_X';
+X_p = X;
+accept = 0;
+for t = 2:T
+    [~, draw] = sort(rand(N-1, N));
+    dX = zeros(N, d);
+    lambda=(unifrnd(-c, c, N,1));
+    std_X = std(X);
+    id = randsample(1:n_CR, N, true, p_CR);
+
+    for i=1:N
+        D = randsample([1:delta], 1, true);
+        a = R(i, draw(1:D, i)); b = R(i, draw(D+1:2*D, i));
+        z = rand(1, d);
+        A = find(z < CR(id(i)));
+        d_star = numel(A);
+        if (d_star == 0), [~, A] = min(z); d_star = 1; end
+        gamma_d = stepSize/sqrt(2*D*d_star);
+        g = randsample([gamma_d 1], 1, true, [1-p_g, p_g]);
+        dX(i,A) = c_star*rand(1, d_star) + (1+lambda(i))*gsum(X(a,A)-X(b,A),1);
+        X_p(i,1:d) = X(i, 1:d) + dX(i,1:d);   
+    end
+    
+    parfor i=1:N
+        p_Xp(i,1) = prior(Xp(i, 1:d));
+        if isinf(p_Xp(i,1)) || isnan(p_Xp(i,1)) || ~isreal(p_Xp(i,1))
+            dX(i,:) =0;
+            continue
+        else
+            p_Xp(i,1) = p_Xp(i,1) + likelihood(Xp(i,1:d));
+            p_acc = min(0, p_Xp(i,1)-p_X(i,1));
+      
+             if p_acc > log(rand)
+                 X(i, :) = Xp(i, 1:d); p_X(i,1) = p_Xp(i,1);
+                 accept = accept + 1;
+             else
+                 dX(i,:) = 0;
+             end
+        end
+       
+      
+    end
+    for i=1:N
+        J(id(i)) = J(id(i)) + sum((dX(i,1:d)./std_X).^2);
+        n_id(id(i)) = n_id(id(i)) + 1;
+    end
+    x(1:N,1:d,t) = X; p_x(t, 1:N) = p_X';
+    if  t*N<burnIn, p_CR = J./n_id; p_CR = p_CR/sum(p_CR); 
+        [X, p_X] = check(X, mean(log(p_x(ceil(t/2):t,1:N))),'dim', 'Nxd');
+        if mod(t, 20)==0
+            if accept/(t*N) < 0.2
+                stepSize = stepSize*0.9;
+            elseif accept/(t*N) > 0.6
+                stepSize = stepSize*1.1;
+            end
+        end
+    end
+end
