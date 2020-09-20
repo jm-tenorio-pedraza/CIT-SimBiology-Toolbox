@@ -94,14 +94,16 @@ for t = 2:T
            end
         end
     end
-for i=1:N 
-    J(id(i)) = J(id(i)) +sum(dX(:,i)./std_X).^2;
-    n_id(id(i)) = n_id(id(i))+1;
-end
+
     x(1:d,1:N,t) = X; p_x(t, 1:N) = p_X'; % Append current X and density
-    if t*N<BurnIn, pCR =J./n_id; 
+    if t*N<BurnIn 
+        for i=1:N
+            J(id(i)) = J(id(i)) +sum(dX(:,i)./std_X).^2;
+            n_id(id(i)) = n_id(id(i))+1;
+        end
+        pCR =J./n_id; 
         pCR = pCR/sum(pCR); 
-        if mod(t,ceil(BurnIn/N/40))==0
+        if mod(t,ceil(BurnIn/N/20))==0
         if mean(accept)/t<0.2
             stepSize=stepSize*(1-1/N);
         elseif mean(accept)/t>0.6

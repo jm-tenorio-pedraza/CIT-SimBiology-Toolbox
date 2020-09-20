@@ -4,13 +4,13 @@ warning on
 clear all
 if ispc
     addpath(genpath('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox'))
-    cd('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\output\CIM\PI\CIM23')
-    out = sbioloadproject('\Users\jmten\OneDrive\Dokumente\GitHub\sbio-projects\CIM_5.sbproj');
+    cd('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\output\CIM\PI\CIM24')
+    out = sbioloadproject('\Users\jmten\OneDrive\Dokumente\GitHub\sbio-projects\CIM_6.sbproj');
 
 else
     addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM23')
-    out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_5.sbproj');
+    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM24')
+    out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_6.sbproj');
 
 end
 %% Load project 
@@ -23,12 +23,12 @@ initialStruct = struct('name', {'MOC1';'MOC2';'MC38'}, 'initialValue', {5; 0.1; 
 cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-8);
-set(cs, 'MaximumWallClock', 2.5)
+set(cs, 'MaximumWallClock', 0.25)
 sbioaccelerate(model, cs)
 %% Parameter setup
 parameters = {'kin_CD8'; 'kin_Treg';'K_IFNg';'KDE_MDSC';'K_MDSC'; 'kin_DC';...
     'kin_MDSC';'kpro_Tumor'; 'kpro_Tumor_Linear';'kill_CD8'; 
-    'K_DC'; 'ks_PDL1_Tumor'; 'ks_PDL1_Immune'; 'K_dif'; 'K_PDL1'; 'K_CTLA4'};
+    'K_DC';  'K_dif'; 'kill_Treg'; 'K_PDL1'; 'K_CTLA4'; 'S_L';'S_R'; 'ks_PDL1_Tumor'; 'ks_PDL1_Immune'  };
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -75,11 +75,11 @@ clearvars doses groups_subset PI1 PI2 variants
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [ 1 9] , 'cell_indx',[2 6 7 ], 'n_indiv', length(PI.u));
+    'rand_indx', [16] , 'cell_indx',[ 1 2 6 7 9], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([.01 .01 .001], [.01 .01 .001], [1 1 1], PI);
-lb=([1e-3   1e-3    1e-3    1e-4    1e-3   1e-3   1e-4    1e-3    1e-2  1e-5    1e-3    1e-3  1e-3    1e0     1e0     1e0])';
-ub=([1e3    1e2     1e2     1e1     1e1    1e3    1e3     1e2     1e2   1e3     1e1     1e5   1e5     1e3     1e8     1e6])';
+lb=([1e-3   1e-3    1e-3    1e-4    1e-5   1e-3   1e-4    1e-3    1e-2  1e-5    1e-5   1   1e-4 1 1 1e-5 1e-5 1e0 1e0])';
+ub=([2e3    1e3     1e2     1e1     1e1    1e3    1e3     1e2     1e2   1e3     1e1    1e3 1e3 1e5 1e4 1e2 1e2 1e2 1e2])';
 
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
@@ -127,29 +127,29 @@ z_Cell = cellfun(@mean,z_Cell');
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z; ])
 table([ind_params(indCell_indx)], z_Cell)
 %% Save results
-save('PI_CIM5_Control_Reduced_23.mat', 'PI')
+save('PI_CIM5_Control_Reduced_2_18.mat', 'PI')
 if ispc
-    load(strjoin({cd 'PI_CIM5_Control_Reduced_23.mat'},'\'),'PI')
+    load(strjoin({cd 'PI_CIM5_Control_Reduced_2_18.mat'},'\'),'PI')
 
 else
-load(strjoin({cd 'PI_CIM5_Control_Reduced_0.mat'},'/'),'PI')
+load(strjoin({cd 'PI_CIM5_Control_Reduced_2_0.mat'},'/'),'PI')
 end
 %% save MCMC results
-N_i='3';
-save(strjoin({cd '/PI_CIM5_Control_23_x_' N_i '.mat'},''), strjoin({'x' N_i},''))
-save(strjoin({cd '/PI_CIM5_Control_23_p_x_' N_i '.mat'},''), strjoin({'p_x' N_i},''))
-save(strjoin({cd '/PI_CIM5_Control_23_J' N_i '.mat'},''), strjoin({'J' N_i},''))
-save(strjoin({cd '/PI_CIM5_Control_23_n_id' N_i '.mat'},''), strjoin({'n_id' N_i},''))
-save(strjoin({cd '/PI_CIM5_Control_23_pCR' N_i '.mat'},''), strjoin({'pCR' N_i},''))
-save(strjoin({cd '/PI_CIM5_Control_23_stepSize' N_i '.mat'},''), strjoin({'stepSize' N_i},''))
+N_i='2';
+save(strjoin({cd '/PI_CIM5_Control_17_x_' N_i '.mat'},''), strjoin({'x' N_i},''))
+save(strjoin({cd '/PI_CIM5_Control_17_p_x_' N_i '.mat'},''), strjoin({'p_x' N_i},''))
+save(strjoin({cd '/PI_CIM5_Control_17_J' N_i '.mat'},''), strjoin({'J' N_i},''))
+save(strjoin({cd '/PI_CIM5_Control_17_n_id' N_i '.mat'},''), strjoin({'n_id' N_i},''))
+save(strjoin({cd '/PI_CIM5_Control_17_pCR' N_i '.mat'},''), strjoin({'pCR' N_i},''))
+save(strjoin({cd '/PI_CIM5_Control_17_stepSize' N_i '.mat'},''), strjoin({'stepSize' N_i},''))
 
-load(strjoin({cd '/PI_CIM5_Control_23_J' N_i '.mat'},''))
-load(strjoin({cd '/PI_CIM5_Control_23_n_id' N_i '.mat'},''))
-load(strjoin({cd '/PI_CIM5_Control_23_pCR' N_i '.mat'},''))
-load(strjoin({cd '/PI_CIM5_Control_23_stepSize' N_i '.mat'},''))
+load(strjoin({cd '/PI_CIM5_Control_17_J' N_i '.mat'},''))
+load(strjoin({cd '/PI_CIM5_Control_17_n_id' N_i '.mat'},''))
+load(strjoin({cd '/PI_CIM5_Control_17_pCR' N_i '.mat'},''))
+load(strjoin({cd '/PI_CIM5_Control_17_stepSize' N_i '.mat'},''))
 
-for i=2:2
-    load(strjoin({cd '/PI_CIM5_Control_23_x_' num2str(i) '.mat'},''))
-    load(strjoin({cd '/PI_CIM5_Control_23_p_x_' num2str(i) '.mat'},''))
+for i=2
+    load(strjoin({cd '/PI_CIM5_Control_17_x_' num2str(i) '.mat'},''))
+    load(strjoin({cd '/PI_CIM5_Control_17_p_x_' num2str(i) '.mat'},''))
 end
 
