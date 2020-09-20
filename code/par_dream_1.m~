@@ -1,4 +1,4 @@
-function [x, p_x] = par_dream_1(X,prior, likelihood, N, T,d, varargin)
+function [x, p_x, stepSize, J, n_id] = par_dream_1(X,prior, likelihood, N, T,d, varargin)
 par = inputParser;
 par.addParameter('delta', 3);
 par.addParameter('c', 0.1);
@@ -68,7 +68,7 @@ for t = 2:T
     end
     x(1:N,1:d,t) = X; p_x(t, 1:N) = p_X';
     if  t*N<burnIn, p_CR = J./n_id; p_CR = p_CR/sum(p_CR); 
-        [X, p_X] = check(X, mean(log(p_x(ceil(t/2):t,1:N))),'di);
+        [X, p_X] = check(X, mean(log(p_x(ceil(t/2):t,1:N))),'dim', 'Nxd');
         if mod(t, 20)==0
             if accept/(t*N) < 0.2
                 stepSize = stepSize*0.9;

@@ -1,4 +1,4 @@
-function [x, p_x] = par_dream_1(X,prior, likelihood, N, T,d, varargin)
+function [x, p_x, stepSize, J, n_id] = par_dream_1(X,prior, likelihood, N, T,d, varargin)
 par = inputParser;
 par.addParameter('delta', 3);
 par.addParameter('c', 0.1);
@@ -7,11 +7,18 @@ par.addParameter('n_CR', 3);
 par.addParameter('p_g', 0.2);
 par.addParameter('stepSize', 2.38);
 par.addParameter('burnIn', 0);
+par.addParameter('ProgressBar', true);
 par.parse(varargin{:});
 par=par.Results;
 
 [delta, c, c_star, n_CR, p_g, stepSize,burnIn] = deal(par.delta, par.c, par.c_star,...
     par.n_CR, par.p_g, par.stepSize, par.burnIn);
+if par.ProgressBar
+    progress=@textprogress;
+else
+    progress=@noaction;
+end
+
 x = nan(N,d,T); p_x = nan(T,N);
 CR = [1:n_CR]/n_CR; p_CR = ones(1,n_CR)/n_CR;
 [J, n_id] = deal(zeros(1,n_CR));
@@ -77,4 +84,36 @@ for t = 2:T
             end
         end
     end
+    progress((t-1)/T,mean(X),(accept/(N*t)))            % Print out progress status
+    if mod(t,20)==0
+    plot(p_x)
+    hold on
+    plot(mean(p_x,2), 'LineWidth', 4)
+    end
+    
 end
+
+function textprogress(pct,curm,acceptpct)
+persistent lastNchar lasttime starttime
+if isempty(lastNchar)||pct==0
+    lasttime=cputime-10;starttime=cputime;lastNchar=0;
+    pct=1e-16;
+end
+if pct==1
+    fprintf('%s',repmat(char(8),1,lastNchar));lastNchar=0;
+    return
+end
+if (cputime-lasttime>0.1)
+
+    ETA=datestr((cputime-starttime)*(1-pct)/(pct*60*60*24),13);
+    progressmsg=[183-uint8((1:40)<=(pct*40)).*(183-'*') ''];
+    curmtxt=sprintf('% 9.3g\n',curm(1:min(end,20),1));
+    progressmsg=sprintf('\nDREAM %5.1f%% [%s] %s\n%3.0f%% accepted\n%s\n',...
+        pct*100,progressmsg,ETA,acceptpct*100,curmtxt);
+
+    fprintf('%s%s',repmat(char(8),1,lastNchar),progressmsg);
+    drawnow;lasttime=cputime;
+    lastNchar=length(progressmsg);
+end
+
+function noaction(varargin)
