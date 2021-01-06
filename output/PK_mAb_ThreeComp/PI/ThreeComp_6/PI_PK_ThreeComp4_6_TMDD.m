@@ -48,7 +48,7 @@ clear dataset_file_ext dose MODEL
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[ 2], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
@@ -80,7 +80,7 @@ toc
 
 %% Save results
 save('PI_PK_ThreeComp4_6_TMDD_2.mat', 'PI')
-load(strjoin({cd 'PI_PK_ThreeComp4_6_TMDD_2.mat'},'/'))
+load(strjoin({cd 'PI_PK_ThreeComp4_6_TMDD_0.mat'},'/'))
 
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x2.mat'},''), 'x2')
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x2.mat'},''), 'p_x2')
