@@ -8,6 +8,8 @@ par.addParameter('p_g', 0.2);
 par.addParameter('stepSize', 2.38);
 par.addParameter('burnIn', 0);
 par.addParameter('ProgressBar', true);
+par.addParameter('J',[] );
+par.addParameter('n_id',[]);
 par.parse(varargin{:});
 par=par.Results;
 
@@ -19,15 +21,22 @@ else
     progress=@noaction;
 end
 
-x = nan(N,d,T); p_x = nan(T,N);
-CR = [1:n_CR]/n_CR; p_CR = ones(1,n_CR)/n_CR;
+x = nan(d,N,T); p_x = nan(T,N);
+CR = [1:n_CR]/n_CR; 
+if isempty(par.J)
 [J, n_id] = deal(zeros(1,n_CR));
+p_CR = ones(1,n_CR)/n_CR;
+else
+    J = par.J;
+    n_id = par.n_id;
+    p_CR = (J./n_id)/sum(J./n_id);
+end
 for i=1:N, R(i, 1:N-1) = setdiff(1:N,i); end
 
 %%X = prior(N,d);
 pdf = @(x)(prior(x) + likelihood(x));
 for i=1:N, p_X(i, 1) = pdf(X(i, 1:d)); end
-x(1:N, 1:d,1) = X; p_x(1,1:N) = p_X';
+x(1:d, 1:N,1) = X'; p_x(1,1:N) = p_X';
 X_p = X;
 accept = 0;
 for t = 2:T
@@ -46,21 +55,21 @@ for t = 2:T
         if (d_star == 0), [~, A] = min(z); d_star = 1; end
         gamma_d = stepSize/sqrt(2*D*d_star);
         g = randsample([gamma_d 1], 1, true, [1-p_g, p_g]);
-        dX(i,A) = c_star*rand(1, d_star) + (1+lambda(i))*gsum(X(a,A)-X(b,A),1);
+        dX(i,A) = c_star*rand(1, d_star) + (1+lambda(i))*g*sum(X(a,A)-X(b,A),1);
         X_p(i,1:d) = X(i, 1:d) + dX(i,1:d);   
     end
     
     parfor i=1:N
-        p_Xp(i,1) = prior(Xp(i, 1:d));
+        p_Xp(i,1) = prior(X_p(i, 1:d));
         if isinf(p_Xp(i,1)) || isnan(p_Xp(i,1)) || ~isreal(p_Xp(i,1))
             dX(i,:) =0;
             continue
         else
-            p_Xp(i,1) = p_Xp(i,1) + likelihood(Xp(i,1:d));
+            p_Xp(i,1) = p_Xp(i,1) + likelihood(X_p(i,1:d));
             p_acc = min(0, p_Xp(i,1)-p_X(i,1));
       
              if p_acc > log(rand)
-                 X(i, :) = Xp(i, 1:d); p_X(i,1) = p_Xp(i,1);
+                 X(i, :) = X_p(i, 1:d); p_X(i,1) = p_Xp(i,1);
                  accept = accept + 1;
              else
                  dX(i,:) = 0;
@@ -73,9 +82,10 @@ for t = 2:T
         J(id(i)) = J(id(i)) + sum((dX(i,1:d)./std_X).^2);
         n_id(id(i)) = n_id(id(i)) + 1;
     end
-    x(1:N,1:d,t) = X; p_x(t, 1:N) = p_X';
+    x(1:d,1:N,t) = X'; p_x(t, 1:N) = p_X';
     if  t*N<burnIn, p_CR = J./n_id; p_CR = p_CR/sum(p_CR); 
-        [X, p_X] = check(X, mean(log(p_x(ceil(t/2):t,1:N))),'dim', 'Nxd');
+        [X, p_X] = check(X, mean(log(p_x(ceil(t/2):t,1:N))),p_X,'dxN',false);
+        
         if mod(t, 20)==0
             if accept/(t*N) < 0.2
                 stepSize = stepSize*0.9;
@@ -84,11 +94,12 @@ for t = 2:T
             end
         end
     end
-    progress((t-1)/T,mean(X),(accept/(N*t)))            % Print out progress status
+    progress((t-1)/T,mean(X)',(accept/(N*t)))            % Print out progress status
     if mod(t,20)==0
     plot(p_x)
     hold on
     plot(mean(p_x,2), 'LineWidth', 4)
+    ylim([quantile(p_x(t,:), 0.02) quantile(p_x(t,:), 0.97)])
     end
     
 end

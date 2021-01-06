@@ -1,18 +1,18 @@
 %% General setup for Kosinsky et al with k_pro as the parameter to vary for each individual
 %% Search paths
-
 clear all
 warning off
 opengl('save', 'software')
+%%
 if ispc
     addpath(genpath('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox'))
-    cd('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\output\CIM\PI\CIM24')
-    out = sbioloadproject('\Users\jmten\OneDrive\Dokumente\GitHub\sbio-projects\CIM_6.sbproj');
+    cd('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\output\CIM\PI\CIM29')
+    out = sbioloadproject('\Users\jmten\OneDrive\Dokumente\GitHub\sbio-projects\CIM_7.sbproj');
 
 else
     addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM24')
-    out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_6.sbproj');
+    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM29')
+    out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_7.sbproj');
 
 end
 %% Load project 
@@ -20,22 +20,26 @@ end
 model=out.m1;
 variants = getvariant(model);
 initialStruct = struct('name', {'MOC1';'MOC2';'MC38'}, 'initialValue', {5; 0.1; 0.1},...
-    'variant', {variants(1); variants(2); variants(3)});
+    'variant', {variants(1); variants(3); variants(4)});
 
 cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-9);
-set(cs.SolverOptions, 'RelativeTolerance', 1.0e-8);
-set(cs, 'MaximumWallClock', 0.25)
+set(cs.SolverOptions, 'RelativeTolerance', 1.0e-6);
+set(cs, 'MaximumWallClock', 2.5e-1)
 sbioaccelerate(model, cs)
 %% Parameter setup
 parameters = {'kin_CD8'; 'kin_Treg';'K_IFNg';'KDE_MDSC';'K_MDSC'; 'kin_DC';...
     'kin_MDSC';'kpro_Tumor'; 'kpro_Tumor_Linear';'kill_CD8'; 
-    'K_DC';  'K_dif'; 'kill_Treg'; 'K_PDL1'; 'K_CTLA4'; 'S_L';'S_R'; 'ks_PDL1_Tumor'; 'ks_PDL1_Immune'  };
+    'K_DC'; 'K_CTLA4'; 'K_PDL1'; 'S_L';'S_R'; 'ks_PDL1_Tumor';...
+    'ks_PDL1_Immune'; 'kill_Treg'; 'kdep_max'; 'KDE_Treg'; 'kin_TIC'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
-groups_subset = {'MOC1_Control', 'MOC1_Control_Mean', 'MOC2_Control',...
-    'MOC2_Control_Mean' 'MC38_Control' 'MOC1_Control_Immune' 'MC38_Control_Immune'};
+groups_subset = {'MOC1_Control', 'MOC1_Control_Mean',  'MOC1_Control_Immune' ...
+    'MOC1_antiPDL1' 'MOC1_antiCTLA4' 'MOC1_antiCTLA4_antiPDL1' };
+groups_subset2 = {'MOC2_Control',...
+    'MOC2_Control_Mean' 'MC38_Control' 'MC38_Control_Immune' 'MOC2_antiPDL1' ...
+    'MOC2_antiCTLA4' 'MOC2_antiPDL1_antiCTLA4'};
 observables={'TV'  'CD8'  'Treg' 'DCm'...
     'MDSC' 'CD8_E' 'PDL1_T' 'PDL1_I'};
 stateVar={'Tumor'  'CD8' 'Treg' 'DC'...
@@ -43,20 +47,24 @@ stateVar={'Tumor'  'CD8' 'Treg' 'DC'...
 doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
 %% Obtain data, simulation function and dose table
 if ispc
-    PI1=getPIData3('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\PI_Clavijo.mat',...
-    stateVar,groups_subset,'output', 'mean','responseGrouping', true, 'kineticGrouping', false);
-    PI2=getPIData3('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\PI_Morisada_2.mat',...
-    stateVar,groups_subset,'output', 'mean','responseGrouping', true, 'kineticGrouping', false);
-
+    data_ext = {'\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\PI_Clavijo_2.mat'...
+        '\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\PI_Morisada_3.mat'};
 else
-PI1=getPIData3('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo.mat',...
-    stateVar,groups_subset,'output', 'mean','responseGrouping', true, 'kineticGrouping', false);
-PI2=getPIData3('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Morisada_2.mat',...
-    stateVar,groups_subset,'output', 'mean','responseGrouping', true, 'kineticGrouping', false);
+    data_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo_2.mat',...
+        '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Morisada_3.mat'};
+end
+PI1=getPIData4(data_ext, stateVar,groups_subset,'output', 'mean',...
+    'responseGrouping', true, 'kineticGrouping', false, 'zeroHandling', 'imput');
+PI2=getPIData4(data_ext, stateVar,groups_subset2,'output', 'mean',...
+    'responseGrouping', true, 'kineticGrouping', false, 'zeroHandling', 'imput');
+try
+PI1.data = rmfield(PI1.data, {'Kinetic'});
+catch
 end
 PI.data = [PI1.data; PI2.data];
 PI.n_data = PI1.n_data+PI2.n_data;
 PI.tspan = unique([PI1.tspan; PI2.tspan]);
+
 PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [%]' ...
      'Percentage [%]'   'Relative units []' ...
     'Relative units []' 'Relative units []'};
@@ -73,15 +81,15 @@ plotData(PI, PI.observablesPlot, 'responseGrouping', true, 'kineticGrouping', fa
 
 % Get simulation function
 [sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'MOC1','doseUnits', 'mole');
-clearvars doses groups_subset PI1 PI2 variants
+clearvars   PI1 PI2 variants
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [16] , 'cell_indx',[ 1 2 6 7 9], 'n_indiv', length(PI.u));
+    'rand_indx', [  9 ] , 'cell_indx',[1 6 7 8 10], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([.01 .01 .001], [.01 .01 .001], [1 1 1], PI);
-lb=([1e-3   1e-3    1e-3    1e-4    1e-5   1e-3   1e-4    1e-3    1e-2  1e-5    1e-5   1   1e-4 1 1 1e-5 1e-5 1e0 1e0])';
-ub=([2e3    1e3     1e2     1e1     1e1    1e3    1e3     1e2     1e2   1e3     1e1    1e3 1e3 1e5 1e4 1e2 1e2 1e2 1e2])';
+lb=([1e-3   1e-3    1e-3    1e-4    1e-5   1e-3   1e-4    1e-3    1e-2  1e-5    1e-5     10      10     1e-5    1e-5    1e0     1e0    1e-4    0.01     1e-1 1e0])';
+ub=([2e3    1e3     1e2     1e1     1e1    1e3    1e3     1e2     1e2   1e3     1e1      1e4     1e6    1e2     1e2     1e4     1e4    1e2     100       1e2 1e3])';
 
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
@@ -129,9 +137,9 @@ z_Cell = cellfun(@mean,z_Cell');
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z; ])
 table([ind_params(indCell_indx)], z_Cell)
 %% Save results
-save('PI_CIM5_Control_Reduced_2_18.mat', 'PI')
+save('PI_CIM29_4.mat', 'PI')
 if ispc
-    load(strjoin({cd 'PI_CIM5_Control_Reduced_2_18.mat'},'\'),'PI')
+    load(strjoin({cd 'PI_CIM29_3.mat'},'\'),'PI')
 
 else
 load(strjoin({cd 'PI_CIM5_Control_Reduced_2_0.mat'},'/'),'PI')

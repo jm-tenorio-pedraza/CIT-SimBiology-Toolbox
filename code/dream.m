@@ -1,125 +1,102 @@
-function [x, p_x,accept,pCR] = dream(X0,likelihood,prior,N,T,d,varargin)
-% Inputs
-% prior = handle to generate initial random samples
-% pdf = handle to log-posterior function
-% N = numer of chains (walkers)
-% T = numger of generations
-% d = parameter dimension
-% Outputs
-% x = samples from posterior distribution
-% p_x = log-posterio probabilities for each sample in x
-% Default parameters
-p=inputParser;
-p.addParameter('ThinChain',1,@isnumeric);
-p.addParameter('ProgressBar',true,@islogical);
-p.addParameter('delta',3,@isnumeric); %addParamValue is chose for compatibility with octave. Still Untested.
-p.addParameter('c',0.1,@isnumeric); %addParamValue is chose for compatibility with octave. Still Untested.
-p.addParameter('c_star',1e-12,@isnumeric); %addParamValue is chose for compatibility with octave. Still Untested.
-p.addParameter('n_CR',3,@isnumeric); %addParamValue is chose for compatibility with octave. Still Untested.
-p.addParameter('p_g',0.2,@isnumeric); %addParamValue is chose for compatibility with octave. Still Untested.
-p.addParameter('StepSize',2.38,@isnumeric); %addParamValue is chose for compatibility with octave. Still Untested.
-p.addParameter('H',[],@isstruct); % Hierarchical structure with Individual, Population and Sigma parameters
-p.addParameter('BurnIn',0,@(x)(x>=0));
-p.addParameter('Parallel',true, @islogical);
-p.parse(varargin{:});
-p=p.Results;
+function [x, p_x, stepSize, J, n_id] = par_dream_1(X,prior, likelihood, N, T,d, varargin)
+par = inputParser;
+par.addParameter('delta', 3);
+par.addParameter('c', 0.1);
+par.addParameter('c_star', 1e-12);
+par.addParameter('n_CR', 3);
+par.addParameter('p_g', 0.2);
+par.addParameter('stepSize', 2.38);
+par.addParameter('burnIn', 0);
+par.addParameter('ProgressBar', true);
+par.addParameter('J',[] );
+par.addParameter('n_id',[]);
+par.parse(varargin{:});
+par=par.Results;
 
-if p.ProgressBar
+[delta, c, c_star, n_CR, p_g, stepSize,burnIn] = deal(par.delta, par.c, par.c_star,...
+    par.n_CR, par.p_g, par.stepSize, par.burnIn);
+if par.ProgressBar
     progress=@textprogress;
 else
     progress=@noaction;
 end
-BurnIn=p.BurnIn;
-delta = p.delta;                                            % Default parameter values
-c = p.c;
-c_star = p.c_star;
-n_CR = p.n_CR;
-p_g = p.p_g;
-stepSize=p.StepSize;
-posterior = @(x)likelihood(x) + prior(x);
-x=nan(d,N,T); p_x = nan(T,N);                               % Preallocate chains and density
-R = nan(N,N-1); p_X = nan(N,1);
 
-[J,n_id] = deal(zeros(1,n_CR));                             % Variables selection prob. crossover
-for i=1:N, R(i, 1:N-1) = setdiff(1:N,i); end                % R-matrix: index of chains for DE
-CR = (1:n_CR)/n_CR; pCR = ones(1,n_CR)/n_CR;                % Crossover values and select. prob.
-
-X = X0;                                                     % Create initial  population
-for i = 1:N, p_X(i,1) = posterior(X(i, :)); end          % Compute density of initial population
-x(1:d, 1:N, 1) = X'; p_x(1,1:N) = p_X';                     % Store initial states and density
-
-H = p.H;
-try
-    ind_index = [H.CellParams(:).Index H.IndividualParams(:).Index];
-    param_index = setdiff(1:d, ind_index);
-catch
-    param_index = 1:d;
+x = nan(d,N,T); p_x = nan(T,N);
+CR = [1:n_CR]/n_CR; 
+if isempty(par.J)
+[J, n_id] = deal(zeros(1,n_CR));
+p_CR = ones(1,n_CR)/n_CR;
+else
+    J = par.J;
+    n_id = par.n_id;
+    p_CR = (J./n_id)/sum(J./n_id);
 end
+for i=1:N, R(i, 1:N-1) = setdiff(1:N,i); end
 
-
-D = reshape(randsample(1:delta, N*T, true),T,N);            % Select delta (equal selection probability)
-z = rand(N*T,d);                                            % Draw d values from U[0,1]
-U_pop = log(rand(T,N));                                     % Draw N values from U(0,1)
-lambda = unifrnd(-c, c, T,N);                               % Draw N lambda values
-
-accept_pop = zeros(N,1);
+%%X = prior(N,d);
+pdf = @(x)(prior(x) + likelihood(x));
+for i=1:N, p_X(i, 1) = pdf(X(i, 1:d)); end
+x(1:d, 1:N,1) = X'; p_x(1,1:N) = p_X';
+X_p = X;
+accept = 0;
 for t = 2:T
-    [~, draw] = sort(rand(N-1,N));                          % Permute [1, ..., N-1] N times
-    dX = zeros(N,d);                                        % Set N jump vectors to zero
-    Xp = X;
-    std_X = std(X);                                         % Compute std each dimension
-    id = randsample(1:n_CR, N, true, pCR);                  % Select index of crossover value
-    % Compute ith proposal for the individual parameters
-%     tic
+    [~, draw] = sort(rand(N-1, N));
+    dX = zeros(N, d);
+    lambda=(unifrnd(-c, c, N,1));
+    std_X = std(X);
+    id = randsample(1:n_CR, N, true, p_CR);
+
     for i=1:N
-        a = R(i, draw(1:D(t,i), i));                        % Calculate step size and update only those columns in A
-        b = R(i, draw(D(t,i)+1:2*D(t,i),i));                % Extract vectors a and b whose entries are indexes not equal to i 
-        A = find(z((t-1)*N+i,:) < CR(id(i)));               % Derive subset A with selected dimensions to be updated
-        d_star = numel(A);                                  % How many dimensions sampled?
-        
-        if d_star == 0, [~, A] = min(z((t-1)*N+i,:));
-            d_star = 1; end                                 % A must contain at least 1 value
-         
-        gamma_d = stepSize/sqrt(2*D(t,i)*d_star);           % Calculate jump rate
-        g=randsample([gamma_d 1], 1, true, [1-p_g p_g]);    % Select gamma: 80/20 mix [default 1]
-     
-        dX(i,A) = c_star*randn(1, d_star) + ...
-            (1+lambda(t,i))*g*sum(X(a,A)-X(b,A),1);         % Compute ith jump diff. evol.
-        Xp(i,param_index) = Xp(i,param_index)...
-            + dX(i,param_index);
-        [X(i,:), p_X(i,1), accept_i]= mcmcstep(X(i,:),...
-            Xp(i,:), p_X(i,1), likelihood, prior,...
-            U_pop(t,i), accept_pop(i));
-        if accept_i > accept_pop(i)                             % MH criterion for the population parameters
-            accept_pop(i) = accept_pop(i) + 1;
+        D = randsample([1:delta], 1, true);
+        a = R(i, draw(1:D, i)); b = R(i, draw(D+1:2*D, i));
+        z = rand(1, d);
+        A = find(z < CR(id(i)));
+        d_star = numel(A);
+        if (d_star == 0), [~, A] = min(z); d_star = 1; end
+        gamma_d = stepSize/sqrt(2*D*d_star);
+        g = randsample([gamma_d 1], 1, true, [1-p_g, p_g]);
+        dX(i,A) = c_star*rand(1, d_star) + (1+lambda(i))*g*sum(X(a,A)-X(b,A),1);
+        X_p(i,1:d) = X(i, 1:d) + dX(i,1:d);   
+
+        p_Xp(i,1) = prior(X_p(i, 1:d));
+        if isinf(p_Xp(i,1)) || isnan(p_Xp(i,1)) || ~isreal(p_Xp(i,1))
+            dX(i,:) =0;
+            continue
         else
-            dX(i,param_index) = 0;                              % Set jump back to 0 for pCR for population parameters
+            p_Xp(i,1) = p_Xp(i,1) + likelihood(X_p(i,1:d));
+            p_acc = min(0, p_Xp(i,1)-p_X(i,1));
+      
+             if p_acc > log(rand)
+                 X(i, :) = X_p(i, 1:d); p_X(i,1) = p_Xp(i,1);
+                 accept = accept + 1;
+             else
+                 dX(i,:) = 0;
+             end
         end
-        J(id(i)) = J(id(i)) + sum((dX(i,:)./std_X).^2);              % Update jump distance crossover idx
+        J(id(i)) = J(id(i)) + sum((dX(i,1:d)./std_X).^2);
         n_id(id(i)) = n_id(id(i)) + 1;
     end
-%     toc
-    totcount = N*(t);
-    accept = sum(accept_pop)/totcount;
-    
-    progress((t-1)/T,mean(X)',...
-        accept)                                                 % Print out progress status
-    
-    x(1:d, 1:N, t) = X'; p_x(t, 1:N) = p_X';                    % Append current X and density
-    
-    if BurnIn>t*N
-        if (sum(J)>0), pCR = J./n_id;
-            pCR = pCR/sum(pCR); end                             % update selection prob. crossover
-        [X, p_X] = check(X, mean((p_x(ceil(t/2):t,1:N))),p_X);  % Outlier detection and correction
+    x(1:d,1:N,t) = X'; p_x(t, 1:N) = p_X';
+    if  t*N<burnIn, p_CR = J./n_id; p_CR = p_CR/sum(p_CR); 
+        [X, p_X] = check(X, mean(log(p_x(ceil(t/2):t,1:N))),p_X,'dxN',false);
         
-        if accept<0.2
-            stepSize = stepSize*1/2;
-        elseif accept>0.4
-            stepSize = stepSize*2;
+        if mod(t, 20)==0
+            if accept/(t*N) < 0.2
+                stepSize = stepSize*0.9;
+            elseif accept/(t*N) > 0.6
+                stepSize = stepSize*1.1;
+            end
         end
     end
+    progress((t-1)/T,mean(X)',(accept/(N*t)))            % Print out progress status
+%     if mod(t,20)==0
+%     plot(p_x)
+%     hold on
+%     plot(mean(p_x,2), 'LineWidth', 4)
+%     ylim([quantile(p_x(t,:), 0.02) quantile(p_x(t,:), 0.97)])
+%     end
+    
 end
-
 
 function textprogress(pct,curm,acceptpct)
 persistent lastNchar lasttime starttime
@@ -132,13 +109,13 @@ if pct==1
     return
 end
 if (cputime-lasttime>0.1)
-    
+
     ETA=datestr((cputime-starttime)*(1-pct)/(pct*60*60*24),13);
     progressmsg=[183-uint8((1:40)<=(pct*40)).*(183-'*') ''];
     curmtxt=sprintf('% 9.3g\n',curm(1:min(end,20),1));
     progressmsg=sprintf('\nDREAM %5.1f%% [%s] %s\n%3.0f%% accepted\n%s\n',...
         pct*100,progressmsg,ETA,acceptpct*100,curmtxt);
-    
+
     fprintf('%s%s',repmat(char(8),1,lastNchar),progressmsg);
     drawnow;lasttime=cputime;
     lastNchar=length(progressmsg);

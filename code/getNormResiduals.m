@@ -58,7 +58,7 @@ simOutput=cellfun(@(x)x./([ones(1,nVar-length(normIndx)) x(end,normIndx)]),...
 % Errors of log-transformed data
 residuals=getErrors(PI,sigma,'log',par.log);
 
-if (length(residuals)~= PI.n_data)
+if (length(residuals)< PI.n_data)
     residuals=1e9;
 elseif any([isinf(residuals), ~isreal(residuals)])
     residuals=1e9;

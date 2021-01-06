@@ -40,7 +40,7 @@ pcs = (pcs/max(max(abs(pcs))));
 PI.pcs = pcs;
 
 figure
-pc = plotPSS(PI.pcs,8,PI.paramNames(PI.H.PopulationParams),'threshold',-1,'newFig', false);
+pc = plotPSS(PI.pcs,5,PI.paramNames(PI.H.PopulationParams),'threshold',-1,'newFig', false);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');
@@ -51,6 +51,7 @@ PI = globalSA2(sim,PI,observables,'nsamples',1e4,'time',1:1:PI.tspan(end),...
 paramRanking = plotPRCC(PI,PI.paramNames(PI.H.PopulationParams),PI.observablesPlot,'time',...
     1:1:PI.tspan(end),'output', 'mean','kpi', 'sum');
 unique(paramRanking{1:5,:}, 'stable')
+
 %% Save results to cd
 save(strjoin({cd 'parameters_hat_2.mat'},'/'), 'parameters_hat')
 sensitivity = false;

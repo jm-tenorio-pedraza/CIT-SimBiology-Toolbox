@@ -1,5 +1,5 @@
 %% Optimization
-options_fminsearch=optimset('Display','iter','MaxFunEvals', 5e4, 'MaxIter',...
+options_fminsearch=optimset('Display','iter','MaxFunEvals', 2e4, 'MaxIter',...
     5e4, 'TolFun', 1e-4);
 options_anneal.Verbosity=2;
 options_anneal.InitTemp=100;
@@ -28,8 +28,8 @@ finalValues([PI.H.CellParams.Index PI.H.IndividualParams.Index]) = p_hat_indiv;
 delta = abs(fval_anneal - fval_fminsearch);
 end
 %% Joint optimization
- [finalValues, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
- [finalValues, fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
+[finalValues, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
+[finalValues,fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
 %% Simulation output
 simTime = unique([PI.tspan', 1:PI.tspan(end)]);
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u, simTime),exp(finalValues),...
@@ -50,7 +50,7 @@ end
 finalValue=num2cell(exp(finalValues'));
 [PI.par(1:end).finalValue]=finalValue{:,:};
 plotFit(PI)
-%%                                                                                                                                                                 %% Plotting errors
+%% Plotting errors
 figure('Position', [10 10 1.5e3 1e3])
 ncol = ceil(sqrt(length(observables)));
 nrow = ceil(length(observables)/ncol);

@@ -28,7 +28,7 @@ simdata=resample(simdata,par.simTime);
 try
     [PI.data(1:length(T)).('simTime')]=T{:,:};
     [PI.data(1:length(T)).('simValue')]=Y{:,:};
-     [PI.data(1:length(T)).('y_hat')]=Y_data{:,:};
+    [PI.data(1:length(T)).('y_hat')]=Y_data{:,:};
 
 catch
     T= {T};
@@ -38,11 +38,11 @@ catch
     [PI.data(1:length(T)).('simTime')]=T{:,:};
     [PI.data(1:length(T)).('simValue')]=Y{:,:};
     [PI.data(1:length(T)).('y_hat')]=Y_data{:,:};
-
 end
 % Normalizing
 
-simOutput=arrayfun(@(x)x.simValue./repmat([ones(1,nVar-length(normIndx)) x.simValue(x.simTime==x.dataTime(end),normIndx)],...
+simOutput=arrayfun(@(x)x.simValue./repmat([ones(1,nVar-length(normIndx))...
+    x.simValue(x.simTime==x.dataTime(end),normIndx)],...
         size(x.simValue(:,1),1),1),PI.data,...
         'UniformOutput',false);
 dataOutput=arrayfun(@(x)x.y_hat./repmat([ones(1,nVar-length(normIndx)) x.y_hat(end,normIndx)],...

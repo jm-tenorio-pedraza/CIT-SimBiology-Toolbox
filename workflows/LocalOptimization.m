@@ -1,9 +1,10 @@
 % Local Optimization
-popParamsIndx = [PI.H.PopulationParams PI.H.CellParams.Index];
+popParamsIndx = [PI.H.PopulationParams];
+cellParamsIndx = [PI.H.CellParams.Index];
 indivParamsIndx = [PI.H.IndividualParams.Index];
 options_fminsearch=optimset('Display','iter','MaxFunEvals', 5e4, 'MaxIter',5e4, 'TolFun', 1e-4);
-ub = log([PI.par([popParamsIndx indivParamsIndx]).maxValue]);
-lb = log([PI.par([popParamsIndx indivParamsIndx]).minValue]);
+ub = log([PI.par([popParamsIndx cellParamsIndx indivParamsIndx]).maxValue]);
+lb = log([PI.par([popParamsIndx cellParamsIndx indivParamsIndx]).minValue]);
 
 % Residuals 
 residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),PI,...
@@ -13,25 +14,32 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
 
 
 %% Estimate Individual params
-residuals_indiv = @(x) residuals_fn([finalValues(popParamsIndx) x]);
+residuals_indiv = @(x) residuals_fn([finalValues(popParamsIndx) finalValues(cellParamsIndx) x]);
 
 [p_hat_indiv, ~] = lsqnonlin(residuals_indiv,finalValues(indivParamsIndx),...
     lb(indivParamsIndx),...
     ub(indivParamsIndx), options_fminsearch);
 finalValues(indivParamsIndx) = p_hat_indiv;
+%% Estimate cell params
+residuals_cell = @(x) residuals_fn([finalValues(popParamsIndx) x finalValues(indivParamsIndx)]);
+
+[p_hat_cell, ~] = lsqnonlin(residuals_cell,finalValues(cellParamsIndx),...
+    lb(cellParamsIndx),...
+    ub(cellParamsIndx), options_fminsearch);
+finalValues(cellParamsIndx) = p_hat_cell;
 
 %% Esitmate Population params
-residuals_pop = @(x) residuals_fn([x finalValues(indivParamsIndx)]);
+residuals_pop = @(x) residuals_fn([x finalValues(cellParamsIndx) finalValues(indivParamsIndx)]);
 
 [p_hat_pop, ~] = lsqnonlin(residuals_pop,finalValues(popParamsIndx),...
     lb(popParamsIndx),...
     ub(popParamsIndx), options_fminsearch);
 finalValues(popParamsIndx) = p_hat_pop;
 %% Estimate both
-[p_hat, ~] = lsqnonlin(residuals_fn,(finalValues([popParamsIndx indivParamsIndx])),...
+[p_hat, ~] = lsqnonlin(residuals_fn,(finalValues([popParamsIndx cellParamsIndx indivParamsIndx])),...
     lb,ub, options_fminsearch);
 
-finalValues([ popParamsIndx indivParamsIndx ]) = p_hat;
+finalValues([ popParamsIndx cellParamsIndx indivParamsIndx ]) = p_hat;
 %% Estimate all parameters
 [finalValues, fval_fminunc] = fminunc(obj_fun, finalValues,options_fminsearch);
                                                                                            %% 

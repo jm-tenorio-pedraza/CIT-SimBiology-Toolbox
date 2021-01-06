@@ -2,11 +2,11 @@ function [X, p_X] = check(X,p_X_mean,p_X,varargin)
 inputs = inputParser;
 inputs.addParameter('N', size(X,2));
 inputs.addParameter('d', size(X,1));
-inputs.addParameter('dim', 'dxN');
+inputs.addParameter('dxN', true);
 inputs.parse(varargin{:});
 inputs=inputs.Results;
 
-if strcmp(inputs.dim, 'dxN')
+if inputs.dxN
 else
     X = X';
 end
@@ -21,7 +21,7 @@ if any(p_X_indx)
     p_X(p_X_indx,1) = repelem(p_X_max(1), sum(p_X_indx),1);
 else
 end
-if strcmp(inputs.dim, 'dxN')
+if inputs.dxN
         
 else
     X = X';
