@@ -3,11 +3,20 @@
 % Search paths
 clear all
 warning off
-addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/PI/ThreeComp_7')
+%%
+if ispc
+    addpath(genpath('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox'))
+    cd('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\output\PK_mAb_ThreeComp\PI\ThreeComp_7')
+    out = sbioloadproject('\Users\jmten\OneDrive\Dokumente\GitHub\sbio-projects\ThreeComp_4.sbproj');
+
+else
+    addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
+    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/PI/ThreeComp_7')
+    out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/ThreeComp_4.sbproj');
+
+end
 
 %% Load project 
-out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/ThreeComp_4.sbproj');
 % Extract model
 model=out.m1;
 cs=model.getconfigset;
@@ -22,11 +31,18 @@ parameters = {'Blood'; 'Tumor';'Peripheral';'CL_antiPDL1'; 'Q23'; 'Q12';...
      'PDL1_Tumor'; 'kdeg_PDL1'; 'PDL1_Blood';'PDL1_Peripheral';'kint';'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_g_Blood_free' 'ID_Id_g_Tumor' 'ID_g_Tumor_free'};
-
-dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_1.xlsx'...
+if ispc
+    dataset_file_ext = {'\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\Nedrow_2017_1.xlsx'...
+        '\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\Nedrow_2017_1.xlsx'...
+         '\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\Contreras_2016_2.xlsx'};
+else
+   dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_1.xlsx'...
     '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_2.xlsx'...
     '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Contreras_2016_2.xlsx'...
     };
+
+end
+
 
 [PI,PI.u]=getDataSets(dataset_file_ext, 'subsetVariables', {'Blood_antiPDL1__ID_g_'...
     'Blood_antiPDL1_free__ID_g_' 'Tumor_antiPDL1__ID_g_' 'Tumor_antiPDL1_free__ID_g_'...
@@ -48,7 +64,7 @@ clear dataset_file_ext dose MODEL
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[1 2 3], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
@@ -79,7 +95,7 @@ obj_fun((finalValues))
 toc
 
 %% Save results
-save('PI_PK_ThreeComp4_7_TMDD_0.mat', 'PI')
+save('PI_PK_ThreeComp4_7_TMDD_8.mat', 'PI')
 load(strjoin({cd 'PI_PK_ThreeComp4_7_TMDD_0.mat'},'/'))
 
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x2.mat'},''), 'x2')
