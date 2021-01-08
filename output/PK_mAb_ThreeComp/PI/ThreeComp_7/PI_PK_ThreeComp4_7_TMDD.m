@@ -96,7 +96,7 @@ toc
 
 %% Save results
 save('PI_PK_ThreeComp4_7_TMDD_8.mat', 'PI')
-load(strjoin({cd 'PI_PK_ThreeComp4_7_TMDD_0.mat'},'/'))
+load(strjoin({cd 'PI_PK_ThreeComp4_7_TMDD_12.mat'},'/'))
 
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x2.mat'},''), 'x2')
 save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x2.mat'},''), 'p_x2')
