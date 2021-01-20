@@ -27,19 +27,20 @@ variants = get(model,'variants');
 sbioaccelerate(model,cs);
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'Tumor';'Peripheral';'CL_antiPDL1'; 'Q23'; 'Q12';...
-     'PDL1_Tumor'; 'kdeg_PDL1'; 'PDL1_Blood';'PDL1_Peripheral';'kint';'ID'};
+parameters = {'Blood'; 'Tumor';'CL_antiPDL1'; 'Q23' ;...
+     'ID'};
 % Define outputs
 observables={'ID_Id_g_Blood' 'ID_g_Blood_free' 'ID_Id_g_Tumor' 'ID_g_Tumor_free'};
 if ispc
     dataset_file_ext = {'\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\Nedrow_2017_1.xlsx'...
-        '\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\Nedrow_2017_2.xlsx'...
+        '\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\Nedrow_2017_1.xlsx'...
          '\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\Contreras_2016_2.xlsx'};
 else
    dataset_file_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_1.xlsx'...
     '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Nedrow_2017_2.xlsx'...
     '/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/Contreras_2016_2.xlsx'...
     };
+
 end
 
 
@@ -53,23 +54,23 @@ PI.observablesPlot = {'Blood Serum antiPDL1_{Total}' 'Blood Serum antiPDL1_{Free
     'Tumor antiPDL1_{Total}' 'Tumor antiPDL1_{Free}' };
 PI.observablesFields = {'Blood_Serum_Total', 'Blood_Serum_Free', 'Tumor_Total', 'Tumor_Free'};
 dose = {'Blood.antiPDL1'};
-sim=createSimFunction(model,parameters,observables, dose,variants(9),...
+sim=createSimFunction(model,parameters,observables, dose,variants(2),...
     'UseParallel', false);
 PI.normIndx = [];
-PI.model ='Three-Compartment model with TMDD';
+PI.model ='Two-Compartment model without TMDD';
 % Get initial values
 PI.x_0 =[PI.data(:).dose]';
 clear dataset_file_ext dose MODEL 
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[2], 'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[], 'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([.1 .1 .001], [.1 .1 0.001], [1 1 1], PI);
-lb = [1e-2   1e-4   1e-4    1e-4    1e-5   1e-5     1e0 1e-3 1e0 1e0 1e-3];
-ub = [1e1    2      1e1     1e1     1e1    1e1      1e6 1e1  1e6 1e6 1e1];
+lb = [1e-2   1e-3   1e-3    1e-4    1e-4   1e-4   ];
+ub = [1e1    2      1e1     1e1     1e1    1e1 ];
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 PI = assignPrior(PI);
@@ -94,27 +95,12 @@ obj_fun((finalValues))
 toc
 %%
 
+
 %% Save results
-save('PI_PK_ThreeComp4_7_TMDD_2.mat', 'PI')
-%%
-load(strjoin({cd 'PI_PK_ThreeComp4_7_TMDD_2.mat'},'/'))
-%%
-%% save MCMC results
-N_i='7';
-save(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_x_' N_i '.mat'},''), strjoin({'x' N_i},''))
-save(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_p_x_' N_i '.mat'},''), strjoin({'p_x' N_i},''))
-save(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_J' N_i '.mat'},''), strjoin({'J' N_i},''))
-save(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_n_id' N_i '.mat'},''), strjoin({'n_id' N_i},''))
-save(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_stepSize' N_i '.mat'},''), strjoin({'stepSize' N_i},''))
+save('PI_PK_TwoComp4_7_wo_TMDD_0.mat', 'PI')
+load(strjoin({cd 'PI_PK_ThreeComp4_7_TMDD_0.mat'},'/'))
 
-load(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_x_' N_i '.mat'},''))
-load(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_p_x_' N_i '.mat'},''))
-load(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_J' N_i '.mat'},''))
-load(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_n_id' N_i '.mat'},''))
-load(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_stepSize' N_i '.mat'},''))
-
-
-for i=1:6
-    load(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_x_' num2str(i) '.mat'},''))
-    load(strjoin({cd '/PI_PK_ThreeComp4_7_TMDD_3_p_x_' num2str(i) '.mat'},''))
-end
+save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x2.mat'},''), 'x2')
+save(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x2.mat'},''), 'p_x2')
+load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_p_x1.mat'},''))
+load(strjoin({cd '/PI_PK_ThreeComp4_4_TMDD_11_DREAM_MCMC_x1.mat'},''))
