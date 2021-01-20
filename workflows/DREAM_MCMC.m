@@ -9,46 +9,45 @@ logL=rowfun(obj_fun,table(X0));
 [L,I]=sort(logL{:,:});
 w0 = X0(I(1:N),:);
 %%
-h.IndividualParams=[];
 p=parpool('local')
 pctRunOnAll warning off
 tic
 [x1, p_x1,stepSize1, J1, n_id1] = par_dream_1(w0,prior_fun, likelihood_fun,...
-    N,ceil(0.25e6/N), N, 'burnIn', N*ceil(0.25e6/N),'stepSize',2.38);
+    N,ceil(.25e6/N), N, 'burnIn', N*ceil(.25e6/N),'stepSize',2.38, 'plotLogL', true);
 toc
 w0 = x1(:,:,end)';
 tic
 [x2, p_x2,stepSize2,J2,n_id2] = par_dream_1(w0,prior_fun,likelihood_fun,...
-    N,ceil(0.3e6/N), N, 'BurnIn', N*ceil(1e6/N),'StepSize',stepSize1,'J', J1, 'n_id', n_id1);
+    N,ceil(.3e6/N), N, 'BurnIn', N*ceil(0/N),'StepSize',stepSize1,'J', J1, 'n_id', n_id1);
 toc
-w0 = x2(:,:,end);
+w0 = x2(:,:,end)';
 tic
-[x3, p_x3,stepSize3,J3,n_id3] = par_dream_1(w0',prior_fun,likelihood_fun,...
-    N,ceil(3e5/N), N, 'BurnIn', N*ceil(1e6/N),'StepSize',stepSize2,'J', J2, 'n_id', n_id2);
+[x3, p_x3,stepSize3,J3,n_id3] = par_dream_1(w0,prior_fun,likelihood_fun,...
+    N,ceil(3e5/N), N, 'BurnIn', N*ceil(0/N),'StepSize',stepSize2,'J', J2, 'n_id', n_id2);
 toc
 
 w0 = x3(:,:,end)';
 tic
 [x4, p_x4,stepSize4,J4, n_id4] = par_dream_1(w0,prior_fun,likelihood_fun,...
-    N,ceil(3e5/N), N, 'BurnIn', N*ceil(1e6/N),'StepSize',stepSize3,'J', J3, 'n_id', n_id3);
+    N,ceil(3e5/N), N, 'BurnIn', N*ceil(0/N),'StepSize',stepSize3,'J', J3, 'n_id', n_id3, 'plotLogL', true);
 toc
 
 w0 = x4(:,:,end)';
 tic
 [x5, p_x5,stepSize5,J5, n_id5] = par_dream_1(w0,prior_fun,likelihood_fun,...
-    N,ceil(3e5/N), N, 'BurnIn', N*ceil(1e6/N),'StepSize',stepSize4,'J', J4, 'n_id', n_id4);
+    N,ceil(3e5/N), N, 'BurnIn', N*ceil(0/N),'StepSize',stepSize4,'J', J4, 'n_id', n_id4);
 toc
 
 w0 = x5(:,:,end)';
 tic
 [x6, p_x6,stepSize6,J6, n_id6] = par_dream_1(w0,prior_fun,likelihood_fun,...
-    N,ceil(3e5/N), N, 'BurnIn', N*ceil(1e6/N),'StepSize',stepSize5,'J', J5, 'n_id', n_id5);
+    N,ceil(3e5/N), N, 'BurnIn', N*ceil(3e5/N),'StepSize',stepSize5,'J', J5, 'n_id', n_id5);
 toc
 
 w0 = x6(:,:,end)';
 tic
 [x7, p_x7,stepSize7,J7, n_id7] = par_dream_1(w0,prior_fun,likelihood_fun,...
-    N,ceil(3e5/N), N, 'BurnIn',0,'StepSize',stepSize6,'J', J6, 'n_id', n_id6);
+    N,ceil(4e5/N), N, 'BurnIn',0,'StepSize',stepSize6,'J', J6, 'n_id', n_id6);
 toc
 
 w0 = x7(:,:,end);
@@ -64,8 +63,8 @@ tic
     size(w0,1),ceil(3e5/size(w0,1)), length(finalValues), 'BurnIn', ...
     3e5,'StepSize',stepSize8,'H', h, 'pCR', pCR8, 'J', J8, 'n_id', n_id8);
 toc
-x=cat(3,x1,x2,x3,x4,x5,x6);
-p_x = [p_x1; p_x2; p_x3; p_x4; p_x5; p_x6];
+x=cat(3,x1,x2,x3,x4,x5, x6,x7);
+p_x = [p_x1; p_x2; p_x3; p_x4; p_x5; p_x6; p_x7];
 
 %% 
 

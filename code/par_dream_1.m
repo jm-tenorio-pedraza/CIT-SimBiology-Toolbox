@@ -10,6 +10,7 @@ par.addParameter('burnIn', 0);
 par.addParameter('ProgressBar', true);
 par.addParameter('J',[] );
 par.addParameter('n_id',[]);
+par.addParameter('plotLogL',false);
 par.parse(varargin{:});
 par=par.Results;
 
@@ -89,13 +90,13 @@ for t = 2:T
         if mod(t, 20)==0
             if accept/(t*N) < 0.2
                 stepSize = stepSize*0.9;
-            elseif accept/(t*N) > 0.6
+            elseif accept/(t*N) > 0.4
                 stepSize = stepSize*1.1;
             end
         end
     end
     progress((t-1)/T,mean(X)',(accept/(N*t)))            % Print out progress status
-    if mod(t,20)==0
+    if mod(t,20)==0 && par.plotLogL
     plot(p_x)
     hold on
     plot(mean(p_x,2), 'LineWidth', 4)

@@ -14,7 +14,7 @@ plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 2e3;
+delta = 1.2e3;
 burnIn=5e5;
 indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
 

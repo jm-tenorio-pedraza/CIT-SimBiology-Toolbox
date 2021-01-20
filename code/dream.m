@@ -10,6 +10,8 @@ par.addParameter('burnIn', 0);
 par.addParameter('ProgressBar', true);
 par.addParameter('J',[] );
 par.addParameter('n_id',[]);
+par.addParameter('plotLogL', false);
+
 par.parse(varargin{:});
 par=par.Results;
 
@@ -89,12 +91,12 @@ for t = 2:T
         end
     end
     progress((t-1)/T,mean(X)',(accept/(N*t)))            % Print out progress status
-%     if mod(t,20)==0
-%     plot(p_x)
-%     hold on
-%     plot(mean(p_x,2), 'LineWidth', 4)
-%     ylim([quantile(p_x(t,:), 0.02) quantile(p_x(t,:), 0.97)])
-%     end
+    if mod(t,20)==0 && par.plotLogL
+    plot(p_x)
+    hold on
+    plot(mean(p_x,2), 'LineWidth', 4)
+    ylim([quantile(p_x(t,:), 0.02) quantile(p_x(t,:), 0.97)])
+    end
     
 end
 
