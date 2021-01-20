@@ -22,7 +22,7 @@ sbioaccelerate(model, cs)
 parameters = {'kin_CD8'; 'kin_Treg';'K_IFNg';'KDE_MDSC';'K_MDSC'; 'kin_DC';'S_L'; ...
     'S_R'; 'kill_Treg';'kin_MDSC';'kin_TIC';'kpro_Tumor'; 'kpro_Tumor_Linear';'kill_CD8'; 
     'K_DC'; 'ks_PDL1_Tumor'; 'ks_PDL1_Immune'; 'K_CTLA4'; 'K_PDL1'; 'T_max'; 
-    'kel_Tumor'; 'kel_Effector'; 'kel_Naive'; 'kel_Treg';'kpro_CD8'};
+    'kdeg_PDL1'; 'kdeg_CTLA4'; 'ks_CTLA4_CD8'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -66,8 +66,8 @@ PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observable
     'rand_indx', [ ] , 'cell_indx',[], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([.4 .4 .05], [.1 .1 .1], [1 1 1], PI);
-lb=([1e-3   1e-3    1e-3    1e-4 1e-3   1e-3   1e-3 1e-3    1e-6    1e-4    1e-3    1e-2   1e-2     1e-3    .01     1e1     1e1     1e0     1e0     1e1     1e-4    1e-2    1e-2    1e-2    1e-2])';
-ub=([1e2    1e2     1e2     1e1 1e1    1e2     1e3  1e3     1e3     1e3     1e2     1e1    1e2      1e3     1e1     1e5     1e5     1e3     1e6     1e4     1e1     1e1     1e1     1e1     1e1])';
+lb=([1e-3   1e-3    1e-3    1e-4 1e-3   1e-3   1e-3 1e-3    1e-6    1e-4    1e-3    1e-2   1e-2     1e-3    .01     1e-3     1e-3     1e0     1e0     1e1        1e-3    1e-3    1e-3])';
+ub=([1e2    1e2     1e2     1e1 1e1    1e2     1e3  1e3     1e3     1e3     1e2     1e1    1e2      1e3     1e1     1e5     1e5     1e3     1e6     1e4     1e1     1e1     1e4])';
 
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
@@ -109,8 +109,8 @@ ind_params = [{PI.H.IndividualParams(:).name}'];
 
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z])
 %% Save results
-save('PI_CIM22_Control_19.mat', 'PI')
-load(strjoin({cd 'PI_CIM22_Control_0.mat'},'/'),'PI')
+save('PI_CIM22_Control_Full_0.mat', 'PI')
+load(strjoin({cd 'PI_CIM22_Control_19.mat'},'/'),'PI')
 N_i='3';
 save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_x_' N_i '.mat'},''), strjoin({'x' N_i},''))
 save(strjoin({cd '/PI_CIM22_Control_14_DREAM_MCMC_p_x_' N_i '.mat'},''), strjoin({'p_x' N_i},''))

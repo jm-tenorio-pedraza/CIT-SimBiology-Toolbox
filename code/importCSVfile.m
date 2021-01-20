@@ -22,7 +22,7 @@ opts.VariableNames = VariableNames;
 opts.VariableTypes = VariableTypes;
 % opts = setvaropts(opts, 4, "TrimNonNumeric", true);
 % opts = setvaropts(opts, 4, "ThousandsSeparator", ",");
-opts = setvaropts(opts, 4, "EmptyFieldRule", "auto");
+% opts = setvaropts(opts, 4, "EmptyFieldRule", "auto");
 opts.ExtraColumnsRule = "ignore";
 opts.EmptyLineRule = "read";
 

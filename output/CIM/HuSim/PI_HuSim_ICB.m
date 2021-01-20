@@ -93,13 +93,14 @@ T_0 = log((rand(size(theta,1),1)*(TV_range(2)-TV_range(1))... % Initial T_0 (1e3
     +TV_range(1))/1.53e-9*1e-6);
 Theta(:,end) = T_0;
 %% Scaling parameters
+%%               1 2 3    4   5   6     7   8       9 101112    13141516           17   18  19202122    23  
 scalingExp1 =   [0 0 0    0   0   0     0   0       0 0 0 0     0 0 0 0            0    0   0 0 0 0     0]; % none
 scalingExp2 =   [0 0 0    0   0   0     0   0       0 0 0 1     0 0 0 1            0    1   1 0 0 0     0]; % Volume parameters
 scalingExp3 =   [0 0 0    0   0   0     0   -.25    0 0 0 1     0 0 0 1         -.25    1   1 0 0 -.25  0]; % Volume, killing rate, PDL1 turnover rate
 scalingExp4 =   [0 0 0    0   0   0     0   0       0 0 0 1     0 0 0 0            0    1   1 0 0 0     0]; % Volume params w/o kpro_Tumor_Linear
 scalingExp5 =   [0 0 0    0   0   0     0   -.25    0 0 0 1     0 0 0 0         -.25    1   1 0 0 -.25  0]; % Volume params and killing rate w/o kpro_Tumor_Linear
 scalingExp6 =   [0 0 0    0   0   0     0   0       0 0 0 1     0 0 0 .75          0    1   1 0 0 0     0]; % Volume and killing rate params
-scalingExp7 =   [1 1 1   .9  .9   .9    0   -.25    0 0 0 1     0 0 0 0         -.25    1   1 0 0 -.25  0]; % PK, volume and killing rate params w/o kpro_Tumor_Linear
+
 scalingExp8 =   [0 0 0    0   0   0     0   0       0 0 0 .9    0 0 0 0            0   .9  .9 0 0 0     0]; % Volume params w/o kpro_Tumor_Linear
 scalingExp9 =   [0 0 0    0   0   0     0   -.25    0 0 0 .9    0 0 0 0         -.25   .9  .9 0 0 -.25  0]; % Volume params and killing rate w/o kpro_Tumor_Linear
 scalingExp10 =  [0 0 0    0   0   0     0   -.25    0 0 0 .9    0 0 0 .65       -.25   .9  .9 0 0 -.25  0]; % Volume params and killing rate w/o kpro_Tumor_Linear
