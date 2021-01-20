@@ -30,7 +30,7 @@ end
 %% Joint optimization
 [finalValues, fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
 [finalValues,fval_fminsearch]=fminsearch(obj_fun,finalValues,options_fminsearch);
-%% Simulation output
+    %% Simulation output
 simTime = unique([PI.tspan', 1:PI.tspan(end)]);
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u, simTime),exp(finalValues),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),...
