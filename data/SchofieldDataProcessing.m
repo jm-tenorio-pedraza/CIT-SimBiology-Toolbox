@@ -92,7 +92,7 @@ PI = generatePI(expCell, varNames, stateVar, 'groupNames', groupNames, 'varIndx'
 MDSchedule = [0 0; 72 72; 168 168; 240 240; 336 336; 408 408;];
 doseSchedule = {[0 0]; MDSchedule; MDSchedule; MDSchedule; MDSchedule};
 doses = [10 0; 10 0; 1 0; 0 10; 0 1];
-[PI, PI.u] = getDoses(PI,'doses', doses, 'Schedule', doseSchedule);
+[PI, PI.u] = getDoses(PI,'doses', doses, 'Schedule', doseSchedule,'BW',.03);
 PI.variableUnits = {'µg/ml' '%ID/ml' 'µg/ml' '%ID/ml'};
 
 %% Save
