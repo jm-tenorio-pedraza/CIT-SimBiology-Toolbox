@@ -79,7 +79,7 @@ antiCTLA4_10mgkg_MD = getIDperMl(antiCTLA4_10mgkg_MD, 200);
 antiCTLA4_1mgkg_MD = getIDperMl(antiCTLA4_1mgkg_MD, 20);
 %% Generate PI.data
 expCell = {antiPDL1_10mgkg_SD; antiPDL1_10mgkg_MD; antiPDL1_1mgkg_MD;...
-    antiCTLA4_10mgkg_MD; antiCTLA4_10mgkg_MD};
+    antiCTLA4_10mgkg_MD; antiCTLA4_1mgkg_MD};
 groupNames = {'10_mgkg_SD'; '10_mgkg_MD'; '1_mgkg_MD'; '10_mgkg_MD'; '1_mgkg_MD'};
 varNames = {'C1_antiPDL1_10mgkg_SD' 'C1_antiPDL1_10mgkg_MD' 'C1_antiPDL1_1mgkg_MD'...
     'C1_antiCTLA4_10mgkg_MD' 'C1_antiCTLA4_1mgkg_MD'};
