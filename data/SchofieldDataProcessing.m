@@ -95,4 +95,4 @@ doses = [10 0; 10 0; 1 0; 0 10; 0 1];
 PI.variableUnits = {'µg/ml' '%ID/ml' 'µg/ml' '%ID/ml'};
 
 %% Save
-save(strjoin({cd 'PI_Schofield'},'/'))
+save(strjoin({cd 'PI_Schofield.mat'},'/'),'PI')

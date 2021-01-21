@@ -34,7 +34,7 @@ for i=1:nCell
     n_data = n_data + sum(sum(~isnan(dataValues)));
 end
 
-tspan=(unique(cell2mat({PI.data(:).dataTime})));
+tspan=(unique(cell2mat({PI.data(:).dataTime}')));
 PI.stateVar = stateVar;
 PI.tspan = tspan;
 PI.n_data = n_data;
