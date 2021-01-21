@@ -72,7 +72,6 @@ title('anti-mouse PD-L1 clone 10F.9G2')
 
 
 %% Add dose-normalizing columns
-% A BW of 30 g was assumed based on the mean value of female CD1 mice
 antiPDL1_10mgkg_SD = getIDperMl(antiPDL1_10mgkg_SD, 300);
 antiPDL1_10mgkg_MD = getIDperMl(antiPDL1_10mgkg_MD, 300);
 antiPDL1_1mgkg_MD = getIDperMl(antiPDL1_1mgkg_MD, 30);
@@ -89,7 +88,7 @@ PI = generatePI(expCell, varNames, stateVar, 'groupNames', groupNames, 'varIndx'
     logical([1 1 0 0; 1 1 0 0; 1 1 0 0; 0 0 1 1; 0 0 1 1]));
 
 %% Generate PI doses
-MDSchedule = [0 0; 72 72; 168 168; 240 240; 336 336; 408 408;];
+MDSchedule = [0 0; 71 71; 167 167; 239 239; 335 335; 406 406;];
 doseSchedule = {[0 0]; MDSchedule; MDSchedule; MDSchedule; MDSchedule};
 doses = [10 0; 10 0; 1 0; 0 10; 0 1];
 [PI, PI.u] = getDoses(PI,'doses', doses, 'Schedule', doseSchedule);

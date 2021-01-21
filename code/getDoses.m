@@ -7,18 +7,16 @@ p.addParameter('doses', [])
 p.addParameter('species', 'mouse')
 p.addParameter('ApplicationRateConstant', 60)
 p.addParameter('Schedule', [])
+p.addParameter('BW', .022);
 p.parse(varargin{:})
 p=p.Results;
 
-if strcmp(p.species, 'mouse')
-    BW = 0.022;
-elseif strcmp(p.species, 'human')
-    BW = 77;
-end
+BW = p.BW;
+MW = p.MW;
 
 if isempty(p.doses)
     dose = {PI.data(:).Group};
-    dose = cellfun(@(x)str2double(regexprep(x,'_mgkg\w*', ''))*p.BW*1e-3/p.MW*1e6,dose,'UniformOutput',false);
+    dose = cellfun(@(x)str2double(regexprep(x,'_mgkg\w*', ''))*BW*1e-3/MW*1e6,dose,'UniformOutput',false);
 else
 
     dose = mat2cell(p.doses*BW*1e-3/p.MW*1e6,repelem(1,size(p.doses,1)),size(p.doses,2));
