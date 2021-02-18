@@ -129,12 +129,15 @@ for i=1:n_sim
     
 end
 ax = gca;
-
+simNames = {PI.data(:).Name};
+if iscell(simNames{1})
+    simNames = [PI.data(:).Name];
+end
 if ~par.indiv
     if par.addErrorVar
-        legend(ax.Children(end-2:-3:1),{PI.data(simIndx).Name}, 'location', 'best', 'interpreter','none')
+        legend(ax.Children(end-2:-3:1),simNames(simIndx), 'location', 'best', 'interpreter','none')
     else
-        legend(ax.Children(end-1:-2:1),{PI.data(simIndx).Name}, 'location', 'best', 'interpreter','none')
+        legend(ax.Children(end-1:-2:1),simNames(simIndx), 'location', 'best', 'interpreter','none')
 
     end
         

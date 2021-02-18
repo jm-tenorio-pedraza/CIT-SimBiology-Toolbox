@@ -1,4 +1,7 @@
 %% MCMC Diagnostics
+
+x = cat(3, x1, x2(:,:,2:end), x3(:, :,2:end), x4(:, :,2:end),  x5(:, :,2:end),  x6(:, :,2:end),  x7(:, :,2:end));
+p_x = [p_x1;p_x2(2:end,:); p_x3(2:end,:); p_x4(2:end,:); p_x5(2:end,:); p_x6(2:end,:); p_x7(2:end,:)];
 %% Diagnostics
 plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
     PI.model,'interpreter', 'tex')
@@ -70,7 +73,10 @@ end
 %% Plot individual variables
 for i =1:length(PI.observablesPlot)
  plotPosteriorPredictions(PI,i,'outputs','indiv', ...
-        'newFig', true, 'TimeUnit', 'days','color', 'cell','simTime', simTime)
+        'newFig', true, 'TimeUnit', 'hours','color', 'cell','simTime', ...
+        simTime, 'YScale', 'linear')
+
+
 end
 %% Plot prediction errors
 for i =1:length(PI.observablesPlot)

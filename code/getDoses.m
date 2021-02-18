@@ -23,7 +23,7 @@ else
 end
 doses = repelem({'nan'}, size(dose,1), size(dose{1},2));
 if isempty(p.Schedule)
-    doseSchedule = repelem({0},size(dose,1),size(dose{1},2));
+    doseSchedule = repelem({zeros(1, size(dose{1},2))},size(dose,1),1);
 else
     doseSchedule = p.Schedule;
 end

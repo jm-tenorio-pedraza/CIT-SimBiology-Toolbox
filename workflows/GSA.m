@@ -50,8 +50,10 @@ PI = globalSA2(sim,PI,observables,'nsamples',1e4,'time',1:1:PI.tspan(end),...
     'sigma', 1,'inputs', exp(finalValues(PI.H.PopulationParams)),'variation', 0.5);
 paramRanking = plotPRCC(PI,PI.paramNames(PI.H.PopulationParams),PI.observablesPlot,'time',...
     1:1:PI.tspan(end),'output', 'mean','kpi', 'sum');
-unique(paramRanking{1:5,:}, 'stable')
+parameters_hat1 =unique(paramRanking{1:3,:}, 'stable');
 
+%% Joint results
+unique([parameters_hat; parameters_hat1])
 %% Save results to cd
 save(strjoin({cd 'parameters_hat_2.mat'},'/'), 'parameters_hat')
 sensitivity = false;

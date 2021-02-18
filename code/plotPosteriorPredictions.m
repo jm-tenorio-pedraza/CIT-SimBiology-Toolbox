@@ -246,10 +246,13 @@ else
     
     ax = gca;                                                                   % Add title and legends
     
-    legends = [PI.data(sim_indx).Name];
-    if length(legends)~= length(PI.data)
-        legends = {PI.data(sim_indx).Name};
+    legends = {PI.data(sim_indx).Name};
+    if iscell(legends{1})
+        legends = [PI.data(sim_indx).Name];
     end
+    
+    
+    
     
     if strcmp(p.outputs,'indiv')
         %legend(ax.Children(end:-4:4),legends,'Interpreter', 'none','location','best')

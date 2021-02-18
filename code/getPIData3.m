@@ -32,8 +32,13 @@ varindx = varindx(~varindx==0);
 
 data_subset = arrayfun(@(x) x.dataValue(:,varindx), PI.data,...
     'UniformOutput', false)';
+try
 groups = {PI.data(:).Group}';                                               % extract groups cell array
 groupIndx = ismember(groups, groups_subset);
+catch
+    groups = [PI.data(:).Group]';                                               % extract groups cell array
+groupIndx = ismember(groups, groups_subset);
+end
 groups = groups(groupIndx);
 data_subset = data_subset(groupIndx);
 try
@@ -178,7 +183,7 @@ for i=1:length(unique_groups)
                     mean_i_p(:,j) = mean(mat_ij,2, 'omitnan');
                     sd_i_p(:,j) = std(mat_ij,[],2, 'omitnan');
                     if n_i==1
-                        sd_i_p(:,j) = (matSD_ij{:,:});
+                        sd_i_p(:,j) = (matSD_ij(:,:));
                     else
                         sd_i_p(:,j) = std(mat_ij(:,:),[],2, 'omitnan');
                     end
