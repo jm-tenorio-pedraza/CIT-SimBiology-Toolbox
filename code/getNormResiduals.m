@@ -13,7 +13,7 @@ end
 phi=getPhi(p);
 
 % Generate Sigma structure
-sigma=p(setdiff(PI.H.SigmaParams, [[PI.H.CellParams.OmegaIndex],[PI.H.IndividualParams.OmegaIndex]])); % 1xp vector
+sigma=p(setdiff(PI.H.SigmaParams, [[PI.H.CellParams.OmegaIndex],[PI.H.IndividualParams.OmegaIndex], [PI.H.RespParams.OmegaIndex]])); % 1xp vector
 
 % Simulate model with parameter structure
 try

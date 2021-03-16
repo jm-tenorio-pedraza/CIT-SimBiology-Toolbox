@@ -1,4 +1,4 @@
-function residuals = getResiduals(p,simFun,PI,getPhi,sigma, psi,omega,normIndx,varargin)
+function residuals = getResiduals(p,simFun,PI,getPhi,sigma, psi,omega,nu,normIndx,varargin)
 % Calculates normalized residuals with the paramaters (double) input mapping inputFun (handle)
 % simFun (handle), function and the data (table) provided
 
@@ -76,6 +76,7 @@ residuals=[error{:,:}];
 %% Add deviations wrt Population parameters
 psi = num2cell(psi);
 omega = num2cell(omega);
+nu = num2cell(nu);
 try
 [PI.H.CellParams(1:end).Omega] = psi{:,:};
 w = arrayfun(@(x) log(p(x.Index))./(sqrt(2)*x.Omega), PI.H.CellParams, 'UniformOutput', false);
@@ -92,13 +93,22 @@ z = [z{:,:}];
 catch
 z = [];    
 end
+
+try
+[PI.H.RespParams(1:end).Omega] = nu{:,:};
+k = arrayfun(@(x) log(p(x.Index))./(sqrt(2)*x.Omega), PI.H.RespParams, 'UniformOutput', false);
+k = [k{:,:}];
+
+catch
+k= [];    
+end
 % Cell params
 
 
-residuals = [residuals w z];
+residuals = [residuals w z k];
 if (length(residuals) < PI.n_data)
     residuals=repelem(1e5, 1,PI.n_data+length([PI.H.IndividualParams(:).Index])+...
-        length([PI.H.CellParams(:).Index]));
+        length([PI.H.CellParams(:).Index])+length([PI.H.RespParams(:).Index]));
 elseif any([isinf(residuals), ~isreal(residuals)])
     residuals=repelem(1e5, 1,PI.n_data);
 end

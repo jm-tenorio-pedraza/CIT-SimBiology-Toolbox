@@ -21,14 +21,25 @@ end
 if size(p,1)>size(p,2)
     p=p';
 end
-p_indiv=arrayfun(@(x)p(x.EtaIndex)*p(x.Index),H.IndividualParams,'UniformOutput',false);  % Obtain indexes for each individually-varying parameter
+p_indiv=arrayfun(@(x)p(x.EtaIndex)*p(x.Index),H.IndividualParams,...  % Obtain indexes for each individually-varying parameter
+    'UniformOutput',false);
 p_indiv=cell2mat(p_indiv')';                                              % Convert the ind indexes into a matrix
 try
-p_cell=arrayfun(@(x)H.CellIndx*(p(x.Index)*p(x.EtaIndex))',H.CellParams,'UniformOutput',false);         % Obtain indexes for each individually-varying parameter
-p_cell=cell2mat(p_cell);                                                % Convert the ind indexes into a matrix
+    p_cell=arrayfun(@(x)H.CellIndx*(p(x.Index)*p(x.EtaIndex))',...        % Obtain indexes for each individually-varying parameter
+        H.CellParams,'UniformOutput',false); 
+    p_cell=cell2mat(p_cell);                                                % Convert the ind indexes into a matrix
 catch
     p_cell = [];
 end
+
+try
+    p_resp=arrayfun(@(x)H.RespIndx*(p(x.Index)*p(x.EtaIndex))',...        % Obtain indexes for each individually-varying parameter
+        H.RespParams,'UniformOutput',false); 
+    p_resp=cell2mat(p_resp);                                                % Convert the ind indexes into a matrix
+catch
+    p_resp = [];
+end
+
 
 if size(p_indiv,1)<n_sim
         p_indiv=p_indiv';
@@ -38,6 +49,9 @@ if size(p_cell,1)<length(H.CellParams(1).Index)
         p_cell=p_cell';
 end
 
+if size(p_resp,1)<length(H.RespParams(1).Index)
+        p_resp=p_resp';
+end
 % cellEtaIndx = [H.CellParams.EtaIndex];
 % indivEtaIndx = [H.IndividualParams.EtaIndex];
 
@@ -50,6 +64,11 @@ try
     phi(:,[H.IndividualParams.EtaIndex]) = p_indiv;
 catch 
 end
+try
+    phi(:,[H.RespParams.EtaIndex]) = p_resp;
+catch 
+end
+
 if ~isempty(par.initialValue)
     phi(:,end+1:end+size(par.initialValue,2)) = par.initialValue;
 else

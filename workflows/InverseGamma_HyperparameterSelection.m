@@ -1,11 +1,12 @@
 %% Inverse gamma prior
-invgamma_prior= @(x,a,b)((b.^a./gamma(a).*x.^(-a-1).*exp(-b./x)));
+invgamma_prior= @(x,a,b)((x.^(-a-1).*exp(-b./x)));
 x = 0.01:0.01:5;
-y = invgamma_prior(x.^2,.001,.001);
-plot(x,y)
+y = invgamma_prior(x.^2,.01,.01);
+plot(x,-log(y))
 hold on
 log(y(1))
 log(y(end))
+% set(gca, 'YScale', 'log')
 %%
 a = 0.01:0.1:1;
 b = 0.01:0.1:1;

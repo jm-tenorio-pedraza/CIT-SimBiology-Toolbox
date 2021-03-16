@@ -11,7 +11,7 @@ if ispc
 
 else
     addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM30')
+    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM32')
     out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_12.sbproj');
 
 end
@@ -31,10 +31,10 @@ set(cs, 'StopTime',100)
 
 sbioaccelerate(model, cs)
 %% Parameter setup
-parameters = {'kin_CD8'; 'kin_Treg';'K_IFNg';'KDE_MDSC';'K_MDSC'; 'kin_DC';...
+parameters = {'kin_CD8'; 'kin_Treg';'kin_DC';...
     'kin_MDSC';'kpro_Tumor'; 'kpro_Tumor_Linear'; 'kill_CD8'; 
-    'K_DC'; 'K_CTLA4'; 'K_PDL1'; 'S_L';'S_R'; 'ks_PDL1_Tumor';...
-    'ks_PDL1_Immune'; 'kill_Treg'; 'kdep_max'; 'kin_Tumor'; 'KDE_Treg'};
+    'K_MDSC'; 'K_CTLA4'; 'K_PDL1'; 'S_L';'S_R'; 'ks_PDL1_Tumor';...
+    'ks_PDL1_Immune'; 'kill_Treg'; 'kdep_max'; 'kin_Tumor'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -89,11 +89,11 @@ close all
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [] , 'cell_indx',[1 2 6 7 8 9 10 20], 'n_indiv', length(PI.u));
+    'rand_indx', [] , 'cell_indx',[2 3 4 6 9 10 11], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([.01 .01 .001], [.01 .01 .001], [1 1 1], PI);
-lb=([1e-3   1e-3    1e-3    1e-4    1e-5   1e-3   1e-4    1e-3    1 1e-5    1e-5     1e-2       1e-2     1e-5    1e-5    1e0     1e0    1e-4    0.01  1e0 1e-2])';
-ub=([2e3    1e3     1e2     1e1     1e1    1e3    1e3     1e2     1e2 1e3     1e1    1e2        1e2    1e2     1e2     1e4     1e4    1e2     100   1e3   1e2])';
+lb=([1e-3   1e-3   1e-3   1e-4    1e-3    1e-2 1e-5    1e-3 1e-2       1e-2   1e-5    1e-5    1e0     1e0    1e-4    0.01  1e0])';
+ub=([2e3    1e3    1e3    1e3     1e2     1e2  1e1     1    1e2        1e2    1e2     1e2     1e4     1e4    1e2     200   2e3])';
 
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
@@ -121,6 +121,7 @@ tic
 obj_fun((finalValues))
 toc
 
+
 %% Parameter selection of inter-cell line varying params
 
 w = arrayfun(@(x) (finalValues(x.Index)), PI.H.CellParams,'UniformOutput', false);
@@ -143,7 +144,7 @@ table([ind_params(indCell_indx)], z_Cell)
 %% Save results
 save('PI_CIM32_0.mat', 'PI')
 if ispc
-    load(strjoin({cd 'PI_CIM30_1.mat'},'\'),'PI')
+    load(strjoin({cd 'PI_CIM32_0.mat'},'\'),'PI')
 
 else
 load(strjoin({cd 'PI_CIM5_Control_Reduced_2_0.mat'},'/'),'PI')

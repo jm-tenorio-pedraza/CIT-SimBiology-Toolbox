@@ -6,11 +6,12 @@ par.parse(varargin{:})
 par = par.Results;
 
 H= PI.H;
-n_indiv = length(PI.H.IndividualParams);
-n_cell = length(PI.H.CellParams);
-n_sigma = length(PI.H.SigmaParams);
-n_pop = length(PI.H.PopulationParams);
-paramNames = repelem({'nan'}, n_pop+n_indiv+n_cell+n_sigma,1);
+n_indiv = length([H.IndividualParams.EtaIndex]);
+n_cell = length([H.CellParams.EtaIndex]);
+n_resp = length([H.RespParams.EtaIndex]);
+n_sigma = length(H.SigmaParams);
+n_pop = length(H.PopulationParams);
+paramNames = repelem({'nan'}, n_pop+n_indiv+n_cell+n_resp+n_sigma,1);
 
 paramNames([H.PopulationParams]) = [sim.Parameters.Name(H.PopulationParams)];
 try
@@ -31,11 +32,23 @@ catch
     paramNames_ind = {};
     omegaNames_ind = {};
 end
+
+try
+paramNames_resp = repelem(cellfun(@(x)strjoin({'k' x}, '_'),...
+    {H.RespParams(:).name},'UniformOutput', false),length(H.RespParams(1).Index));
+nuNames_resp = cellfun(@(x)strjoin({'\nu' x}, '_'),...
+    {H.RespParams(:).name},'UniformOutput', false);
+catch
+    paramNames_resp= {};
+    nuNames_resp= {};
+end
 sigmaNames = cellfun(@(x)strjoin({'\sigma' x}, '_'),...
     observables,'UniformOutput', false);
  paramNames([H.IndividualParams(1:end).Index])= paramNames_ind;
  paramNames([H.CellParams(1:end).Index]) = paramNames_cell;
- paramNames([H.SigmaParams]) = [omegaNames_ind'; psiNames_cell'; sigmaNames'];
+ paramNames([H.RespParams(1:end).Index]) = paramNames_resp;
+
+ paramNames([H.SigmaParams]) = [psiNames_cell'; omegaNames_ind'; nuNames_resp'; sigmaNames'];
  
  for i=1:length(paramNames)
      underscore_indx = ismember(paramNames{i}, '_');

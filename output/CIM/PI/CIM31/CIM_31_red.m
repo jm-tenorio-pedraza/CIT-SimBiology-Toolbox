@@ -89,7 +89,7 @@ close all
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [] , 'cell_indx',[1 2 3 4 5 6 7 16], 'n_indiv', length(PI.u));
+    'rand_indx', [] , 'cell_indx',[1 2 3 4 5 6 7 10 11 12 14 16], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([.01 .01 .001], [.01 .01 .001], [1 1 1], PI);
 lb=([1e-3   1e-3   1e-3   1e-4    1e-3    1     1e-5    1e-2       1e-2   1e-5    1e-5    1e0     1e0    1e-4    0.01  1e0])';

@@ -32,7 +32,7 @@ sensmatrix = getSensitivities(inputs, PI,@(p)sim(p,PI.tspan(end),PI.u,1:1:PI.tsp
 plotSensitivities(S)
 %% Get SHM
 F = max(abs(V),[],2)'.*diag(S)'.*abs(U);
-s=shmPlot2(F,group,time,observables,'tau',0.1);
+s=shmPlot2(F,group,time,observables,'tau',0.01);
 
 %% Get PSS
 pcs = V*S;
@@ -40,7 +40,7 @@ pcs = (pcs/max(max(abs(pcs))));
 PI.pcs = pcs;
 
 figure
-pc = plotPSS(PI.pcs,5,PI.paramNames(PI.H.PopulationParams),'threshold',-1,'newFig', false);
+pc = plotPSS(PI.pcs,6,PI.paramNames(PI.H.PopulationParams),'threshold',-1,'newFig', false);
 %% Parameters
 parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');

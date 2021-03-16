@@ -1,5 +1,5 @@
 %% DREAM MCMC
-clear ans data_ext doses groups_subset groups_subset2 parameters observables stateVar
+clear ans data_ext doses groups_subset groups_subset2 parameters observables stateVar beta cellParamsIndx finalValue i fval_minunc indivParamsIndx lb ncol nrow options_fminsearch p_hat p_hat_cell p_hat_pop popParamsIndx residuals_cell residuals_fn residuals_pop sigma_prior SigmaNames simTime ub 
 %% Initial vectors
 finalValues = log([PI.par(:).finalValue]);
 N = length(finalValues);
@@ -13,12 +13,13 @@ p=parpool('local')
 pctRunOnAll warning off
 tic
 [x1, p_x1,stepSize1, J1, n_id1] = par_dream_1(w0,prior_fun, likelihood_fun,...
-    N,ceil(.25e6/N), N, 'burnIn', N*ceil(.25e6/N),'stepSize',2.38, 'plotLogL', true);
+    N,ceil(.3e6/N), N, 'burnIn', N*ceil(.3e6/N),'stepSize',2.38, 'plotLogL', true);
 toc
 w0 = x1(:,:,end)';
 tic
 [x2, p_x2,stepSize2,J2,n_id2] = par_dream_1(w0,prior_fun,likelihood_fun,...
-    N,ceil(.3e6/N), N, 'BurnIn', N*ceil(0/N),'StepSize',stepSize1,'J', J1, 'n_id', n_id1);
+    N,ceil(.3e6/N), N, 'BurnIn', N*ceil(0/N),'StepSize',stepSize1,'J', J1,...
+    'n_id', n_id1,'plotLogL', true);
 toc
 w0 = x2(:,:,end)';
 tic

@@ -6,13 +6,13 @@ opengl('save', 'software')
 %%
 if ispc
     addpath(genpath('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox'))
-    cd('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\output\CIM\PI\CIM32')
-    out = sbioloadproject('\Users\jmten\OneDrive\Dokumente\GitHub\sbio-projects\CIM_12.sbproj');
+    cd('\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\output\CIM\PI\CIM31')
+    out = sbioloadproject('\Users\jmten\OneDrive\Dokumente\GitHub\sbio-projects\CIM_11.sbproj');
 
 else
     addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM32')
-    out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_12.sbproj');
+    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/CIM/PI/CIM31')
+    out = sbioloadproject('/Users/migueltenorio/Documents/GitHub/sbio-projects/CIM_11.sbproj');
 
 end
 %% Load project 
@@ -32,9 +32,9 @@ set(cs, 'StopTime',100)
 sbioaccelerate(model, cs)
 %% Parameter setup
 parameters = {'kin_CD8'; 'kin_Treg'; 'kin_DC';...
-    'kin_MDSC';'kpro_Tumor'; 'kpro_Tumor_Linear'; 'kill_CD8'; 
+    'kin_MDSC';'kpro_Tumor';'kill_CD8'; 
      'K_CTLA4'; 'K_PDL1'; 'S_L';'S_R'; 'ks_PDL1_Tumor';...
-    'ks_PDL1_Immune'; 'kill_Treg'; 'kdep_max'; 'kin_Tumor';};
+    'ks_PDL1_Immune'; 'kill_Treg'; 'kdep_max'; 'kin_Tumor'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -89,11 +89,11 @@ close all
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [] , 'cell_indx',[1 2 3 4 5 6 7 16], 'n_indiv', length(PI.u));
+    'rand_indx', [] , 'cell_indx',[ 1 2 3 4 5 6 9 10 11 13 15], 'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues([.01 .01 .001], [.01 .01 .001], [1 1 1], PI);
-lb=([1e-3   1e-3   1e-3   1e-4    1e-3    1     1e-5    1e-2       1e-2   1e-5    1e-5    1e0     1e0    1e-4    0.01  1e0])';
-ub=([2e3    1e3    1e3    1e3     1e2     1e2   1e1     1e2        1e2    1e2     1e2     1e4     1e4    1e2     100   1e3])';
+lb=([1e-3   1e-3   1e-3   1e-4    1e-3    1e-5    1e-2       1e-2   1e-5    1e-5    1e0     1e0    1e-4    0.01  1e0])';
+ub=([2e3    1e3    1e3    1e3     1e2     1e1     1e2        1e2    1e2     1e2     1e4     1e4    1e2     100   1e3])';
 
 PI.par = getParamStruct2(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);
@@ -141,9 +141,9 @@ z_Cell = cellfun(@mean,z_Cell');
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z; ])
 table([ind_params(indCell_indx)], z_Cell)
 %% Save results
-save('PI_CIM32_red_0.mat', 'PI')
+save('PI_CIM31_red1_0.mat', 'PI')
 if ispc
-    load(strjoin({cd 'PI_CIM32_0.mat'},'\'),'PI')
+    load(strjoin({cd 'PI_CIM31_red1_0.mat'},'\'),'PI')
 
 else
 load(strjoin({cd 'PI_CIM5_Control_Reduced_2_0.mat'},'/'),'PI')
