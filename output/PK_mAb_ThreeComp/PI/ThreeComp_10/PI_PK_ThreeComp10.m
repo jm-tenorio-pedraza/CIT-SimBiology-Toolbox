@@ -22,7 +22,7 @@ model=out.m1;
 cs=model.getconfigset;
 set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-11);
 set(cs.SolverOptions, 'RelativeTolerance', 1.0e-9);
-set(cs, 'MaximumWallClock',2.5)
+set(cs, 'MaximumWallClock',0.25)
 variants = get(model,'variants');
 sbioaccelerate(model,cs);
 set(cs, 'Time','hour')
@@ -30,8 +30,8 @@ set(cs, 'StopTime',100)
 
 %% Setting up parameters, data and simulations
 
-parameters = {'Blood'; 'T_0';'Peripheral';'CL_antiPDL1'; 'Q12';...
-     'PDL1_Tumor_ss'; 'kdeg_PDL1'; 'PDL1_Blood';'PDL1_Peripheral';'ID_antiPDL1'};
+parameters = {'Blood'; 'T_0';'Peripheral';'CL_antiPDL1'; 'Q23';'Q12';...
+     'PDL1_Tumor_ss'; 'kdeg_PDL1';'kint'; 'ID_antiPDL1'};
 
  % Define outputs
 observables={'ID_g_Blood_antiPDL1_Id' 'ID_ml_antiPDL1_Blood_free'...
@@ -79,13 +79,13 @@ sim=createSimFunction(model,parameters,observables, dose,variants(13),...
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct3(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [],'cell_indx',[1 2 4],'resp_indx', [],'n_indiv', length(PI.u),'CellField', 'Name');
+    'rand_indx', [],'cell_indx',[1 2 3],'resp_indx', [],'n_indiv', length(PI.u),'CellField', 'Name');
 
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([.1 .1 .01 0.001], [.1 .1 0.01 0.001], [1 1 1 1], PI);
-lb = [1e-2   1      1e-4    1e-4    1e-5     1e-3   1e-3    1e-3    1e-3 ];
-ub = [1e1    1e3    1e1     1e1     1e1      1e3    1e1     1e3     1e3  ];
+lb = [1e-2   1      1e-4    1e-4    1e-4    1e-5     1e-3   1e-3    1e-3 ];
+ub = [1e1    1e3    1e1     1e1     1e2     1e1      1e3    1e1     1e1  ];
 PI.par = getParamStruct3(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 PI = assignPrior(PI);
