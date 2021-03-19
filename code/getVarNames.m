@@ -11,13 +11,15 @@ if ~isempty(PI.H.CellParams(1).Index)
 else
     cellSigmaNames = [];
 end
-
+try
 if ~isempty(PI.H.RespParams(1).Index)
     respSigmaNames=arrayfun(@(x)strjoin({'nu', x.name}, '_'),PI.H.RespParams,'UniformOutput',false)';
 else
     respSigmaNames = [];
 end
-
+catch
+    respSigmaNames = [];
+end
 try
 varNames = [cellSigmaNames; indivSigmaNames; respSigmaNames];
 varNames(end+1:end+length(stateVar)) =  cellfun(@(x) strjoin({'sigma', x}, '_'),...
