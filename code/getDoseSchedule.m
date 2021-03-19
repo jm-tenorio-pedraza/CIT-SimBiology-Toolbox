@@ -22,22 +22,22 @@ control=table([startTime(1):freq(1):(freq(1)*(numDoses(1)-1)+startTime(1))]',...
     zeros(numDoses(1),1), zeros(numDoses(1),1),...
     'VariableNames',{'Time' 'Amount' 'Rate'});
 if strcmp(par.doseUnits, 'g')
-% Create cell of doses
-antiPDL1.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
-
-antiCTLA4.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
-
-control.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
+    % Create cell of doses
+    antiPDL1.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
+    
+    antiCTLA4.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
+    
+    control.Properties.VariableUnits={'day' 'milligram' 'milligram/second'};
 else
-antiPDL1.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
-
-antiCTLA4.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
-
-control.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
-end    
+    antiPDL1.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+    
+    antiCTLA4.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+    
+    control.Properties.VariableUnits={'day' 'micromole' 'micromole/second'};
+end
 
 u=repelem({NaN},size(PI.data,1),length(doses));
-dose = cellfun(@(x) regexp(x,'_','split'),doses,'UniformOutput',false); 
+dose = cellfun(@(x) regexp(x,'_','split'),doses,'UniformOutput',false);
 dose = [dose{:,:}];
 dose = dose(2:2:end);
 group = [PI.data(:).Group]';
@@ -53,14 +53,14 @@ for i=1:length(group)
     for j = 1:length(dose)
         if bool(j)
             doseindx = cellindx(j);
-                if doseindx==1
-                    u(i,j)={antiPDL1};
-                elseif doseindx==2
-                    u(i,j)={antiCTLA4};
-                end
+            if doseindx==1
+                u(i,j)={antiPDL1};
+            elseif doseindx==2
+                u(i,j)={antiCTLA4};
+            end
         else
-           u(i,j)={control};
-
+            u(i,j)={control};
+            
         end
     end
 end
@@ -76,13 +76,13 @@ for i=1:size(u,1)
     hold on
     for j=1:size(u,2)
         plot(u{i,j}.Time, u{i,j}.Amount, '*')
-       
+        
     end
     plot(u{i,j}.Time, zeros(length(u{i,j}.Time),1), '-k')
-
+    
     legend(dose)
     title(PI.data(i).Group,'Interpreter', 'none')
-%     ylim([0 1])
+    %     ylim([0 1])
 end
 return
 

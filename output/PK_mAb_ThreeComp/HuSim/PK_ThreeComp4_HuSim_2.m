@@ -3,8 +3,13 @@
 % Search paths
 clear all
 warning off
-addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
-cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/HuSim')
+if ispc
+    addpath(genpath('/Users/jmten/OneDrive/Dokumente/GitHub/CIT-SimBiology-Toolbox'))
+    cd('/Users/jmten/OneDrive/Dokumente/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/HuSim')
+else
+    addpath(genpath('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox'))
+    cd('/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/output/PK_mAb_ThreeComp/HuSim')
+end
 sensitivity = false;
 
 %% Load project 
