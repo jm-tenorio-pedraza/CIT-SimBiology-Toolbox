@@ -144,7 +144,7 @@ z_Cell = cellfun(@mean,z_Cell');
 table([cell_params(cell_indx); ind_params(ind_indx)], [w; z; ])
 table([ind_params(indCell_indx)], z_Cell)
 %% Save results
-save('PI_CIM30_MOC1_Responder.mat', 'PI')
+save('PI_CIM30_MOC2_1.mat', 'PI')
 if ispc
     load(strjoin({cd 'PI_CIM30_MOC1_Responder.mat'},'\'),'PI')
 
