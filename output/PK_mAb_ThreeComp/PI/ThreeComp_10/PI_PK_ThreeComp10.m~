@@ -84,8 +84,8 @@ PI.H = getHierarchicalStruct3(parameters(1:end-1),PI,'n_sigma', length(observabl
 % Generating PI
 SigmaNames = getVarNames(PI, observables);
 [beta, sigma_prior] = getVarValues([.1 .1 .01 0.001], [.1 .1 0.01 0.001], [1 1 1 1], PI);
-lb = [1e-1   1      1e-1    1e-3    1e-3    1e-1    1e-2     1e-2   1e-3    1e-2 ];
-ub = [1e1    1e2    1e2     1e2     1e2     1e3     1e2      1e2    0.5     0.9  ];
+lb = [1e-1   1      1e-4    1e-4    1e-4    1e-2     1e-2   1e-3    1e-2 ];
+ub = [1e1    1e3    1e1     1e1     1e2     1e2      1e2    0.5     0.9  ];
 PI.par = getParamStruct3(sim,PI.H,size(PI.data,1)-1,beta,...
     SigmaNames,'Sigma', sigma_prior,'LB', lb', 'UB', ub');
 PI = assignPrior(PI);
