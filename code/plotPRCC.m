@@ -75,6 +75,10 @@ else
 
         end
         ranking(:,i) = parameters(prcc_mean_indx);
+        h=gca;
+        h= h.Children(end:-1:1);
+        legend(h(prcc_mean_indx(1:5)),parameters(prcc_mean_indx(1:5)))
+
         title(PI.observablesPlot(i), 'interpreter', 'tex')
         xlabel(strjoin({'Time [' par.timeUnit ']'}, ''))
         ylabel('Partial correlation coefficient')
@@ -85,6 +89,5 @@ end
 end
 ranking.Properties.VariableNames = observables;
 
-legend(parameters)
 
 return

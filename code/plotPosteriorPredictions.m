@@ -13,6 +13,7 @@ p.addParameter('TimeUnit', 'days')
 p.addParameter('interpreter', 'tex');
 p.addParameter('color', 'group');
 p.addParameter('YScale', 'linear');
+p.addParameter('indivData', false) 
 
 p.parse(varargin{:});
 p=p.Results;
@@ -106,13 +107,18 @@ if strcmp(p.outputs, 'outcome')
             
             ci=patch('XData', simTime(~ci_nan),'YData',ci_data(~ci_nan));           % Credible interval
             sim=plot(simTime(~m_nan),m_data(~m_nan));                               % Mean or median of simulations
-            try
-                dat= errorbar(PI.data(k_indx).dataTime,...                      % Plot data point + SD error bar
-                    PI.data(k_indx).dataValue(:,colIndx),...
-                    PI.data(k_indx).SD(:,colIndx));
-            catch
-                dat=plot(PI.data(k_indx).dataTime, ...                          % Plot data point only
-                    PI.data(k_indx).dataValue(:,colIndx));
+            if p.indivData
+                dataIndx = ismember({PI.IndivData(1:end).Name},PI.data(k_indx).Name);
+                dat=arrayfun(@(x)plot(x.dataTime,x.dataValue(:,colIndx)),PI.IndivData(dataIndx),'UniformOutput',false);
+            else
+                try
+                    dat= errorbar(PI.data(k_indx).dataTime,...                      % Plot data point + SD error bar
+                        PI.data(k_indx).dataValue(:,colIndx),...
+                        PI.data(k_indx).SD(:,colIndx));
+                catch
+                    dat=plot(PI.data(k_indx).dataTime, ...                          % Plot data point only
+                        PI.data(k_indx).dataValue(:,colIndx));
+                end
             end
             % Line specs
             col_i=treatment_colors(k_indx,:);
@@ -128,12 +134,20 @@ if strcmp(p.outputs, 'outcome')
             ci.LineWidth=1;
             
             sim.Color=col_i;
-            
-            dat.LineStyle='none';
-            dat.Color = col_i;
-            dat.MarkerFaceColor=col_i;
-            dat.MarkerEdgeColor=col_i;
-            dat.Marker='d';
+            if p.indivData
+                for i=1:length(dat)
+                    dat{i}.Color =col_i;
+                    dat{i}.Marker='d';
+                    dat{i}.MarkerFaceColor=col_i;
+                    dat{i}.MarkerEdgeColor=col_i;
+                end
+            else
+                dat.LineStyle='none';
+                dat.Color = col_i;
+                dat.MarkerFaceColor=col_i;
+                dat.MarkerEdgeColor=col_i;
+                dat.Marker='d';
+            end
            
         end
         % Axes specs
@@ -142,11 +156,11 @@ if strcmp(p.outputs, 'outcome')
             grid on
             ax=gca;
             title(groups(j),'interpreter',p.interpreter)
-        if maxX<1
-            ylim([(minX), (maxX)])
-        else
-            ylim([floor(minX), ceil(maxX)])
-        end
+%         if maxX<1
+%             ylim([(minX), (maxX)])
+%         else
+%             ylim([floor(minX), ceil(maxX)])
+%         end
         set(ax, 'YScale', p.YScale)  
     end
 
@@ -187,13 +201,18 @@ else
         hold on
         ci=patch('XData', simTime(~ci_nan),'YData',ci_data(~ci_nan));           % Credible interval
         sim=plot(simTime(~m_nan),m_data(~m_nan));                               % Mean or median of simulations
-        try
-            dat= errorbar(PI.data(simIndx(j)).dataTime,...                      % Plot data point + SD error bar
-                PI.data(simIndx(j)).dataValue(:,colIndx),...
-                PI.data(simIndx(j)).SD(:,colIndx));
-        catch
-            dat=plot(PI.data(simIndx(j)).dataTime, ...                          % Plot data point only
-                PI.data(simIndx(j)).dataValue(:,colIndx));
+        if p.indivData
+            dataIndx = ismember({PI.IndivData(1:end).Name},PI.data(simIndx(j)).Name);
+            dat=arrayfun(@(x)plot(x.dataTime,x.dataValue(:,colIndx)),PI.IndivData(dataIndx),'UniformOutput',false);
+        else
+            try
+                dat= errorbar(PI.data(simIndx(j)).dataTime,...                      % Plot data point + SD error bar
+                    PI.data(simIndx(j)).dataValue(:,colIndx),...
+                    PI.data(simIndx(j)).SD(:,colIndx));
+            catch
+                dat=plot(PI.data(simIndx(j)).dataTime, ...                          % Plot data point only
+                    PI.data(simIndx(j)).dataValue(:,colIndx));
+            end
         end
         %% Line specs
         col_i=treatment_colors(simIndx(j),:);
@@ -210,11 +229,20 @@ else
         
         sim.Color=col_i;
         
-        dat.LineStyle='none';
-        dat.Color = col_i;
-        dat.MarkerFaceColor=col_i;
-        dat.MarkerEdgeColor=col_i;
-        dat.Marker='d';
+        if p.indivData
+            for i=1:length(dat)
+                dat{i}.Color =col_i;
+                dat{i}.Marker='d';
+                dat{i}.MarkerFaceColor=col_i;
+                dat{i}.MarkerEdgeColor=col_i;
+            end
+        else
+            dat.LineStyle='none';
+            dat.Color = col_i;
+            dat.MarkerFaceColor=col_i;
+            dat.MarkerEdgeColor=col_i;
+            dat.Marker='d';
+        end
         %% Axes specs
         ylabel(PI.variableUnits(colIndx),'interpreter', 'none')
         xlabel(strjoin({'Time [' p.TimeUnit ']'},''))
@@ -234,11 +262,11 @@ else
             %                 'interpreter', p.interpreter,'Location', 'best')
             %         end
         end
-        if maxX<1
-            ylim([(minX), (maxX)])
-        else
-            ylim([floor(minX), ceil(maxX)])
-        end
+%         if maxX<1
+%             ylim([(minX), (maxX)])
+%         else
+%             ylim([floor(minX), ceil(maxX)])
+%         end
         set(ax, 'YScale', p.YScale)
         
     end

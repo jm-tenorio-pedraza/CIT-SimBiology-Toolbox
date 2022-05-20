@@ -19,6 +19,12 @@ for i=1:length(outputs)
 end
 
 % Obtaining simulations
+p = gcp('nocreate'); % If no pool, create new one.
+if isempty(p)
+    p = parpool('local');
+    pctRunOnAll warning off
+else
+end
 OutputStruct = [];
 parfor i=1:size(params,1)
     OutputStruct(i).dataOutput=output_handle(params(i,:));
@@ -29,12 +35,11 @@ for j=1:length(outputs)
     output_j=char(outputs(j));
     out_j=arrayfun(@(x)cellfun(@(y) y(:,j)',x.dataOutput, 'UniformOutput',false),...
         OutputStruct,'UniformOutput',false);
-    
-    
     for k=1:length(PI.output)
         out_jk = cell2mat(cellfun(@(x)x{k,:},out_j, 'UniformOutput',false)');
         PI.output(k).(output_j) = out_jk;
     end
     
 end
+delete(p)
 end

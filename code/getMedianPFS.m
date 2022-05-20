@@ -1,4 +1,10 @@
-function surv = getMedianPFS(PI,T, censor, treatments)
+function surv = getMedianPFS(PI,treatments,varargin)
+inputs=inputParser;
+inputs.addParameter('Method','Brookmeyer')
+inputs.addParameter('survivalType','PFS')
+
+inputs.parse(varargin{:})
+inputs=inputs.Results;
 N = size(PI.output(1).Response,1);
 indx = 1:N;
 N_p = size(treatments);
@@ -11,11 +17,22 @@ end
 surv = table(treatments);
 for i=1:N_p
     
-surv{i,2} = log(2)*sum(T(indx))/sum(~censor(indx+N*(i-1)))/30;
+if strcmp(inputs.Method, 'Brookmeyer')
+    if strcmp(inputs.survivalType,'PFS')
+        surv{i,2} = log(2)*sum(PI.output(i).T)/sum(~PI.output(i).Censor)/30;
 
-surv{:,3} = log(2)./exp(log(1./(surv{:,2}/log(2)))+1.96*sum(~censor(indx+N*(i-1))).^(-1/2));
+        surv{i,3} = log(2)./exp(log(sum(~PI.output(i).Censor)/sum(PI.output(i).T))+1.96*sum(~PI.output(i).Censor).^(-1/2))/30;
+        
+        surv{i,4} = log(2)./exp(log(sum(~PI.output(i).Censor)/sum(PI.output(i).T))-1.96*sum(~PI.output(i).Censor).^(-1/2))/30;
 
-surv{:,4} = log(2)./exp(log(1./(surv{:,2}/log(2)))-1.96*sum(~censor(indx+N*(i-1))).^(-1/2));
+    else
+        surv{i,2} = log(2)*sum(PI.output(i).OS_T)/sum(~PI.output(i).OS_Censor)/30;
+
+        surv{i,3} = log(2)./exp(log(sum(~PI.output(i).OS_Censor)/sum(PI.output(i).OS_T))+1.96*sum(~PI.output(i).OS_Censor).^(-1/2))/30;
+        
+        surv{i,4} = log(2)./exp(log(sum(~PI.output(i).OS_Censor)/sum(PI.output(i).OS_T))-1.96*sum(~PI.output(i).OS_Censor).^(-1/2))/30;
+    end
+end
 end
 surv.Properties.VariableNames = {'Treatments', 'Median_PFS', 'LB', 'UB'};
 return

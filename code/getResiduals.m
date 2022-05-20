@@ -6,8 +6,10 @@ function residuals = getResiduals(p,simFun,PI,getPhi,sigma, psi,omega,nu,normInd
 par=inputParser;
 par.addParameter('addSigma',false)
 par.addParameter('log',true)
-
 par.addParameter('output','residuals')
+par.addParameter('errorModel','additive')
+par.addParameter('constantVar',.1)
+
 par.parse(varargin{:});
 par=par.Results;
 
@@ -53,21 +55,38 @@ simOutput=cellfun(@(x)x./repmat([ones(1,nVar-length(normIndx)) x(end,normIndx)],
 
 % Input into data array
 [PI.data(1:length(simOutput)).('y_hat')]=simOutput{:,:};
+sigma = arrayfun(@(x)repmat(sigma, size(x.dataValue,1),1), PI.data, 'UniformOutput', false);
+[PI.data(1:length(simOutput)).('sigma')] = sigma{:,:};
 
+if strcmp(par.errorModel, 'additive')
+else
+    sigma = arrayfun(@(x)par.constantVar+x.y_hat.*x.sigma,PI.data,'UniformOutput', false);
+    [PI.data(1:length(simOutput)).('sigma')] = sigma{:,:};
+end
 % Errors of log-transformed data
 if par.log
-if par.addSigma
-    error=arrayfun(@(x)reshape((log(x.y_hat)-log(x.dataValue)).^2./...% squared residuals
-    ((2*sigma.^2))+...% normalized by their variance
-    (log(sigma*sqrt(pi*2))),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
+    if par.addSigma
+        error=arrayfun(@(x)reshape((log(x.y_hat)-log(x.dataValue)).^2./...% squared residuals
+            ((2*x.sigma.^2))+...% normalized by their variance
+            (log(x.sigma*sqrt(pi*2))),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
+    else
+        error=arrayfun(@(x)reshape((log(x.y_hat)-log(x.dataValue))./...% squared residuals
+            (sqrt(2)*(x.sigma)),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
+    end
+elseif strcmp(par.errorModel, 'multiplicative')
+    if par.addSigma
+        error=arrayfun(@(x)reshape(((x.y_hat)-(x.dataValue)).^2./...% squared residuals
+            ((2*x.sigma.^2))+...% normalized by their variance
+            (log(x.sigma*sqrt(pi*2))),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
+    else
+        error=arrayfun(@(x)reshape(((x.y_hat)-(x.dataValue))./...% squared residuals
+            (sqrt(2)*(x.sigma)),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
+    end
 else
-error=arrayfun(@(x)reshape((log(x.y_hat)-log(x.dataValue))./...% squared residuals
-    (sqrt(2)*(sigma)),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
-end
-else
+    
     error=arrayfun(@(x)reshape(((x.y_hat)-(x.dataValue))./...% squared residuals
-    (sqrt(2)*(sigma)),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
-
+        (sqrt(2)*(sigma)),1,[]),PI.data,'UniformOutput', false);% normalized by their variance
+    
 end
 error=cellfun(@(x)x(~isnan(x)),error,'UniformOutput',false);
 [PI.data(1:end).residuals] = error{:,:};
@@ -107,7 +126,7 @@ end
 
 residuals = [residuals w z k];
 if (length(residuals) < PI.n_data)
-    residuals=repelem(1e5, 1,PI.n_data+length([PI.H.IndividualParams(:).Index])+...
+    residuals=repelem(max(abs(residuals)), 1,PI.n_data+length([PI.H.IndividualParams(:).Index])+...
         length([PI.H.CellParams(:).Index])+length([PI.H.RespParams(:).Index]));
 elseif any([isinf(residuals), ~isreal(residuals)])
     residuals=repelem(1e5, 1,PI.n_data);

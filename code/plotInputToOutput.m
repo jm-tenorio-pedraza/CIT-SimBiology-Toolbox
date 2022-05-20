@@ -21,11 +21,11 @@ for k=1:size(outputs)
           
         end
         set(gca,'XScale', 'log')
-        legend(groups)
         ylim([-100 100])
         title(names{i},'interpreter','none')
     end
 end
+legend(groups)
 end
 for k=1:size(outputs)
     output_k = char(outputs{k});

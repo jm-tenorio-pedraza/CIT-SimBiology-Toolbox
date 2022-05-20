@@ -8,12 +8,13 @@ p.addParameter('steps',1:1:size(p_hat,1));
 p.addParameter('names',{});
 p.addParameter('ESS',[]);
 p.addParameter('interpreter','none');
+p.addParameter('thinning',1)
 
 p.parse(varargin{:});
 p=p.Results;
 
 dim_phat=size(p_hat);
-
+thin=p.thinning;
 n_dim=length(dim_phat);
 switch n_dim
     case 2
@@ -64,36 +65,38 @@ elseif strcmp(p.type, 'individual')
 
 end
     case 3
-        for i=1:n_p
-            subplot(n_row, n_col,i)
-            hold on
-%             if dim_phat(2)<=dim_phat(3)
-            p_ij=reshape(p_hat(i,:,:),n_w,dim_phat(3),1);                  % NxT matrix with the numer of walkers/ensemble in the rows and the columns representing the steps 
-                colors=linspecer(n_w);
+        nfig=ceil(n_p/5);
+        traceIndx = 1:2:10;
 
-%             else
-%                 p_ij=reshape(p_hat(:,i,:),dim_phat(3),dim_phat(1),1);
-%                 colors=linspecer(dim_phat(2));
-% 
-%             end
-            h=plot(p.steps,p_ij);
-            for j=1:length(h)
-                set(h(j),'color',colors(j,:))
-            end
-            
-             if ~isempty(p.ESS)
-                legend(strjoin({'ESS=' num2str(p.ESS(i))},''),'Location','best')
-            end
-%             ylim([min_y max_y])
-
+        for j=1:nfig
+            figure('Renderer', 'painters', 'Position', [10 10 600 1000])
+            parIndx= (j-1)*5+1:(j-1)*5+5;
             try
-            title(p.names(i), 'interpreter', p.interpreter)
+            for i=1:5
+                subplot(5, 2,traceIndx(i))
+                p_ij=reshape(p_hat(parIndx(i),:,:),n_w,dim_phat(3),1);                  % NxT matrix with the numer of walkers/ensemble in the rows and the columns representing the steps
+                colors=linspecer(n_w);
+                h=plot(p.steps(:,1:thin:size(p_ij,2)),p_ij(:,1:thin:size(p_ij,2)));
+                for k=1:length(h)
+                    set(h(k),'color',colors(k,:))
+                end
+                
+                if ~isempty(p.ESS)
+                    legend(strjoin({'ESS=' num2str(p.ESS(parIndx(i)))},''),'Location','best')
+                end                
+                try
+                    title(p.names(parIndx(i)), 'interpreter', p.interpreter)
+                catch
+                end
+                xlabel('MCMC step')
+                subplot(5,2,traceIndx(i)+1)
+                histogram(p_ij(:,1:thin:size(p_ij,2)));
+                %ylim([min_y max_y])
+            end
             catch
             end
-            xlabel('MCMC step')
-            %ylim([min_y max_y])
         end
-            
+        
 end
 
 return

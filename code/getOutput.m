@@ -5,6 +5,8 @@ par.addParameter('n_samples',1e3)
 par.addParameter('output', PI)
 par.addParameter('simTime', PI.tspan)
 par.addParameter('logTransform',true)
+par.addParameter('errorModel','additive')
+par.addParameter('constantVar',.1)
 
 par.parse(varargin{:})
 par=par.Results;
@@ -29,12 +31,12 @@ try
     [PI.data(1:length(T)).('simTime')]=T{:,:};
     [PI.data(1:length(T)).('simValue')]=Y{:,:};
     [PI.data(1:length(T)).('y_hat')]=Y_data{:,:};
-
+    
 catch
     T= {T};
     Y = {Y};
     Y_data = {Y_data};
-
+    
     [PI.data(1:length(T)).('simTime')]=T{:,:};
     [PI.data(1:length(T)).('simValue')]=Y{:,:};
     [PI.data(1:length(T)).('y_hat')]=Y_data{:,:};
@@ -43,11 +45,12 @@ end
 
 simOutput=arrayfun(@(x)x.simValue./repmat([ones(1,nVar-length(normIndx))...
     x.simValue(x.simTime==x.dataTime(end),normIndx)],...
-        size(x.simValue(:,1),1),1),PI.data,...
-        'UniformOutput',false);
-dataOutput=arrayfun(@(x)x.y_hat./repmat([ones(1,nVar-length(normIndx)) x.y_hat(end,normIndx)],...
-        size(x.y_hat(:,1),1),1),PI.data,...
-        'UniformOutput',false);
+    size(x.simValue(:,1),1),1),PI.data,...
+    'UniformOutput',false);
+dataOutput=arrayfun(@(x)x.y_hat./repmat([ones(1,nVar-length(normIndx))...
+    x.y_hat(par.simTime==x.dataTime(end),normIndx)],...
+    size(x.y_hat(:,1),1),1),PI.data,...
+    'UniformOutput',false);
 
 % Input into data array
 [PI.data(1:length(simOutput)).('simOutput')]=simOutput{:,:};
@@ -79,23 +82,28 @@ dataOutput=arrayfun(@(x)x.yOutput(ismember(par.simTime,x.dataTime),:),PI.data,..
 [PI.data(1:length(dataOutput)).('y_hat')]=dataOutput{:,:};
 
 try
-% Get lower and upper boudariestry
-sigma = p(setdiff(H.SigmaParams, [H.CellParams(:).OmegaIndex H.IndividualParams(:).OmegaIndex]));
-if par.logTransfrom
-lb = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),1-par.prob,3),...
-    PI.data,'UniformOutput',false);
-ub = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),par.prob,3),...
-    PI.data,'UniformOutput',false);
-
-else
-    lb = arrayfun(@(x)quantile(((x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),1-par.prob,3),...
-    PI.data,'UniformOutput',false);
-ub = arrayfun(@(x)quantile(((x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*sigma),par.prob,3),...
-    PI.data,'UniformOutput',false);
-    
-end
-[PI.data(1:end).lb]= lb{:,:};
-[PI.data(1:end).ub] = ub{:,:};
+    % Get lower and upper boudariestry
+    sigma = p(setdiff(H.SigmaParams, [H.CellParams(:).OmegaIndex H.IndividualParams(:).OmegaIndex]));
+    sigma = arrayfun(@(x)repmat(sigma, size(x.simOutput,1),1), PI.data, 'UniformOutput', false);
+    if strcmp(par.errorModel, 'additive')
+    else
+        sigma = arrayfun(@(x)par.constantVar+x.simOutput.*x.sigma,PI.data,'UniformOutput', false);
+        [PI.data(1:length(simOutput)).('sigma')] = sigma{:,:};
+    end
+    if par.logTransfrom
+        lb = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*x.sigma),1-par.prob,3),...
+            PI.data,'UniformOutput',false);
+        ub = arrayfun(@(x)quantile(exp(log(x.simOutput)+ randn([size(x.simOutput),par.n_samples]).x.*sigma),par.prob,3),...
+            PI.data,'UniformOutput',false);
+        
+  else
+         lb = arrayfun(@(x)quantile(((x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*x.sigma),1-par.prob,3),...
+            PI.data,'UniformOutput',false);
+        ub = arrayfun(@(x)quantile(((x.simOutput)+ randn([size(x.simOutput),par.n_samples]).*x.sigma),par.prob,3),...
+            PI.data,'UniformOutput',false);
+    end
+    [PI.data(1:end).lb]= lb{:,:};
+    [PI.data(1:end).ub] = ub{:,:};
 catch
 end
 if strcmp(par.output, 'PI')

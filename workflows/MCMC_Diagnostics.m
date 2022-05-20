@@ -1,10 +1,9 @@
 %% MCMC Diagnostics
 
-x = cat(3, x1, x2(:,:,2:end), x3(:, :,2:end), x4(:, :,2:end),  x5(:, :,2:end),  x6(:, :,2:end),  x7(:, :,2:end));
-p_x = [p_x1;p_x2(2:end,:); p_x3(2:end,:); p_x4(2:end,:); p_x5(2:end,:); p_x6(2:end,:); p_x7(2:end,:)];
+x = cat(3, x3,x4(:,:,2:end), x5(:,:,2:end),x6(:,:,2:end), x7(:,:,2:end));
+p_x = [p_x3;p_x4(2:end,:);p_x5(2:end,:); p_x6(2:end,:);p_x7(2:end,:)];
 %% Diagnostics
-plotMCMCDiagnostics(x,p_x,'name', paramNames,'model',...
-    PI.model,'interpreter', 'tex')
+
 plotMCMCDiagnostics(x([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
     p_x,'name', PI.paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
     'model', PI.model, 'interpreter', 'tex');
@@ -17,30 +16,35 @@ plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta = 1.2e3;
-burnIn=5e5;
-indx = ceil(burnIn/size(x,1)+1):delta:size(x,3);
+delta =1e2;
+burnIn=0;
+indx = ceil(burnIn/size(x,2)+1):delta:size(x,3);
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
 
 postSamples =x(:,w_indx(1:end),indx);
 logP_thinned = p_x(indx,w_indx(1:end));
-
-plotMCMCDiagnostics(postSamples([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
-    logP_thinned,'name', PI.paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
-    'model', PI.model, 'interpreter', 'tex');
+plotMCMCDiagnostics(postSamples,logP_thinned,'name', paramNames,'model',...
+    'MOC1 tumor-bearing mice','interpreter', 'tex','Thinning',1,'plots',{'trace','corr','autocorr'})
 
 postSamples=postSamples(:,:)';
 logP_thinned=reshape(logP_thinned',1,[]);
 %% 
+etaIndx=[PI.H.CellParams.EtaIndex PI.H.IndividualParams.EtaIndex PI.H.RespParams.EtaIndex];
+psiIndx=[PI.H.CellParams.OmegaIndex PI.H.IndividualParams.OmegaIndex PI.H.RespParams.OmegaIndex];
+xIndx=[PI.H.CellParams.Index PI.H.IndividualParams.Index PI.H.RespParams.Index];
 % Population Parameters
-plotBivariateMarginals_2((postSamples(:,[PI.H.PopulationParams PI.H.SigmaParams])),...
-    'names',paramNames([PI.H.PopulationParams PI.H.SigmaParams]),'interpreter', 'tex')
+plotBivariateMarginals_2(exp(postSamples(:,[PI.H.PopulationParams])),...
+    'names',paramNames([PI.H.PopulationParams ]),'interpreter', 'tex')
 % Individual and population parameters
-plotBivariateMarginals_2((postSamples(:, [PI.H.CellParams.Index PI.H.IndividualParams.Index])),...
-    'names',paramNames([PI.H.CellParams.Index PI.H.IndividualParams.Index]))
+plotBivariateMarginals_2((postSamples(:, [etaIndx xIndx psiIndx])),...
+    'names',paramNames([etaIndx xIndx psiIndx]),'interpreter', 'tex')
+% Sigma Parameters
+plotBivariateMarginals_2((postSamples(:,[PI.H.SigmaParams])),...
+    'names',paramNames([PI.H.SigmaParams ]),'interpreter', 'tex')
+
 plotIIVParams(postSamples, PI,'name', paramNames,'newFig', false,...
-    'n_row', 2,'n_col',2,'figIndx', 3:4,'panel', true,'dim',true)
+    'n_row', 2,'n_col',2,'figIndx', 1,'panel', true,'dim',true)
 %% Posterior predictions
 simTime = unique([PI.tspan', 1:PI.tspan(end)]);
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,simTime),x,...
@@ -51,7 +55,7 @@ PI=getPosteriorPredictions2(exp(postSamples(1:end,:)),PI,simFun,PI.observablesFi
     'simTime', simTime);
 toc
 PI=getCredibleIntervals(PI,PI.observablesFields, exp(postSamples(1:end,:)),PI.H,...
-    'logit_indx', [],'simTime', simTime);
+    'logit_indx', [],'simTime', simTime,'errorModel','additive');
 
 %% Plot all
 figure('Position', [10 10 1.5e3 1e3])
@@ -63,7 +67,7 @@ for i=1:length(PI.observablesFields)
 
     plotPosteriorPredictions(PI,i,'outputs','group',...
        'newFig', false, 'TimeUnit', 'hours','color', 'dataset',...
-        'simTime', simTime, 'YScale', 'linear', 'interpreter', 'tex','plot','data')
+        'simTime', simTime, 'YScale', 'linear', 'interpreter', 'tex','plot','data','indivData',false)
 end
 
 for i=1:9
@@ -74,7 +78,7 @@ end
 for i =1:length(PI.observablesPlot)
  plotPosteriorPredictions(PI,i,'outputs','indiv', ...
         'newFig', true, 'TimeUnit', 'hours','color', 'cell','simTime', ...
-        simTime, 'YScale', 'linear')
+        simTime, 'YScale', 'linear','indivData',false)
 
 
 end

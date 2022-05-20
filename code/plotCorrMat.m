@@ -21,7 +21,7 @@ n_var = size(p_hat_corr,1);
 imagesc(p_hat_corr, [-1 1])
 set(gca, 'XTick', 1:n_var,'YTick', 1:n_var); % center x-axis and y-axis ticks on bins
 set(gca, 'XTickLabel',Names, 'TickLabelInterpreter', p.interpreter,'XTickLabelRotation', 45); % set x-axis labels
-set(gca, 'FontSize', 18); 
+set(gca, 'FontSize', 14); 
 
 set(gca, 'YTickLabel', Names, 'TickLabelInterpreter', p.interpreter); % set y-axis labels
 title(strjoin({'Correlation matrix for', p.model},' ' ), 'FontSize', 20); % set title

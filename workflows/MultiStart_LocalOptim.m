@@ -26,7 +26,7 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
     exp(phat_0([PI.H.IndividualParams.OmegaIndex])),...
     exp(phat_0([PI.H.RespParams.OmegaIndex])),PI.normIndx);
 %% 
-n_samples = 200;
+n_samples = 100;
 lhs = lhsdesign(n_samples,length(ub));
 p0 = unifinv(lhs,repelem(exp(lb),n_samples,1),repelem(exp(ub),n_samples,1));
 p_hat = nan(size(p0)); fval_lsqnonlin = nan(size(p0,1),1);
@@ -34,7 +34,7 @@ for i = 1:size(p0,1)
     try
     [p_hat(i,:), fval_lsqnonlin(i)] = lsqnonlin(residuals_fn,log(p0(i,:)), lb,ub, options_lsqnonlin);
     catch
-        p_hat(i,:)= p0(i,:);
+        p_hat(i,:)= log(p0(i,:));
         fval_lsqnonlin(i) = 1e9;
     end
 end
@@ -74,3 +74,5 @@ cv_cell = num2cell(cv);
 sigma_0 = repmat(finalValues([H.SigmaParams]),sum(cutoffIndx),1);
 X0=[log(finalValues);X0 log(sigma_0)];
 
+%% Add best paramter vector to finalValues
+finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index PI.H.RespParams.Index]) = (p_hat_sorted(1,:));

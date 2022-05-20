@@ -19,6 +19,10 @@ p.addParameter('output', 'mean')
 p.addParameter('responseGrouping', false)
 p.addParameter('kineticGrouping', false)
 p.addParameter('zeroHandling', 'rm')
+p.addParameter('logTransform', 'false')
+p.addParameter('centralityMeasure', @mean)
+
+p.addParameter('respThreshold', 0.01)
 p.parse(varargin{:})
 p=p.Results;
 
@@ -29,42 +33,42 @@ dataTime={};
 SD_subset = {};
 data_indx = 1;
 
-for i=1:length(PI_struct)
-    if size(PI_struct(i).PI.data,1)>size(PI_struct(i).PI.data,2)           % transpose data array for following processing
+for j=1:length(PI_struct)
+    if size(PI_struct(j).PI.data,1)>size(PI_struct(j).PI.data,2)           % transpose data array for following processing
     else
-        PI_struct(i).PI.data = PI_struct(i).PI.data';
+        PI_struct(j).PI.data = PI_struct(j).PI.data';
     end
-    [~,varindx]= (ismember(stateVar,PI_struct(i).PI.stateVar));            % identify and select variables of interest
+    [~,varindx]= (ismember(stateVar,PI_struct(j).PI.stateVar));            % identify and select variables of interest
     if any(varindx==0)
-        data_subset_i = arrayfun(@(x)nan(size(x.dataValue,1), length(stateVar)),...
-            PI_struct(i).PI.data, 'UniformOutput', false);
+        data_subset_j = arrayfun(@(x)nan(size(x.dataValue,1), length(stateVar)),...
+            PI_struct(j).PI.data, 'UniformOutput', false);
         SD_subset_i = arrayfun(@(x)nan(size(x.SD,1), length(stateVar)),...
             PI_struct(i).PI.data, 'UniformOutput', false);
         varindx = varindx~=0;
-        for j=1:length(data_subset_i)
-            data_subset_i{j,1}(:,varindx) = PI_struct(i).PI.data(j).dataValue(:, varindx);
-            SD_subset_i{j,1}(:,varindx) = PI_struct(i).PI.data(j).SD(:, varindx);
+        for k=1:length(data_subset_j)
+            data_subset_j{k,1}(:,varindx) = PI_struct(j).PI.data(k).dataValue(:, varindx);
+            SD_subset_i{k,1}(:,varindx) = PI_struct(j).PI.data(k).SD(:, varindx);
         end
     else
-        data_subset_i = arrayfun(@(x) x.dataValue(:,varindx),...           % Remove variables not to be considered
-            PI_struct(i).PI.data,'UniformOutput', false)';
+        data_subset_j = arrayfun(@(x) x.dataValue(:,varindx),...           % Remove variables not to be considered
+            PI_struct(j).PI.data,'UniformOutput', false)';
         SD_subset_i = arrayfun(@(x) x.SD(:,varindx),...                    % Remove variables not to be considered
-            PI_struct(i).PI.data,'UniformOutput', false)';
+            PI_struct(j).PI.data,'UniformOutput', false)';
     end
     
-    groups_i = {PI_struct(i).PI.data(:).Group}';                             % extract groups cell array
+    groups_i = {PI_struct(j).PI.data(:).Group}';                             % extract groups cell array
     groupIndx = ismember(groups_i, groups_subset);                           % Identify and select the therapy groups
     groups_i = groups_i(groupIndx);
     
-    data_subset_i = data_subset_i(groupIndx);                               
+    data_subset_j = data_subset_j(groupIndx);                               
     SD_subset_i = SD_subset_i(groupIndx);                  % Select the measured SDs if they are available
-    dataTime_i = {PI_struct(i).PI.data(groupIndx).dataTime}';                % extract time-points cell array
+    dataTime_i = {PI_struct(j).PI.data(groupIndx).dataTime}';                % extract time-points cell array
    
-    data_subset(data_indx:(data_indx+length(data_subset_i)-1)) = data_subset_i;
+    data_subset(data_indx:(data_indx+length(data_subset_j)-1)) = data_subset_j;
     SD_subset(data_indx:(data_indx+length(SD_subset_i)-1)) = SD_subset_i;
     dataTime(data_indx:(data_indx+length(dataTime_i)-1)) = dataTime_i;
     groups(data_indx:(data_indx+length(groups_i)-1)) = groups_i;
-    data_indx = data_indx+length(data_subset_i);
+    data_indx = data_indx+length(data_subset_j);
 end
 
 dataTimeZeroIndx = cellfun(@(x) x(1)==0, dataTime);
@@ -95,16 +99,33 @@ end
 for i=1:length(unique_groups)
     group_i = ismember(groups', unique_groups{i});
     data_i = data_subset(group_i)';
+    if (p.logTransform)
+        data_i = cellfun(@(x)log(x), data_i, 'UniformOutput',false);
+        respThreshold = log(p.respThreshold);
+        TVend = -Inf;
+    else
+        respThreshold=p.respThreshold;
+        TVend=0;
+    end
     dataTime_i = dataTime(group_i)';
     SD_indx = SD_subset(group_i);                                    % Array of standard deviations cells if dealing with mean data, empty otherwise
 
     try
         SD_i = cellfun(@(x) x(:,varindx),SD_indx, 'UniformOutput', false);
+        if (p.logTransform)
+            SDstruct = [];
+            [SDstruct(1:length(SD_indx)).SD] = SD_indx{:,:};
+            [SDstruct(1:end).dataValue] = data_i{:,:};
+            SD_i = arrayfun(@(x) log(1+x.SD.^2./(exp(x.dataValue).^2)), SDstruct, 'UniformOutput',false);
+        end
     catch
         SD_i = cellfun(@(x) nan(length(x),1), dataTime_i, 'UniformOutput', false);
     end
         
     time = unique(cell2mat(dataTime_i));                                        % Count how many time-resolved data points there are for each individual
+    if size(time,1)<size(time,2)
+        time = time';
+    end
     n_i = length(data_i);
     mean_i_p = NaN(length(time), length(stateVar));                         % Allocate space for mean of all variables (Non-responders, fast growing tumors matrix)
     sd_i_p = NaN(length(time), length(stateVar));
@@ -128,13 +149,13 @@ for i=1:length(unique_groups)
             kinetic(~kinIndx) = {'Slow'};
             
         case 2
-            respIndx = cellfun(@(x) x(end)>0.1 || all(isnan(x)) || x(end-1)>0.1, TV_i);
+            respIndx = cellfun(@(x) x(end)>respThreshold || all(isnan(x)) || x(end-1)>respThreshold, TV_i);
             
             mean_i_r = NaN(length(time),length(stateVar));
             sd_i_r = NaN(length(time),length(stateVar));                     % Allocate space for mean of all variables (Responders, slow growing tumors matrix)
             
             response = repelem({'NaN'}, n_i,1);
-            response(respIndx) = {'Non-responder'};
+            response(respIndx) = {'Progressor'};
             response(~respIndx) =  {'Responder'};
             
         case 4
@@ -147,9 +168,9 @@ for i=1:length(unique_groups)
             time_an = arrayfun(@(x) x.time(~x.nanIndx), temp, 'UniformOutput', false);
             tv_an = arrayfun(@(x) x.TV(~x.nanIndx), temp, 'UniformOutput', false);
             try
-            respIndx = cellfun(@(x) x(end)>0.01 || isnan(x(end)) || all(isnan(x)), tv_an);
+                respIndx = cellfun(@(x) x(end)>respThreshold|| isnan(x(end)) || all(isnan(x)), tv_an);
             catch
-                respIndx = true;
+                respIndx = cellfun(@(x) isempty(x), tv_an);
             end
             try
             time_end_p =  cellfun(@(x) x(end), time_an(respIndx));
@@ -160,10 +181,10 @@ for i=1:length(unique_groups)
                 time_end_p =  cellfun(@(x) x(end), time_an(respIndx));
                 time_end_r =  cellfun(@(x) x(end), time_an(~respIndx));
             end
-            endValueIndx_r = cellfun(@(x) x(end)==0, TV_i(~respIndx));
+            endValueIndx_r = cellfun(@(x) x(end)==TVend, TV_i(~respIndx));
 
-            kinIndx_p = (time_end_p<=median(time_end_p));
-            kinIndx_r = or(time_end_r<median(time_end_r), endValueIndx_r');
+            kinIndx_p = (time_end_p<=mean(time_end_p));
+            kinIndx_r = or(time_end_r<=mean(time_end_r), endValueIndx_r');
             
             mean_i_f_p = NaN(length(time),length(stateVar));
             sd_i_f_p = NaN(length(time),length(stateVar));
@@ -179,13 +200,19 @@ for i=1:length(unique_groups)
             sd_i_s_r = NaN(length(time),length(stateVar));
             
             kinetic = repelem({'NaN'}, n_i,1);
-            kinetic(kinIndx_p) = {'Fast'};
-            kinetic(kinIndx_r) = {'Fast'};
-            kinetic(~kinIndx_p) = {'Slow'};
-            kinetic(~kinIndx_r) = {'Slow'};
+            kinetic_p = kinetic(respIndx);
+            kinetic_r = kinetic(~respIndx);
+            
+            kinetic_p(kinIndx_p) = {'Fast'};
+            kinetic_r(kinIndx_r) = {'Fast'};
+            kinetic_p(~kinIndx_p) = {'Slow'};
+            kinetic_r(~kinIndx_r) = {'Slow'};
+            
+            kinetic(~respIndx) = kinetic_r;
+            kinetic(respIndx) = kinetic_p;
             
             response = repelem({'NaN'}, n_i,1);
-            response(respIndx) = {'Non-responder'};
+            response(respIndx) = {'Progressor'};
             response(~respIndx) =  {'Responder'};
     end
     
@@ -200,7 +227,15 @@ for i=1:length(unique_groups)
             mat_ij = nan(length(time), n_i);
             matSD_ij = nan(length(time), n_i);
             for k=1:n_i
-                timeIndx_ij = ismember(time, dataTime_i{k});
+               
+                if strcmp(p.zeroHandling,'replace')
+                    zeroIndx_i= or(data_ij{k} ==0, data_ij{k} ==-inf) ;
+                    if any(zeroIndx_i)
+                        data_ij{k}(zeroIndx_i) = min(data_ij{k});
+                    end
+                else
+                end
+                     timeIndx_ij = ismember(time, dataTime_i{k});
                 mat_ij(timeIndx_ij, k) = data_ij{k};
                 if n_i==1
                 matSD_ij(timeIndx_ij, k) = sd_ij{k};
@@ -209,7 +244,7 @@ for i=1:length(unique_groups)
             
             switch case_i
                 case 1
-                    mean_i_p(:,j) = mean(mat_ij,2, 'omitnan');
+                    mean_i_p(:,j) = p.centralityMeasure(mat_ij,2, 'omitnan');
                     sd_i_p(:,j) = std(mat_ij,[],2, 'omitnan');
                     if n_i==1
                         sd_i_p(:,j) = (matSD_ij{:,:});
@@ -218,8 +253,8 @@ for i=1:length(unique_groups)
                     end
                    
                 case 2
-                    mean_i_p(:,j) = mean(mat_ij(:,respIndx),2, 'omitnan');
-                    mean_i_r(:,j) = mean(mat_ij(:,~respIndx),2, 'omitnan');
+                    mean_i_p(:,j) = p.centralityMeasure(mat_ij(:,respIndx),2, 'omitnan');
+                    mean_i_r(:,j) = p.centralityMeasure(mat_ij(:,~respIndx),2, 'omitnan');
                     if n_i==1
                         sd_i_p(:,j) = (matSD_ij);
                     else
@@ -232,8 +267,8 @@ for i=1:length(unique_groups)
                     
                     
                 case 3
-                    mean_i_f(:,j) = mean(mat_ij(:,kinIndx),2, 'omitnan');
-                    mean_i_s(:,j) = mean(mat_ij(:,~kinIndx),2, 'omitnan');
+                    mean_i_f(:,j) = p.centralityMeasure(mat_ij(:,kinIndx),2, 'omitnan');
+                    mean_i_s(:,j) = p.centralityMeasure(mat_ij(:,~kinIndx),2, 'omitnan');
                     
                     sd_i_f(:,j) =  std(mat_ij(:,kinIndx),[],2, 'omitnan');
                     sd_i_s(:,j) = std(mat_ij(:,~kinIndx),[],2, 'omitnan');
@@ -250,10 +285,10 @@ for i=1:length(unique_groups)
                 case 4
                     nonRespIndx = find(respIndx);
                     RespIndx = find(~respIndx);
-                    mean_i_f_p(:,j) = mean(mat_ij(:,nonRespIndx(kinIndx_p)),2, 'omitnan');
-                    mean_i_f_r(:,j) = mean(mat_ij(:,RespIndx(kinIndx_r)),2, 'omitnan');
-                    mean_i_s_p(:,j) = mean(mat_ij(:,nonRespIndx(~kinIndx_p)),2, 'omitnan');
-                    mean_i_s_r(:,j) = mean(mat_ij(:,RespIndx(~kinIndx_r)),2, 'omitnan');
+                    mean_i_f_p(:,j) = p.centralityMeasure(mat_ij(:,nonRespIndx(kinIndx_p)),2, 'omitnan');
+                    mean_i_f_r(:,j) = p.centralityMeasure(mat_ij(:,RespIndx(kinIndx_r)),2, 'omitnan');
+                    mean_i_s_p(:,j) = p.centralityMeasure(mat_ij(:,nonRespIndx(~kinIndx_p)),2, 'omitnan');
+                    mean_i_s_r(:,j) = p.centralityMeasure(mat_ij(:,RespIndx(~kinIndx_r)),2, 'omitnan');
                     if n_i == 1
                         sd_i_f_p(:,j) = matSD_ij;
                     else
@@ -288,7 +323,7 @@ for i=1:length(unique_groups)
                     data(struct_indx).Group = unique_groups(i);
                     data(struct_indx).Response = 'Progressor';
                     
-                    data(struct_indx+1).Name = strjoin({unique_groups{i}, 'Responders'}, '_');
+                    data(struct_indx+1).Name = strjoin({unique_groups{i}, 'Responder'}, '_');
                     data(struct_indx+1).dataTime = time;
                     data(struct_indx+1).dataValue = mean_i_r;
                     data(struct_indx+1).SD = sd_i_r;
@@ -352,10 +387,17 @@ for i=1:length(unique_groups)
         
         
     else
+        for l=1:length(dataTime_i)
+            if size(dataTime_i{l},1)< size(dataTime_i{l},2)
+                dataTime_i{l} = dataTime_i{l}';
+            end
+        end
+        names = cellfun(@(x)strjoin({unique_groups{i}, x},'_'), response, 'UniformOutput', false);
+        [data(struct_indx:struct_indx+n_i-1).Name] = names{:,:};
         [data(struct_indx:struct_indx+n_i-1).dataTime] = dataTime_i{:,:};
         [data(struct_indx:struct_indx+n_i-1).dataValue] = data_i{:,:};
         [data(struct_indx:struct_indx+n_i-1).SD] = SD_i{:,:};
-        [data(struct_indx:struct_indx+n_i-1).Group] = groups{group_i,:};
+        [data(struct_indx:struct_indx+n_i-1).Group] = groups{group_i};
         
         if p.responseGrouping
             [data(struct_indx:struct_indx+n_i-1).Response] = response{:,:};
@@ -383,7 +425,7 @@ end
 
 %% Control for data with non-admissible values (x=0)
 
-zero_indx = arrayfun(@(x) logical(sum(x.dataValue(:,1)==0,2)),PI.data,...
+zero_indx = arrayfun(@(x) logical(sum(or(x.dataValue(:,1)==0,isinf(x.dataValue(:,1))),2)),PI.data,...
     'UniformOutput', false);                                                % Identify indexes of tumor volume equal to 0
 [PI.data(1:end).zero_indx] = zero_indx{:,:};                                % Add index array to data array
 if strcmp(p.zeroHandling, 'rm')
@@ -414,11 +456,35 @@ elseif strcmp(p.zeroHandling, 'imput')
 %             PI.data(i).SD = PI.data(i).SD(2:end,:);
 %         end
     end
+else
+    if strcmp(p.zeroHandling, 'replace')
+    [minValues, minValuesIndx] = arrayfun(@(x) min(x.dataValue(~x.zero_indx,1), [], 1,'omitnan'), PI.data,...
+    'UniformOutput', false);
+    [minValue,minValueIndx] = min(cell2mat(minValues));
+    SDValue = PI.data(minValueIndx).SD(~PI.data(minValueIndx).zero_indx);
+    SDValue = SDValue(minValuesIndx{minValueIndx});
+    for i = 1:length(PI.data)
+%         if PI.data(i).zero_indx(1)==0
+            try
+                PI.data(i).dataValue((PI.data(i).zero_indx),1) = minValue;
+                PI.data(i).SD(PI.data(i).zero_indx,1) = SDValue;
+            catch
+            end
+%         else
+%             PI.data(i).dataValue = PI.data(i).dataValue(2:end,:);
+%             PI.data(i).dataTime = PI.data(i).dataTime(2:end,:);
+%             PI.data(i).SD = PI.data(i).SD(2:end,:);
+%         end
+    end
+    else
+    end
 end
 
 
-
-PI.tspan = unique(cat(1,PI.data(:).dataTime));
+try
+    PI.tspan = unique(cat(1,PI.data(:).dataTime));
+catch
+end
 PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))),{PI.data.dataValue},...
     'UniformOutput',true));
 

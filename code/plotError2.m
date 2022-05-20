@@ -61,7 +61,8 @@ for i=1:n_sim
     hold on
     nanIndx = isnan(PI.data(simIndx(i)).dataValue(:,colIndx));
         dat=plot(PI.data(simIndx(i)).dataTime(~nanIndx),...
-            PI.data(simIndx(i)).dataValue(~nanIndx,colIndx) - PI.data(simIndx(i)).y_hat(~nanIndx,colIndx));
+            PI.data(simIndx(i)).dataValue(~nanIndx,colIndx) - ...
+            PI.data(simIndx(i)).y_hat(~nanIndx,colIndx));
     if par.indiv
             title(PI.data(simIndx(i)).Name,'interpreter', par.interpreter)
 

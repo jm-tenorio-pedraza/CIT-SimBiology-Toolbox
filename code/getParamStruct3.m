@@ -1,12 +1,14 @@
-function par_struct = getParamStruct2(simFun,H,n_sim,sigmaParams,sigmaNames,varargin)
+function par_struct = getParamStruct3(simFun,H,n_sim,sigmaParams,sigmaNames,varargin)
 if nargin<5
     error('getParamStruct:toofewinputs','getParamStruct requires atleast 5 inputs.')
 end
 inputs=inputParser;
 inputs.addParameter('Sigma',3);
 inputs.addParameter('startSigma',[repelem(1,length([H.CellParams.OmegaIndex]),1); ...
-    repelem(1, length([H.IndividualParams.OmegaIndex]),1); repelem(.1,length(H.SigmaParams)...
-    -length([H.CellParams.OmegaIndex])-length([H.IndividualParams.OmegaIndex]),1)]);
+    repelem(1, length([H.IndividualParams.OmegaIndex]),1);...
+    repelem(1, length([H.RespParams.OmegaIndex]),1);...
+    repelem(.1,length(setdiff(H.SigmaParams,...
+    [H.CellParams.OmegaIndex H.IndividualParams.OmegaIndex  H.RespParams.OmegaIndex])),1)]);
 inputs.addParameter('ref', 'params')
 inputs.addParameter('LB', [])
 inputs.addParameter('UB', [])
@@ -62,14 +64,14 @@ v_params = ones(dim_cell+dim_indiv + dim_resp,1);
 if ~isempty(inputs.LB)
     % Min                                   Max                                 Start                       % Mu
     p=[ inputs.LB(1:length(param))              inputs.UB(1:length(param))          param                       param
-        v_params*1e-3                           v_params*1e2                        v_params                    v_params
-        sigmaParams*0.1                       sigmaParams*1000                   inputs.startSigma           sigmaParams];
+        v_params*1e-1                           v_params*1e1                        v_params                    v_params
+        sigmaParams*0.01                       sigmaParams*10                   inputs.startSigma           sigmaParams];
     
 else
     % Min                                   Max                                 Start                       % Mu
     p=[ 10.^(floor(log10(ref*1e-6)))            10.^(ceil(log10(ref*1e6)))          param                       param
-        v_params*1e-3                           v_params*1e2                        v_params                    v_params
-        sigmaParams*0.1                         sigmaParams*1000                      inputs.startSigma              sigmaParams];
+        v_params*1e-1                           v_params*1e1                        v_params                    v_params
+        sigmaParams*0.01                         sigmaParams*10                   inputs.startSigma           sigmaParams];
 end
 if length(inputs.Sigma)<2
     % Sigma
