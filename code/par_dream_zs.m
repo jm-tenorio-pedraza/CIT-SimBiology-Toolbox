@@ -34,14 +34,18 @@ Zindx= m0+1;
 m=m0;
 X = Z0(end-N+1:end,:);
 CR = [1:n_CR]/n_CR; 
+
 if isempty(par.J)
-[J, n_id] = deal(ones(1,n_CR));
-p_CR = ones(1,n_CR)/n_CR;
+%     [J, n_id] = deal(ones(1,n_CR));
+    J = ones(1,n_CR);
+    n_id=ones(1,n_CR);
+    p_CR = ones(1,n_CR)/n_CR;
 else
     J = par.J;
     n_id = par.n_id;
     p_CR = (J./n_id)/sum(J./n_id);
 end
+
 for i=1:N, R(i, 1:N-1) = setdiff(1:N,i); end
 p_X=nan(N,1);
 for i=1:N, p_X(i, 1) = prior(X(i, 1:d))+likelihood(X(i, 1:d)); end

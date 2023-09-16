@@ -3,22 +3,25 @@
 x = cat(3, x3,x4(:,:,2:end), x5(:,:,2:end),x6(:,:,2:end), x7(:,:,2:end));
 p_x = [p_x3;p_x4(2:end,:);p_x5(2:end,:); p_x6(2:end,:);p_x7(2:end,:)];
 %% Diagnostics
+plotMCMCDiagnostics(x(:,:,:),...
+    p_x,'name', PI.paramNames,...
+    'model', PI.model, 'interpreter', 'tex');
 
 plotMCMCDiagnostics(x([PI.H.PopulationParams PI.H.SigmaParams],:,:),...
     p_x,'name', PI.paramNames([PI.H.PopulationParams PI.H.SigmaParams]),...
     'model', PI.model, 'interpreter', 'tex');
 plotMCMCDiagnostics(x([PI.H.PopulationParams],:,:),...
     p_x,'name', PI.paramNames([PI.H.PopulationParams ]),...
-    'model', PI.model, 'interpreter', 'tex');
-
-plotMCMCDiagnostics(x([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index],:,:),...
-    p_x,'name', paramNames([PI.H.CellParams(:).Index PI.H.IndividualParams(:).Index]),...
+    'model', PI.model, 'interpreter', 'none');
+%% Plot response params with pop mean and var
+plotMCMCDiagnostics(x([PI.H.RespParams(:).EtaIndex PI.H.RespParams(:).OmegaIndex  PI.H.RespParams(:).Index],:,:),...
+    p_x,'name', paramNames([PI.H.RespParams(:).EtaIndex PI.H.RespParams(:).OmegaIndex PI.H.RespParams(:).Index]),...
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta =1e2;
-burnIn=0;
-indx = ceil(burnIn/size(x,2)+1):delta:size(x,3);
+delta =1e1;
+burnIn=3e5;
+indx = ceil(burnIn/size(x,2)+1):delta:(size(x,3));
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
 
@@ -69,11 +72,20 @@ for i=1:length(PI.observablesFields)
        'newFig', false, 'TimeUnit', 'hours','color', 'dataset',...
         'simTime', simTime, 'YScale', 'linear', 'interpreter', 'tex','plot','data','indivData',false)
 end
-
-for i=1:9
-    subplot(3,3,i)
-    set(gca, 'YScale', 'linear')
+figure('Position', [10 10 1.5e3 1e3])
+ncol = length(PI.observablesFields);
+nrow = length(PI.output);
+%%
+for i=1:length(PI.observablesFields)
+    plotPosteriorPredictions(PI,i,'outputs','indiv',...
+       'newFig', false, 'TimeUnit', 'hours','color', 'cell','simTime', simTime,...
+       'YScale', 'linear', 'interpreter', 'tex','plot','all','indivData',false,...
+       'plotIndx',i:ncol:(ncol*nrow),'n_col',ncol,'n_row',nrow)
 end
+% for i=1:9
+%     subplot(3,3,i)
+%     set(gca, 'YScale', 'linear')
+% end
 %% Plot individual variables
 for i =1:length(PI.observablesPlot)
  plotPosteriorPredictions(PI,i,'outputs','indiv', ...
@@ -93,3 +105,7 @@ plotCI(PI, 'TwoComp', 'name', PI.paramNames, 'interpreter', 'tex')
 PI.postSamples = postSamples;
 PI.logP = logP_thinned;
 plotHistogram(PI.postSamples(:,[PI.H.PopulationParams]), PI.paramNames([PI.H.PopulationParams]))
+PI.DIC= getDIC(exp(postSamples),-logP_thinned,obj_fun,'method','Gelman');
+%% Calculate deviance with MAP
+save(strjoin({cd '/CIM/PI/CIM01/PI_' PI.model '.mat'},''), 'PI')
+

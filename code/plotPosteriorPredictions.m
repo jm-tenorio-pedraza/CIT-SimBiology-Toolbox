@@ -13,7 +13,11 @@ p.addParameter('TimeUnit', 'days')
 p.addParameter('interpreter', 'tex');
 p.addParameter('color', 'group');
 p.addParameter('YScale', 'linear');
-p.addParameter('indivData', false) 
+p.addParameter('indivData', false);
+p.addParameter('plotIndx', []); % Indexes for subplotting 
+p.addParameter('n_row', []); % Indexes for subplotting 
+p.addParameter('n_col', []); % Indexes for subplotting 
+
 
 p.parse(varargin{:});
 p=p.Results;
@@ -179,7 +183,11 @@ else
         m_nan=or(isnan(m_data), m_data==0);
         
         if ismember(p.outputs,{'indiv'})                                        % Extract prediction intervals only if individual outputs are desired
-            subplot(n_row,n_col,j)
+            if isempty(p.plotIndx)
+                subplot(n_row,n_col,j)
+            else
+                subplot(p.n_row,p.n_col,p.plotIndx(j))
+            end
             pi_data=[PI.CI(simIndx(j)).(output_i){'Pred_UB',:},...
                 PI.CI(simIndx(j)).(output_i){'Pred_LB',:}(end:-1:1)];
             pi_nan=or(isnan(pi_data), pi_data==0);
@@ -244,14 +252,30 @@ else
             dat.Marker='d';
         end
         %% Axes specs
-        ylabel(PI.variableUnits(colIndx),'interpreter', 'none')
-        xlabel(strjoin({'Time [' p.TimeUnit ']'},''))
+       
         grid on
         hold on
         
         ax=gca;
         if strcmp(p.outputs,'indiv')
-            title(PI.data(simIndx(j)).Name,'interpreter','none')
+            if isempty(p.plotIndx)
+                 title(PI.observablesPlot(colIndx),'interpreter', p.interpreter,'FontSize',10)
+               ylabel(PI.variableUnits(colIndx),'interpreter', 'none')
+               xlabel(strjoin({'Time [' p.TimeUnit ']'},''),'FontSize',10)
+                
+            else
+                if ismember(p.plotIndx(j), 1:p.n_col)
+                    title(PI.observablesPlot(colIndx),'interpreter','none')
+                end
+                if ismember(p.plotIndx(j),1:p.n_col:(p.n_row*p.n_col))
+                    
+                    ylabel({PI.output(j).Name; PI.variableUnits{colIndx}},'interpreter', 'none','FontSize',8)
+                end
+               
+                if ismember(p.plotIndx(j),(p.n_col*p.n_row):-1:(p.n_col*p.n_row-p.n_col+1))
+                    xlabel(strjoin({'Time [' p.TimeUnit ']'},''),'FontSize',10)
+                end
+            end
             %         try
             %             legend(ax.Children, {'Data' PI.observablesPlot{colIndx}...
             %                 '95% Credible Interval' '95% Prediction Interval'},...
@@ -289,7 +313,7 @@ else
         legend(ax.Children(end:-3:3),legends,'Interpreter', 'none', 'location','best')
     end
     
-    ax.FontSize = 14;
+%     ax.FontSize = 14;
 end
 
 return

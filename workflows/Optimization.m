@@ -7,6 +7,8 @@ options_anneal.InitTemp=100;
 [finalValues,fval_anneal]=anneal(obj_fun,finalValues,options_anneal);
 [finalValues,fval_fminsearch]=fminsearch(obj_fun,finalValues,...
     options_fminsearch);
+%% Update final values
+finalValues =log([PI.par(:).finalValue]);
 
 %% Simulation output
 simTime = unique([PI.tspan', 1:PI.tspan(end)]);
@@ -40,5 +42,4 @@ for i=1:length(observables)
  plotError2(PI,i,'all', false, 'indiv', false, 'addErrorVar', false, 'newFig', ...
      false, 'group', 'Cell', 'TimeUnit', 'hours')
 end
-close all
 

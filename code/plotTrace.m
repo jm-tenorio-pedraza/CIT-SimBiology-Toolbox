@@ -7,8 +7,9 @@ p.addParameter('type','individual');
 p.addParameter('steps',1:1:size(p_hat,1));
 p.addParameter('names',{});
 p.addParameter('ESS',[]);
-p.addParameter('interpreter','none');
+p.addParameter('interpreter','tex');
 p.addParameter('thinning',1)
+p.addParameter('units','log-transf units')
 
 p.parse(varargin{:});
 p=p.Results;
@@ -67,33 +68,41 @@ end
     case 3
         nfig=ceil(n_p/5);
         traceIndx = 1:2:10;
+        figureCounter=1;
 
         for j=1:nfig
             figure('Renderer', 'painters', 'Position', [10 10 600 1000])
             parIndx= (j-1)*5+1:(j-1)*5+5;
-            try
+            
             for i=1:5
-                subplot(5, 2,traceIndx(i))
-                p_ij=reshape(p_hat(parIndx(i),:,:),n_w,dim_phat(3),1);                  % NxT matrix with the numer of walkers/ensemble in the rows and the columns representing the steps
-                colors=linspecer(n_w);
-                h=plot(p.steps(:,1:thin:size(p_ij,2)),p_ij(:,1:thin:size(p_ij,2)));
-                for k=1:length(h)
-                    set(h(k),'color',colors(k,:))
+                if figureCounter<=n_p
+                    subplot(5, 2,traceIndx(i))
+                    p_ij=reshape(p_hat(parIndx(i),:,:),n_w,dim_phat(3),1);                  % NxT matrix with the numer of walkers/ensemble in the rows and the columns representing the steps
+                    colors=linspecer(n_w);
+                    h=plot(p.steps(:,1:thin:size(p_ij,2)),p_ij(:,1:thin:size(p_ij,2)));
+                    ylabel(p.units)
+                    for k=1:length(h)
+                        set(h(k),'color',colors(k,:))
+                    end
+                    
+                    if ~isempty(p.ESS) % add ESS if available
+                        legend(strjoin({'ESS=' num2str(p.ESS(parIndx(i)))},''),'Location','best')
+                    end
+                    title(strjoin({'Trace of ' p.names{parIndx(i)}}, ''),...
+                        'interpreter',p.interpreter)
+                    xlabel('MCMC step')
+                    
+                    % Plot histogram
+                    subplot(5,2,traceIndx(i)+1)
+                    histogram(p_ij(:,1:thin:size(p_ij,2)),'Normalization', 'probability');
+                    xlabel(p.units)
+                    ylabel('prob')
+                    title(strjoin({'Histogram of '  p.names{parIndx(i)}}, ''),...
+                        'interpreter',p.interpreter)
+
+                    %ylim([min_y max_y])
+                    figureCounter=figureCounter+1;
                 end
-                
-                if ~isempty(p.ESS)
-                    legend(strjoin({'ESS=' num2str(p.ESS(parIndx(i)))},''),'Location','best')
-                end                
-                try
-                    title(p.names(parIndx(i)), 'interpreter', p.interpreter)
-                catch
-                end
-                xlabel('MCMC step')
-                subplot(5,2,traceIndx(i)+1)
-                histogram(p_ij(:,1:thin:size(p_ij,2)));
-                %ylim([min_y max_y])
-            end
-            catch
             end
         end
         

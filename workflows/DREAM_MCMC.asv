@@ -55,10 +55,10 @@ tic
 toc
 
 %%
-x13 =x;
-p_x13 =p_x;
+x12 =x;
+p_x12 =p_x;
 %% Save results
-N_i='13';  
+N_i='12';  
 save(strjoin({cd '/CIM/PI/CIM01/MCMC/' PI.model '_Z' '.mat'},''), 'Z')
 %  save(strjoin({cd '/CIM/PI/CIM01/MCMC/' PI.model '_w0' '.mat'},''), 'w0')
 

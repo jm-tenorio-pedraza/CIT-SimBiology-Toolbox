@@ -18,7 +18,6 @@ time = param.time;
 if isempty(param.samples)
 [samples, ~] = generateLHSSample2(PI,param.inputs,  param.nsamples,...
     'Variation', param.variation,'LB', param.LB, 'UB', param.UB);
-
 else
     samples = param.samples;
 end
@@ -62,7 +61,7 @@ for i = 1:length(time)
         timerow_j_norm = timerow_j - mean(timerow_j,'omitnan');
         rho = partialcorri(timerow_j_norm,samples_norm,'Rows', 'complete',...
             'Type', 'Spearman');
-        prcc((j-1)*length(time)+i,:,:) = reshape(rho', 1, length(parameters),...
+        prcc((j-1)*length(time)+i,:,:) = reshape(rho', 1, size(rho,2),...
             length(observables));
     end
 end
