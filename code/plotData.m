@@ -32,6 +32,7 @@ switch case_i
                  arrayfun(@(x)errorbar(x.dataTime, x.dataValue(:,i),x.SD(:,i),'Color',...
                     x.colors,'Marker','*'),PI.data)
             catch
+                hold on
                 arrayfun(@(x)plot(x.dataTime, x.dataValue(:,i),'Color',...
             x.colors,'Marker','*'),PI.data)
             end
