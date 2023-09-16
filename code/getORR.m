@@ -1,28 +1,43 @@
 function [PI, ORR] = getORR(PI, treatments,varargin)
 inputs=inputParser;
-inputs.addParameter('TV_0', PI.output(1).TV(:,1))
-inputs.addParameter('N', size(PI.output(1).TV,1))
+inputs.addParameter('TV_0', []);
+inputs.addParameter('TumorField', 'Tumor');
+inputs.addParameter('cutoff_value', PI.tspan(end))
+inputs.addParameter('N', 1)
 inputs.parse(varargin{:})
 inputs=inputs.Results;
+tumorField=inputs.TumorField;
+cutoff_indx = find(PI.tspan<=inputs.cutoff_value);
 
+if isempty(inputs.TV_0)
+    TV_0=PI.output(1).(tumorField)(1:end,1);
+else
+    TV_0 = inputs.TV_0;
+end
 colors = linspecer(4);
 colors_i = zeros(size(PI.output(1).SLD,1),3);
 for i=1:length(treatments)
-    pd = and(any(PI.output(i).SLD>20,2),...
-        any(PI.output(i).TV/(4/3*pi).^(1/3)...
-        -inputs.TV_0./(4/3*pi).^(1/3)>0.5,2));
-    pr = and((and(any(PI.output(i).SLD<=-30,2), ...
-        ~any(PI.output(i).SLD<-99,2))),~pd);
-    cr = and((any(PI.output(i).SLD<-99,2)),~pd);
-    sd = and(and(~pd,~pr), ~cr);   
-    pd_sigma =and(any(PI.output(i).SLD_sigma>20,2),...
-        any(PI.output(i).TV_sigma/(4/3*pi).^(1/3)...
-        -inputs.TV_0./(4/3*pi).^(1/3)>0.5,2));
-    pr_sigma = and((and(any(PI.output(i).SLD_sigma<=-30,2), ...
-        ~any(PI.output(i).SLD_sigma<-99,2))),~pd);
-    cr_sigma = and((any(PI.output(i).SLD_sigma<-99,2)),~pd);
+    SLD = 2*real((PI.output(i).Tumor(:,cutoff_indx)/(4/3*pi)).^(1/3));
+% %     minTumorSize = 2*real(min((PI.output(i).Tumor(:,cutoff_indx)/(4/3*pi)).^(1/3),[],2));
+    minTumorSize = 2*real(((PI.output(i).Tumor(:,1)/(4/3*pi)).^(1/3)));
+
+    SLD_change = real(((SLD-minTumorSize)./minTumorSize)*100);
+    pd = and(any(SLD_change>20,2),...
+        any(SLD-minTumorSize>0.5,2));
+    pr = and((and(any(PI.output(i).SLD(:,cutoff_indx)<=-30,2), ...
+        ~any(PI.output(i).SLD(:,cutoff_indx)<-99,2))),~pd);
+    cr = and((any(PI.output(i).SLD(:,cutoff_indx)<=-99,2)),~pd);
+    sd = and(and(~pd,~pr), ~cr);
+    
+    SLD_sigma_rescaled = 2*real((PI.output(i).Tumor_sigma(:,cutoff_indx)/(4/3*pi)).^(1/3));
+    SLD_sigma_change = real((SLD_sigma_rescaled)./minTumorSize)*100;
+    pd_sigma =and(any(SLD_sigma_change>20,2),...
+        any(SLD_sigma_change>0.5,2));
+    pr_sigma = and((and(any(PI.output(i).SLD_sigma(:,cutoff_indx)<=-30,2), ...
+        ~any(PI.output(i).SLD_sigma(:,cutoff_indx)<-99,2))),~pd);
+    cr_sigma = and((any(PI.output(i).SLD_sigma(:,cutoff_indx)<-99,2)),~pd);
     sd_sigma = and(and(~pd_sigma,~pr_sigma), ~cr_sigma);
-%     ORR{1:4,i+1} = [mean(pd_sigma); mean(sd_sigma); mean(pr_sigma); mean(cr_sigma)];
+    %     ORR{1:4,i+1} = [mean(pd_sigma); mean(sd_sigma); mean(pr_sigma); mean(cr_sigma)];
     
     colors_i(pd,:) = repmat(colors(1,:),sum(pd),1);
     colors_i(sd,:) = repmat(colors(2,:),sum(sd),1);
@@ -31,7 +46,7 @@ for i=1:length(treatments)
     PI.output(i).Response = [pd sd pr cr];
     PI.output(i).Response_sigma = [pd_sigma sd_sigma pr_sigma cr_sigma];
     PI.output(i).colors = colors_i;
-
+    
 end
 
 ORR2 = cell2mat(arrayfun(@(x)mean(x.Response), PI.output,'UniformOutput', false));

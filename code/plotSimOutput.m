@@ -6,6 +6,7 @@ par.addParameter('addErrorVar', true)
 par.addParameter('newFig', true)
 par.addParameter('interpreter', 'tex')
 par.addParameter('TimeUnit', 'days')
+par.addParameter('indivData', false) 
 par.parse(varargin{:})
 par = par.Results;
 
@@ -52,11 +53,15 @@ for i=1:n_sim
     end
     hold on
     sim=plot(PI.data(simIndx(i)).simTime, PI.data(simIndx(i)).simOutput(:,colIndx));
-    try
-        dat = errorbar(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx), PI.data(simIndx(i)).SD(:,colIndx));
-    catch
-        dat=plot(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx));
-        
+    if par.indivData
+        dataIndx = ismember({PI.IndivData(1:end).Name},PI.data(simIndx(i)).Name);
+        dat=arrayfun(@(x)plot(x.dataTime,x.dataValue(:,colIndx)),PI.IndivData(dataIndx),'UniformOutput',false);
+    else
+        try
+            dat = errorbar(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx), PI.data(simIndx(i)).SD(:,colIndx));
+        catch
+            dat=plot(PI.data(simIndx(i)).dataTime, PI.data(simIndx(i)).dataValue(:,colIndx));
+        end
     end
     if par.addErrorVar
         try
@@ -73,8 +78,7 @@ for i=1:n_sim
         error = [];
     end
     if par.indiv
-            title(PI.data(simIndx(i)).Name,'interpreter', par.interpreter)
-
+        title(PI.data(simIndx(i)).Name,'interpreter', par.interpreter)
         col_i=treatment_colors(ismember(treatments,PI.data(simIndx(i)).Group),:);
     else
         title(PI.observablesPlot(colIndx), 'interpreter', par.interpreter)
@@ -82,12 +86,21 @@ for i=1:n_sim
     end
     sim.Color=col_i;
     sim.LineWidth= 2;
-    dat.LineStyle='none';
+   
+    if par.indivData
+        for j=1:length(dat)
+            dat{j}.Color =col_i;
+            dat{j}.Marker='d';
+            dat{j}.MarkerFaceColor=col_i;
+            dat{j}.MarkerEdgeColor=col_i;
+        end
+    else
+    dat.Marker='d';
+     dat.LineStyle='none';
     dat.Color = col_i;
     dat.MarkerFaceColor=col_i;
     dat.MarkerEdgeColor=col_i;
-    
-    dat.Marker='d';
+    end
     error.LineStyle = 'none';
     error.FaceColor = col_i;
     error.FaceAlpha = 0.2;

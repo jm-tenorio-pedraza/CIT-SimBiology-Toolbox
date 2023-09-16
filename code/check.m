@@ -11,7 +11,7 @@ else
     X = X';
 end
 p_X_iqr = quantile(p_X_mean, [0.25 0.75]); % 1 x 2 vector 
-p_X_indx = p_X_mean<(p_X_iqr(1) - 2*(p_X_iqr(2)-p_X_iqr(1)));
+p_X_indx = p_X_mean<(p_X_iqr(1) - 1*(p_X_iqr(2)-p_X_iqr(1)));
 
 if any(p_X_indx)
     p_X_max_indx = ismember(p_X,max(p_X));

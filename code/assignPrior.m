@@ -1,8 +1,13 @@
-function PI = assignPrior(PI)
+function PI = assignPrior(PI,varargin)
+par=inputParser;
+par.addParameter('sigmaDist', 'IG')
+par.parse(varargin{:})
+par = par.Results;
+
 prior = repelem({'nan'}, length(PI.par));
 
 prior(PI.H.PopulationParams) = {'U'};
-prior(PI.H.SigmaParams) = {'IG'};
+prior(PI.H.SigmaParams) = {par.sigmaDist};
 try
     prior([PI.H.IndividualParams.Index]) = {'N_z'};
 catch

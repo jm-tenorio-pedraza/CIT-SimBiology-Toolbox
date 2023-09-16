@@ -19,13 +19,7 @@ n_cell = length(cell_indx);
 n_resp = length(resp_indx);
 n_indiv = length(PI.data);
 n_sigma=p.n_sigma;
-try
-    cell_groups = cellfun(@(x)x(1:find(x=='_',1)-1),[PI.data(:).(p.CellField)],...
-        'UniformOutput',false);
-catch
-    cell_groups = cellfun(@(x)x(1:find(x=='_',1)-1),{PI.data(:).(p.CellField)},...
-    'UniformOutput',false);
-end
+cell_groups = {PI.data(:).(p.CellField)};
 response_groups = ({PI.data(:).(p.ResponseField)});
 if ischar(response_groups) 
         response_groups = ([PI.data(:).(p.ResponseField)]);     
@@ -45,13 +39,13 @@ CellIndex=mat2cell(reshape(cellIndexStart:cellIndexEnd,...               % Creat
     [],n_cell)',ones(n_cell,1));
 CellEtaIndex = mat2cell(reshape(cell_indx,n_cell,[]),ones(n_cell,1));
 
-indivIndexStart = length(params)+1+n_cell*n_celltypes;
+indivIndexStart = cellIndexEnd+1;
 indivIndexEnd = indivIndexStart+n_indiv*n_rand-1;
 IndivIndex=mat2cell(reshape(indivIndexStart:indivIndexEnd,...                                               % Create indexes of individually varying parameters 
     [],n_rand)',ones(n_rand,1));                                            % for each simulation starting at the end of the cell params
 IndivEtaIndex = mat2cell(reshape(rand_indx,n_rand,[]),ones(n_rand,1));
 
-respIndexStart = length(params) + 1 + n_cell*n_celltypes + n_indiv*n_rand;
+respIndexStart = indivIndexEnd + 1;
 respIndexEnd = respIndexStart+n_resp*n_resptypes-1;
 RespIndex = mat2cell(reshape(respIndexStart:respIndexEnd, [], n_resp)',...
     ones(n_resp,1));
@@ -78,8 +72,8 @@ try
             IndivIndex{end,end}(end)+n_cell,n_cell,[]),ones(n_cell,1));         % individually-varying params starting at the end of
                                                                                 % the individual params    
     else
-        CellOmegaIndex =  mat2cell(reshape(IndivIndex{end,end}(end)+1:...       % Create indexes for the variance parameters of
-            IndivIndex{end,end}(end)+n_cell,n_cell,[]),ones(n_cell,1));         % individually-varying params starting at the end of
+        CellOmegaIndex =  mat2cell(reshape(RespIndex{end,end}(end)+1:...       % Create indexes for the variance parameters of
+            RespIndex{end,end}(end)+n_cell,n_cell,[]),ones(n_cell,1));         % individually-varying params starting at the end of
     end                                                                         % the response params
     
 catch
@@ -103,27 +97,28 @@ H.SigmaParams = [CellOmegaIndex{:,:}];                                 % Add ome
 %% Add individual parameter indexes if available
 [H.IndividualParams(1:n_rand).EtaIndex] = IndivEtaIndex{:,:};
 
-    if isempty(RespIndex) && ~isempty(IndivIndex)
-        indivStartIndex = IndivIndex{end,end}(end)+1+n_cell;
-        indivEndIndex =   indivStartIndex+n_rand-1;
-        IndivOmegaIndex = mat2cell(reshape(indivStartIndex:...       % Create indexes for the variance parameters of
-            indivEndIndex,n_rand,[]),ones(n_rand,1));         % individually-varying params starting at the end of
-        
-        
-        H.SigmaParams = [H.SigmaParams [IndivOmegaIndex{:,:}]];                                       % Add noise variance indexes to the vector of variance indexes
-
-    elseif ~isempty(RespIndex) && ~isempty(IndivIndex)
-        indivStartIndex = RespIndex{end,end}(end)+1+n_cell;
-        indivEndIndex =   indivStartIndex+n_rand-1;
-        IndivOmegaIndex = mat2cell(reshape(indivStartIndex:...       % Create indexes for the variance parameters of
-            indivEndIndex,n_rand,[]),ones(n_rand,1));         % individually-varying params starting at the end of
-        
-        
-        H.SigmaParams = [H.SigmaParams [IndivOmegaIndex{:,:}]];                                       % Add noise variance indexes to the vector of variance indexes
-    else
-            IndivOmegaIndex ={};                                                    % If there are no individual parameters
-
-    end
+if isempty(RespIndex) && ~isempty(IndivIndex)
+    indivStartIndex = IndivIndex{end,end}(end)+1+n_cell;
+    indivEndIndex =   indivStartIndex+n_rand-1;
+    IndivOmegaIndex = mat2cell(reshape(indivStartIndex:...       % Create indexes for the variance parameters of
+        indivEndIndex,n_rand,[]),ones(n_rand,1));         % individually-varying params starting at the end of
+    
+    
+    H.SigmaParams = [H.SigmaParams [IndivOmegaIndex{:,:}]];                                       % Add noise variance indexes to the vector of variance indexes
+    
+elseif ~isempty(RespIndex) && ~isempty(IndivIndex)
+    indivStartIndex = RespIndex{end,end}(end)+1+n_cell;
+    indivEndIndex =   indivStartIndex+n_rand-1;
+    IndivOmegaIndex = mat2cell(reshape(indivStartIndex:...       % Create indexes for the variance parameters of
+        indivEndIndex,n_rand,[]),ones(n_rand,1));         % individually-varying params starting at the end of
+    
+    
+    H.SigmaParams = [H.SigmaParams [IndivOmegaIndex{:,:}]];                                       % Add noise variance indexes to the vector of variance indexes
+    
+else
+    IndivOmegaIndex ={};                                                    % If there are no individual parameters
+    
+end
 [H.IndividualParams(1:n_rand).OmegaIndex] = IndivOmegaIndex{:,:};          % Add omega indexes to H
 
 
@@ -135,16 +130,13 @@ H.SigmaParams = [CellOmegaIndex{:,:}];                                 % Add ome
         RespOmegaIndex = mat2cell(reshape(respStartIndex:...           % Create indexes for the variance parameters of
             respEndIndex,n_resp,[]),ones(n_resp,1));                    % response-varying params starting at the end of cell params
         
-    elseif ~isempty(RespIndex) && ~isempty(IndivIndex)
-        respStartIndex = IndivIndex{end,end}(end)+1+n_cell;
-        respEndIndex =   indivStartIndex+n_resp-1;
+ elseif ~isempty(RespIndex) && ~isempty(IndivIndex)
+        respStartIndex = IndivOmegaIndex{end,end}(end)+1;
+        respEndIndex =   respStartIndex+n_resp-1;
         RespOmegaIndex = mat2cell(reshape(respStartIndex:...       % Create indexes for the variance parameters of
             respEndIndex,n_resp,[]),ones(n_resp,1));         % individually-varying params starting at the end of
-        
-        
-    else
-            RespOmegaIndex ={};                                                    % If there are no individual parameters
-
+ else
+         RespOmegaIndex ={};                                                    % If there are no individual parameters
  end
 H.SigmaParams = [H.SigmaParams [RespOmegaIndex{:,:}]];        % Add noise variance indexes to the vector of variance indexes
 

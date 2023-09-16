@@ -5,6 +5,9 @@ param.addParameter('nsamples', 1e3)
 param.addParameter('time', 1:1:PI.tspan(end))
 param.addParameter('inputs', sim.Parameters.Value)
 param.addParameter('variation', 0.9)
+param.addParameter('LB', [])
+param.addParameter('UB', [])
+param.addParameter('samples', [])
 
 param.parse(varargin{:})
 
@@ -12,20 +15,36 @@ param=param.Results;
 popParamsIndx = [PI.H.PopulationParams];
 parameters = {PI.par(popParamsIndx).name}';                                    % Extract parameter names from simultation
 time = param.time;
+if isempty(param.samples)
+[samples, ~] = generateLHSSample2(PI,param.inputs,  param.nsamples,...
+    'Variation', param.variation,'LB', param.LB, 'UB', param.UB);
 
-[samples, lhs_sample] = generateLHSSample2(PI,param.inputs,  param.nsamples, 'Variation', param.variation);
-
+else
+    samples = param.samples;
+end
+samples_norm = samples - mean(samples);
 
 samplescell{size(samples,1), 1} = [];
-samplescell(1:size(samples,1),1) = mat2cell([repelem(samples, length(PI.u),1) repmat(PI.x_0,size(samples,1),1)],...
+samplescell(1:size(samples,1),1) = mat2cell([repelem(samples, length(PI.u),1)],...
     ones(size(samples,1),1)*(length(PI.u)));
 PRCC = [];
 [PRCC(1:size(samples,1)).samples] = samplescell{:,:};
+u = PI.u;
+p = gcp('nocreate'); % If no pool, do not create new one.
 
-simulations = arrayfun(@(x)getData(resample(sim(x.samples, time(end),...% array of simulations for each 
-    PI.u, time), time)), PRCC, 'UniformOutput', false);
+if isempty(p)
+    p = parpool('local')
+    pctRunOnAll warning off
+else
+end
+parfor i=1:size(samples,1)
+    PRCC(i).simulations = getData(resample(sim(samples(i,:), time(end),...% array of simulations for each 
+    u, time), time));
+end
+% simulations = arrayfun(@(x)getData(resample(sim(x.samples, time(end),...% array of simulations for each 
+%     PI.u, time), time)), PRCC, 'UniformOutput', false);
 
-[PRCC(1:size(samples,1)).simulations] = simulations{:,:};
+% [PRCC(1:size(samples,1)).simulations] = simulations{:,:};
 prcc = NaN(length(time)*length(PI.u),length(parameters),length(observables));
 for i = 1:length(time)
     timerow_i=arrayfun(@(y)arrayfun(@(x)x{1,1}(i,:),y.simulations,'UniformOutput',...
@@ -40,8 +59,8 @@ for i = 1:length(time)
 %         for k=1:length(observables)
 %             [~,staterank(:,k)] = ismember( firstrow_j(:,k),stateSorted(:,k));
 %         end
-        timerow_j_norm = timerow_j - mean(timerow_j);
-        rho = partialcorri(timerow_j_norm,lhs_sample,'Rows', 'complete',...
+        timerow_j_norm = timerow_j - mean(timerow_j,'omitnan');
+        rho = partialcorri(timerow_j_norm,samples_norm,'Rows', 'complete',...
             'Type', 'Spearman');
         prcc((j-1)*length(time)+i,:,:) = reshape(rho', 1, length(parameters),...
             length(observables));
@@ -49,4 +68,5 @@ for i = 1:length(time)
 end
 PI.prcc = prcc;
 PI.samples = samples;
+end
 

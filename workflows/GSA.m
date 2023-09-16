@@ -1,7 +1,7 @@
 %% GSA
 time = 1:PI.tspan(end);
-inputs = [PI.par(PI.H.PopulationParams).finalValue];
-%inputs = [PI.par(PI.H.PopulationParams).MAP];
+% inputs = [PI.par(PI.H.PopulationParams).finalValue];
+inputs = [PI.par(PI.H.PopulationParams).MAP];
 inputs = [repelem(inputs,size(PI.x_0,1),1) PI.x_0(:,1)];
 
 if ~isempty(PI.H.CellParams(1).Index)
@@ -46,11 +46,15 @@ parameters_hat = cat(1,pc(:).p_hat);
 parameters_hat = unique(parameters_hat,'stable');
 
 %% Global PRCC SA
-PI = globalSA2(sim,PI,observables,'nsamples',1e4,'time',1:1:PI.tspan(end),...
+PI = globalSA2(sim,PI,observables,'samples',[exp(postSamples(:,[PI.H.PopulationParams])), ...
+    repelem(PI.x_0,size(postSamples,1),1)],'nsamples',1e4,'time',1:1:PI.tspan(end),...
     'sigma', 1,'inputs', exp(finalValues(PI.H.PopulationParams)),'variation', 0.5);
+PI = globalSA2(sim,PI,observables,'samples',[],'nsamples',1e2,'time',1:1:PI.tspan(end),...
+    'sigma', 1,'inputs', exp(finalValues(PI.H.PopulationParams)),'variation', 0.5);
+
 paramRanking = plotPRCC(PI,PI.paramNames(PI.H.PopulationParams),PI.observablesPlot,'time',...
     1:1:PI.tspan(end),'output', 'mean','kpi', 'sum');
-parameters_hat1 =unique(paramRanking{1:3,:}, 'stable');
+parameters_hat1 =unique(paramRanking{1:8,:});
 
 %% Joint results
 unique([parameters_hat; parameters_hat1])
