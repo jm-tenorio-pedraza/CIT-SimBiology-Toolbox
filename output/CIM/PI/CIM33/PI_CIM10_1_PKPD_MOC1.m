@@ -31,12 +31,12 @@ set(cs, 'StopTime',100)
 
 sbioaccelerate(model, cs)
 %% Parameter setup
-parameters = {'kin_CD8'; 'kin_Treg';'kin_MDSC';'kpro_Tumor';'kill_CD8'; ...
-    'K_MDSC'; 'K_CTLA4'; 'K_PDL1'; 'S_L'; 'S_R'; 'kdep_max'; ...
-    'ks_PDL1_Tumor'; 'ks_PDL1_Immune'; 'K_IFNg'; ...
-    'KDE_Treg'; 'KDE_MDSC'; 'IARdif_w_CD28'; 'IARdif_w_kcoi'; 'IARdif_w_kdeMDSC';...
+parameters = {'fin_CD8'; 'fin_Treg';'fin_MDSC' ;'kpro_Tumor';'kill_CD8'; ...
+    'K_MDSC'; 'K_CD45';'K_CTLA4'; 'K_PDL1'; 'S_L'; 'S_R'; 'kdep_max'; ...
+    'K_IFNg';  'f_Treg'; 'f_MDSC'; ...
+    'IARdif_w_CD28'; 'IARdif_w_kcoi'; 'IARdif_w_kdeMDSC';...
     'IARinf_w_CD28'; 'IARinf_w_kcoi'; 'IARinf_w_kdeMDSC'; 'IARpro_w_CD28';...
-    'IARpro_w_kcoi'; 'IARpro_w_kdeMDSC'};
+    'IARpro_w_kcoi'; 'IARpro_w_kdeMDSC'; 'IARkill_w_kcoi'};
 parameters = [parameters; 'T_0'];
 
 % Define outputs% Define outputs
@@ -61,6 +61,13 @@ try
 PI.data = rmfield(PI.data, {'Kinetic'});
 catch
 end
+PI.data(1).dataTime = PI.data(1).dataTime(1:end-2);
+PI.data(1).dataValue = PI.data(1).dataValue(1:end-2,:);
+PI.data(1).SD = PI.data(1).SD(1:end-2,:);
+PI.data(1).zero_indx = PI.data(1).zero_indx(1:end-2);
+PI.n_data = sum(cellfun(@(x)sum(sum(~isnan(x))), {PI.data(:).dataValue}));
+
+%%
 PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [%]' ...
      'Percentage [%]'   'Relative units []' ...
     'Relative units []' 'Relative units []'};
@@ -82,11 +89,11 @@ clearvars   PI1 PI2 variants
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct3(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [] , 'cell_indx',[], 'resp_indx', [7 9 15 16],'n_indiv', length(PI.u));
+    'rand_indx', [] , 'cell_indx',[], 'resp_indx', [8 10 14 15],'n_indiv', length(PI.u));
 SigmaNames = getVarNames(PI, stateVar);
-[beta, sigma_prior] = getVarValues2([.01 .01 .1 .001], [.01 .01 .1 .001], [1 1 1 1], PI);
-lb=([1e-1   1e-1   1e0   1e-2  1e-3    1    1e-2    1e-2    1e-2       1e-2   1e-1    1e-2    1e-2   1e-2    1e-2   1e-2   .01  .01  .01     .01        .01     .01     .01     .01  .01])';
-ub=([2e2    2e2    2e2   1     1e0     1e3  1e2     1e2     1e2        1e2    1e2     1e2     1e2    1e1     10     1e2    .5  .5    .5     .5          .5      .5      .5      .5      .5])';
+[beta, sigma_prior] = getVarValues2([1 1 1 .001], [1 1 1 .001], [1 1 1 1], PI);
+lb=([1e-2   1e-3  0.1   1e-2  1e-2    1    1    1e-2    1e-2    1e-2       1e-2   1e-1    1e-2    1e-2   1e-2   .01  .01  .01     .01        .01     .01     .01     .01  .01 .01])';
+ub=([0.2    .1    0.6   1     1e1     1e3  1e3  1e2     1e2     1e2        1e2    1e1     1e1     0.8     0.9    .5  .5    .5     .5          .5      .5      .5      .5      .5 .8])';
 
 PI.par = getParamStruct3(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior, 'ref', 'ones','LB', lb, 'UB', ub);

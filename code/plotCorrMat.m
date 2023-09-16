@@ -5,7 +5,7 @@ end
 p=inputParser;
 p.addParameter('model','MOC1');
 p.addParameter('type','spearman');
-p.addParameter('interpreter','none');
+p.addParameter('interpreter','tex');
 
 p.parse(varargin{:});
 p=p.Results;
@@ -24,7 +24,7 @@ set(gca, 'XTickLabel',Names, 'TickLabelInterpreter', p.interpreter,'XTickLabelRo
 set(gca, 'FontSize', 14); 
 
 set(gca, 'YTickLabel', Names, 'TickLabelInterpreter', p.interpreter); % set y-axis labels
-title(strjoin({'Correlation matrix for', p.model},' ' ), 'FontSize', 20); % set title
+title(strjoin({'Correlation matrix for', p.model},' ' ), 'FontSize', 20,'Interpreter','none'); % set title
 
 % Defining two-color gradient color map
 blue1 = [0, 0, 1];

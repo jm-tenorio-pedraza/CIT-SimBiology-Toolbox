@@ -41,7 +41,7 @@ figure
 h=plot(-logP);
 xlabel('MCMC step')
 ylabel('Negative Log-Likelihood')
-title(strjoin({'Log-posterior density trace plot of',p.model},' '), 'interpreter', p.interpreter)
+title(strjoin({'Log-posterior density trace plot of',p.model},' '), 'Interpreter', p.interpreter)
 set(gca, 'YScale', 'log')
 colors = linspecer(size(logP,2));
 for i=1:size(logP,2)
@@ -49,7 +49,7 @@ for i=1:size(logP,2)
 end
 % Param traceplot
 % figure('Renderer', 'painters', 'Position', [10 10 1500 600])
-plotTrace( params,'names', p.name,'ESS',ESS,'interpreter', p.interpreter,'thinning', p.Thinning)
+plotTrace( params,'names', p.name,'ESS',ESS,'interpreter','tex','thinning', p.Thinning)
 end
 % Autocorrelation
 if ismember('autocorr', p.plots)
@@ -80,6 +80,6 @@ end
 % Correlation matrix
 if ismember('corr', p.plots)
 figure('Renderer', 'painters', 'Position', [10 10 1200 800])
-plotCorrMat(phat, p.name, 'model', p.model,'interpreter', p.interpreter)
+plotCorrMat(phat, p.name, 'model', p.model,'interpreter', 'tex')
 end
 end

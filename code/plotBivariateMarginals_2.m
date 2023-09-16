@@ -79,12 +79,12 @@ for i=1:p
 
             elseif i==p&&j==p
 %                 ax.YTickLabels ={};
-                ylabel('pdf','Fontsize',5,'Fontweight','normal')
+%                 ylabel('pdf','Fontsize',5,'Fontweight','normal')
 
             else
 %                  ax.YTickLabels ={};
                   ax.XTickLabels ={};
-                 ylabel('pdf','Fontsize',5,'Fontweight','normal')
+%                  ylabel('pdf','Fontsize',5,'Fontweight','normal')
 
             end
             if p<11
