@@ -19,8 +19,8 @@ plotMCMCDiagnostics(x([PI.H.RespParams(:).EtaIndex PI.H.RespParams(:).OmegaIndex
     'model', PI.model, 'interpreter', 'tex');
 
 %% Plotting results
-delta =1e1;
-burnIn=3e5;
+delta =1e2;
+burnIn=0e5;
 indx = ceil(burnIn/size(x,2)+1):delta:(size(x,3));
 
 [mean_w, w_indx] = sort(mean(p_x(indx,:)));
@@ -49,7 +49,7 @@ plotBivariateMarginals_2((postSamples(:,[PI.H.SigmaParams])),...
 plotIIVParams(postSamples, PI,'name', paramNames,'newFig', false,...
     'n_row', 2,'n_col',2,'figIndx', 1,'panel', true,'dim',true)
 %% Posterior predictions
-simTime = unique([PI.tspan', 1:PI.tspan(end)]);
+simTime = unique([PI.tspan, 1:PI.tspan(end)]);
 simFun=@(x)getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u,simTime),x,...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),PI.normIndx, PI.H,...
     'output', 'simoutput', 'simTime', simTime);

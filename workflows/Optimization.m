@@ -11,10 +11,10 @@ options_anneal.InitTemp=100;
 finalValues =log([PI.par(:).finalValue]);
 
 %% Simulation output
-simTime = unique([PI.tspan', 1:PI.tspan(end)]);
+simTime = unique([PI.tspan, 1:PI.tspan(end)]);
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u, simTime),exp(finalValues),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),...
-    PI.normIndx,PI.H,'output', 'PI', 'simTime', simTime,'logTransform',false, 'errorModel','multiplicative');
+    PI.normIndx,PI.H,'output', 'PI', 'simTime', simTime,'logTransform',false, 'errorModel','additive');
 PI.AIC = 2*length(PI.par)-2*likelihood_fun(finalValues)*(1);
 %% Plotting output
 % figure('Position', [10 10 1.5e3 1e3])
@@ -23,7 +23,7 @@ PI.AIC = 2*length(PI.par)-2*likelihood_fun(finalValues)*(1);
 for i=1:length(observables)
 %  subplot(nrow,ncol,i)
  plotSimOutput(PI,i,'all', false, 'indiv', true, 'addErrorVar', false,...
-     'newFig', true, 'TimeUnit', 'days','indivData',true)
+     'newFig', true, 'TimeUnit', 'hours','indivData',false)
 %   set(gca, 'YScale','log')
 % % ylim([0 .1])
 end

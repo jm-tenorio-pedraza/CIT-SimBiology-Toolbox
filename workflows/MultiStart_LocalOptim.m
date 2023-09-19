@@ -24,13 +24,17 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
     exp(phat_0(end-length(observables)+1:end)),...
     exp(phat_0([PI.H.CellParams.OmegaIndex])),...
     exp(phat_0([PI.H.IndividualParams.OmegaIndex])),...
-    exp(phat_0([PI.H.RespParams.OmegaIndex])),PI.normIndx);
+    exp(phat_0([PI.H.RespParams.OmegaIndex])),PI.normIndx,...
+    'log', true, 'errorModel', 'additive');
 %% 
-n_samples = 100;
+n_samples = 500;
 lhs = lhsdesign(n_samples,length(ub));
 p0 = unifinv(lhs,repelem(exp(lb),n_samples,1),repelem(exp(ub),n_samples,1));
 p_hat = nan(size(p0)); fval_lsqnonlin = nan(size(p0,1),1);
-for i = 1:size(p0,1)
+
+% p=parpool('local');
+pctRunOnAll warning off
+parfor i = 1:n_samples
     try
     [p_hat(i,:), fval_lsqnonlin(i)] = lsqnonlin(residuals_fn,log(p0(i,:)), lb,ub, options_lsqnonlin);
     catch
@@ -52,7 +56,7 @@ PI.MultiStartOptim = struct('p_start', p0_cell, 'p_end', p_hat_cell, 'fval_lsqno
 figure
 hold on
 ax =gca;
-cutoffValue = find([PI.MultiStartOptim(:).fval_lsqnonlin]>[PI.MultiStartOptim(1).fval_lsqnonlin]*2,1);
+cutoffValue = find([PI.MultiStartOptim(:).fval_lsqnonlin]>[PI.MultiStartOptim(1).fval_lsqnonlin]*3,1);
 set(ax, 'YScale', 'log')
 plot([PI.MultiStartOptim(:).fval_lsqnonlin])
 plot(repelem(PI.MultiStartOptim(cutoffValue).fval_lsqnonlin, length(PI.MultiStartOptim),1));
@@ -71,8 +75,8 @@ cv_cell = num2cell(cv);
 [PI.par([PI.H.PopulationParams]).cv_MultiStartOptim] = (cv_cell{:,:});
 
 %% Use selected samples as initial walkers for MCMC
-sigma_0 = repmat(finalValues([H.SigmaParams]),sum(cutoffIndx),1);
-X0=[log(finalValues);X0 log(sigma_0)];
+sigma_0 = randn(size(X0,1), length(finalValues)-size(X0,2))*.1;
+w0=[X0 (sigma_0)];
 
 %% Add best paramter vector to finalValues
 finalValues([PI.H.PopulationParams PI.H.CellParams.Index PI.H.IndividualParams.Index PI.H.RespParams.Index]) = (p_hat_sorted(1,:));

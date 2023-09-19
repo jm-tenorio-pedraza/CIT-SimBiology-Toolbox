@@ -3,7 +3,7 @@ clear Cell_Field clavijo_counts Clavijo_Names clavijo_unique clavijoData counts 
 %% Initial vectors
 % finalValues = log([PI.par(:).finalValue]);
 d = length(finalValues);
-N_samples=2e3;
+N_samples=26;
 % LHS design for prior sampling
 thetaLHS_0 = lhsdesign(N_samples,length(PI.H.PopulationParams));
 lb=paramValues'*.1;
@@ -51,14 +51,14 @@ N=3;
 T = ceil(.9e5/N);
 tic
 [x, p_x, stepSize, J, n_id,accept,Z] = par_dream_zs(Z,prior_fun, likelihood_fun,...
-    N,T,d, 'burnIn',0e5,'J',J,'n_id',n_id,'stepSize', stepSize,'plotLogL',true);
+    N,T,d, 'burnIn',0,'J',J,'n_id',n_id,'stepSize', stepSize,'plotLogL',true);
 toc
 
 %%
-x13 =x;
-p_x13 =p_x;
+x3 =x;
+p_x3 =p_x;
 %% Save results
-N_i='13';  
+N_i='3';  
 save(strjoin({cd '/CIM/PI/CIM01/MCMC/' PI.model '_Z' '.mat'},''), 'Z')
 %  save(strjoin({cd '/CIM/PI/CIM01/MCMC/' PI.model '_w0' '.mat'},''), 'w0')
 
@@ -77,11 +77,11 @@ load(strjoin({cd '/CIM/PI/CIM01/MCMC/'  PI.model '_J' '.mat'},''))
 load(strjoin({cd '/CIM/PI/CIM01/MCMC/'  PI.model '_n_id'  '.mat'},''))
 load(strjoin({cd '/CIM/PI/CIM01/MCMC/'  PI.model '_stepSize' '.mat'},''))
 
-for i=6:10
+for i=1:2
     load(strjoin({cd '/CIM/PI/CIM01/MCMC/' PI.model '_x_'  num2str(i) '.mat'},''))
     load(strjoin({cd '/CIM/PI/CIM01/MCMC/' PI.model '_p_x_' num2str(i) '.mat'},''))
 end
-x = cat(3,x6,x7,x8,x9,x10,x11,x12);
-p_x=cat(1,p_x6,p_x7,p_x8,p_x9,p_x10,p_x11,p_x12);
+x = cat(3,x1,x2,x3);
+p_x=cat(1,p_x1,p_x2,p_x3);
 %% clear variables
 clearvars -except d J likelihood_fun N obj_fun p prior_fun sim w0 x stepSize n_id paramNames PI finalValues w0 z0 Z

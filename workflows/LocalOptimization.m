@@ -20,29 +20,29 @@ residuals_fn = @(x) getResiduals(exp(x),@(x)sim(x,PI.tspan(end),PI.u,PI.tspan),P
     exp(phat_0([PI.H.CellParams.OmegaIndex])),...
     exp(phat_0([PI.H.IndividualParams.OmegaIndex])),...
     exp(phat_0([PI.H.RespParams.OmegaIndex])),PI.normIndx,...
-    'log', false, 'errorModel', 'multiplicative');
+    'log', true, 'errorModel', 'additive');
 
 
-%% Estimate Individual params
-try
-residuals_indiv = @(x) residuals_fn([finalValues(popParamsIndx) finalValues(cellParamsIndx) x  finalValues(respParamsIndx)]);
-
-[p_hat_indiv, ~] = lsqnonlin(residuals_indiv,finalValues(indivParamsIndx),...
-    lb(indivParamsIndx),...
-    ub(indivParamsIndx), options_lsqnonlin);
-finalValues(indivParamsIndx) = p_hat_indiv;
-catch
-end
-%% Estimate cell params
-try
-residuals_cell = @(x) residuals_fn([finalValues(popParamsIndx) x finalValues(indivParamsIndx)  finalValues(respParamsIndx)]);
-
-[p_hat_cell, ~] = lsqnonlin(residuals_cell,finalValues(cellParamsIndx),...
-    lb(cellParamsIndx),...
-    ub(cellParamsIndx), options_lsqnonlin);
-finalValues(cellParamsIndx) = p_hat_cell;
-catch
-end
+% %% Estimate Individual params
+% try
+% residuals_indiv = @(x) residuals_fn([finalValues(popParamsIndx) finalValues(cellParamsIndx) x  finalValues(respParamsIndx)]);
+% 
+% [p_hat_indiv, ~] = lsqnonlin(residuals_indiv,finalValues(indivParamsIndx),...
+%     lb(indivParamsIndx),...
+%     ub(indivParamsIndx), options_lsqnonlin);
+% finalValues(indivParamsIndx) = p_hat_indiv;
+% catch
+% end
+% %% Estimate cell params
+% try
+% residuals_cell = @(x) residuals_fn([finalValues(popParamsIndx) x finalValues(indivParamsIndx)  finalValues(respParamsIndx)]);
+% 
+% [p_hat_cell, ~] = lsqnonlin(residuals_cell,finalValues(cellParamsIndx),...
+%     lb(cellParamsIndx),...
+%     ub(cellParamsIndx), options_lsqnonlin);
+% finalValues(cellParamsIndx) = p_hat_cell;
+% catch
+% end
 %% Esitmate Population params
 
 residuals_pop = @(x) residuals_fn([x finalValues(cellParamsIndx) finalValues(indivParamsIndx)  finalValues(respParamsIndx)]);

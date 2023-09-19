@@ -48,15 +48,15 @@ opts.EmptyLineRule = "read";
 Sun2019Fig1c = readtable("C:\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\Sun_2019_Fig1c.csv", opts);
 
 %% Setup the Import Options and import the data Clavijo_2019_Fig5b
-opts = delimitedTextImportOptions("NumVariables", 6);
+opts = delimitedTextImportOptions("NumVariables", 10);
 
 % Specify range and delimiter
 opts.DataLines = [3, Inf];
 opts.Delimiter = ",";
 
 % Specify column names and types
-opts.VariableNames = ["MOC1_Control", "VarName2", "MOC1_TIL_10", "VarName4", "MOC1_TIL_GMDSC", "VarName6"];
-opts.VariableTypes = ["double", "double", "double", "double", "double", "double"];
+opts.VariableNames = ["MOC1_Control", "VarName2", "MOC1_TIL_10", "VarName4", "MOC1_TIL_GMDSC", "VarName6", "MOC1_TIL_GMDSC_Sema4D", "VarName8", "MOC1_GMDSC", "VarName10",];
+opts.VariableTypes = ["double", "double", "double", "double", "double", "double" , "double" , "double" "double" , "double"];
 
 % Specify file level properties
 opts.ExtraColumnsRule = "ignore";
@@ -65,6 +65,8 @@ opts.EmptyLineRule = "read";
 % Import the data
 Clavijo2019_Fig5b = readtable("C:\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\Clavijo_2019.Fig5b.csv", opts);
 
+% Exclude Sema4d
+Clavijo2019_Fig5b=Clavijo2019_Fig5b(:,[1:6 9:10]);
 %% Setup the Import Options and import the data
 opts = delimitedTextImportOptions("NumVariables", 6);
 
@@ -89,8 +91,8 @@ dataNames={'Sun2019_Fig7f_Control'; "Sun2019_Fig7f_Tumor:TIL_1:1"; "Sun2019_Fig7
     "Sun2019_Fig7f_Tumor:TIL_1:5"; "Sun2019_Fig7F_Tumor:TIL_1:10"; 'Sun2019_Fig1c_Control';...
     'Sun2019_Fig1c_Tumor:TIL_10:1'; 'Sun2019_Fig1c_Tumor:TIL:GMDSC_1:10:30'; 'Sun2019_Fig1c_Tumor:GMDSC_1:30';...
     'Clavijo2019_Fig5b_Control'; 'Clavijo2019_Fig5b_Tumor:TIL_10:1'; 'Clavijo2019_Fig5b_Tumor:TIL:GMDSC_1:10:30';...
-    'Friedman2019_Fig5b_Control'; 'Friedman2019_Fig5b_Tumor:p22TIL_1:10'; 'Friedman2019_Fig5b_Tumor:p22TIL_1:10_antiPD1';};
-[SI.data(1:15).Name]=dataNames{:,:};
+    'Clavijo2019_Fig5b_MOC1:GMDSC_1:30'; 'Friedman2019_Fig5b_Control'; 'Friedman2019_Fig5b_Tumor:p22TIL_1:1'; 'Friedman2019_Fig5b_Tumor:p22TIL_1:1_antiPD1';};
+[SI.data(1:16).Name]=dataNames{:,:};
 
 %% Dataset-specific data
 % Sun 2019, Fig7f
@@ -99,7 +101,7 @@ dataTimes=mat2cell(dataTimes', repelem(1,size(dataTimes',1)));
 [SI.data(1:5).dataTime]=dataTimes{:,:};
 
 dataValue=Sun2019Fig7f{:,2:2:end};
-dataValue(1,:)=repelem(1,5);
+dataValue=dataValue./dataValue(1,:);
 dataValue=mat2cell(dataValue',repelem(1,size(dataValue',1)));
 dataValue=cellfun(@(x)x',dataValue,'UniformOutput', false);
 [SI.data(1:5).dataValue]=dataValue{:,:};
@@ -115,7 +117,7 @@ dataTimes=mat2cell(dataTimes', repelem(1,size(dataTimes',1)));
 [SI.data(6:9).dataTime]=dataTimes{:,:};
 
 dataValue=Sun2019Fig1c{:,2:2:end};
-dataValue(1,:)=repelem(1,4);
+dataValue=dataValue./dataValue(1,:);
 dataValue=mat2cell(dataValue',repelem(1,size(dataValue',1)));
 dataValue=cellfun(@(x)x',dataValue,'UniformOutput', false);
 [SI.data(6:9).dataValue]=dataValue{:,:};
@@ -127,57 +129,58 @@ SD=mat2cell(SD',repelem(1,size(SD',1)));
 % Clavijo 2019, Fig5b
 dataTimes = round(Clavijo2019_Fig5b{:,1:2:end}*24);
 dataTimes=mat2cell(dataTimes', repelem(1,size(dataTimes',1)));
-[SI.data(10:12).dataTime]=dataTimes{:,:};
+[SI.data(10:13).dataTime]=dataTimes{:,:};
 
 dataValue=Clavijo2019_Fig5b{:,2:2:end};
 dataValue=dataValue./dataValue(1,:);
 dataValue=mat2cell(dataValue',repelem(1,size(dataValue',1)));
 dataValue=cellfun(@(x)x',dataValue,'UniformOutput', false);
-[SI.data(10:12).dataValue]=dataValue{:,:};
+[SI.data(10:13).dataValue]=dataValue{:,:};
 
 SD=NaN(3,size(Clavijo2019_Fig5b,1));
 SD=mat2cell(SD',repelem(1,size(SD',1)));
-[SI.data(10:12).SD]=SD{:,:};
+[SI.data(10:13).SD]=SD{:,:};
 
 % Friedman 2019, Fig5b
 dataTimes = round(Friedman2019Fig5b{:,1:2:end}*24);
 dataTimes=mat2cell(dataTimes', repelem(1,size(dataTimes',1)));
-[SI.data(13:15).dataTime]=dataTimes{:,:};
+[SI.data(14:16).dataTime]=dataTimes{:,:};
 
 dataValue=Friedman2019Fig5b{:,2:2:end};
 dataValue=dataValue./dataValue(1,:);
 dataValue=mat2cell(dataValue',repelem(1,size(dataValue',1)));
 dataValue=cellfun(@(x)x',dataValue,'UniformOutput', false);
-[SI.data(13:15).dataValue]=dataValue{:,:};
+[SI.data(14:16).dataValue]=dataValue{:,:};
 
 SD=NaN(3,size(Friedman2019Fig5b,1));
 SD=mat2cell(SD',repelem(1,size(SD',1)));
-[SI.data(13:15).SD]=SD{:,:};
+[SI.data(14:16).SD]=SD{:,:};
 
 %% Common dataset
 groupNames={'MOC1_Sun2019_Fig7f' 'MOC1_Sun2019_Fig7f' 'MOC1_Sun2019_Fig7f'...
     'MOC1_Sun2019_Fig7f' 'MOC1_Sun2019_Fig7f' 'MOC1_Sun2019_Fig1c' 'MOC1_Sun2019_Fig1c'...
     'MOC1_Sun2019_Fig1c' 'MOC1_Sun2019_Fig1c' 'MOC1_Clavijo2019_Fig5b' 'MOC1_Clavijo2019_Fig5b'...
-    'MOC1_Clavijo2019_Fig5b' 'MOC1_Friedman2019_Fig5b' 'MOC1_Friedman2019_Fig5b' 'MOC1_Friedman2019_Fig5b'};
-[SI.data(1:15).Group]=groupNames{:,:};
+    'MOC1_Clavijo2019_Fig5b' 'MOC1_Clavijo2019_Fig5b' 'MOC1_Friedman2019_Fig5b' ...
+    'MOC1_Friedman2019_Fig5b' 'MOC1_Friedman2019_Fig5b'};
+[SI.data(1:end).Group]=groupNames{:,:};
 
 expNames= {'MOC1_TIL_1:0' 'MOC1_TIL_1:1' 'MOC1_TIL_1:2' 'MOC1_TIL_1:5' 'MOC1_TIL_1:10' ....
      'MOC1_TIL_1:0'  'MOC1_TIL_1:10'  'MOC1_TIL_GMDSC_1:10:30'  'MOC1_GMDSC_1:30' ...
-     'MOC1_TIL_1:0' 'MOC1_TIL_1:10' 'MOC1_TIL_GMDSC_1:10:30' 'MOC1_TIL_1:0' ...
-     'MOC1_p22TIL_1:10' 'MOC1_p22TIL_1:10_antiPD1'};
-[SI.data(1:15).Experiment]=expNames{:,:};
+     'MOC1_TIL_1:0' 'MOC1_TIL_1:10' 'MOC1_TIL_GMDSC_1:10:30' 'MOC1_GMDSC_1:30' 'MOC1_TIL_1:0' ...
+     'MOC1_p22TIL_1:10' 'MOC1_p22TIL_1:10_antiPD1'  };
+[SI.data(1:end).Experiment]=expNames{:,:};
 
-cell={'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1'  'MOC1' 'MOC1' 'MOC1'};
-[SI.data(1:15).Cell]=cell{:,:};
+cell={'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1' 'MOC1'  'MOC1' 'MOC1' 'MOC1' 'MOC1'};
+[SI.data(1:end).Cell]=cell{:,:};
 
 responseGroup={'Responder' 'Responder' 'Responder' 'Responder' 'Responder' ...
      'Responder'  'Responder'  'Responder'  'Responder'  'Responder'...
-     'Responder'  'Responder' 'Responder'  'Responder' 'Responder' };
-[SI.data(1:15).Response]=responseGroup{:,:};
+     'Responder'  'Responder' 'Responder'  'Responder' 'Responder' 'Responder'};
+[SI.data(1:end).Response]=responseGroup{:,:};
 
 
-datacount= {7 7 7 7 7 9 9 9 9 10 10 10 6 6 6};
-[SI.data(1:15).Count]=datacount{:,:};
+datacount= {7 7 7 7 7 9 9 9 9 10 10 10 10 6 6 6 6};
+[SI.data(1:end).Count]=datacount{:,:};
 
 % Add initial values for the three species considered
 %    T_0    CD8_0   GMDSC_0     anti-PD-L1
@@ -193,9 +196,10 @@ x0=[.01     0       0   0; ...
     .01     0       0   0; ...
     .01     .1      0   0;...
     .01     .1      .3  0; ...
+    .01     0       .3  0; ...
     .01     0       0   0;...
-    .01     1       0   0;...
-    .01     1       0   1];
+    .01     .01     0   0;...
+    .01     .01     0   1;];
 SI.x_0=x0;
 %% Clear temporary variables
 clear opts
