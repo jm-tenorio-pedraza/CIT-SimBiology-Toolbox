@@ -11,7 +11,7 @@ options_anneal.InitTemp=100;
 finalValues =log([PI.par(:).finalValue]);
 
 %% Simulation output
-simTime = unique([PI.tspan, 1:PI.tspan(end)]);
+simTime = unique([PI.tspan', 1:PI.tspan(end)]);
 PI=getOutput(PI,@(p)sim(p,PI.tspan(end),PI.u, simTime),exp(finalValues),...
     @(p)getPhi2(p,PI.H,length(PI.u),'initialValue',PI.x_0),...
     PI.normIndx,PI.H,'output', 'PI', 'simTime', simTime,'logTransform',false, 'errorModel','additive');

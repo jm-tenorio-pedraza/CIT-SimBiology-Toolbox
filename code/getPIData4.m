@@ -111,7 +111,7 @@ for i=1:length(unique_groups)
     SD_indx = SD_subset(group_i);                                    % Array of standard deviations cells if dealing with mean data, empty otherwise
 
     try
-        SD_i = cellfun(@(x) x(:,varindx),SD_indx, 'UniformOutput', false);
+        SD_i = cellfun(@(x) x(:,:),SD_indx, 'UniformOutput', false);
         if (p.logTransform)
             SDstruct = [];
             [SDstruct(1:length(SD_indx)).SD] = SD_indx{:,:};

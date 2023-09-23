@@ -1,0 +1,158 @@
+%% Obtain data, simulation function and dose table
+if ispc
+    data_ext = {'\Users\jmten\OneDrive\Dokumente\GitHub\CIT-SimBiology-Toolbox\data\PI_Clavijo_2.mat'};
+else
+    data_ext = {'/Users/migueltenorio/Documents/GitHub/CIT-SimBiology-Toolbox/data/PI_Clavijo_2.mat'};
+end
+PIClavijo=getPIData4(data_ext, stateVar,groups_subset,'output', 'mean',...
+    'responseGrouping', true, 'kineticGrouping', false, 'zeroHandling',...
+    'replace','logTransform',false);
+
+PIIndiv_Clavijo=getPIData4(data_ext, stateVar,groups_subset,'output', 'individual',...
+    'responseGrouping', true, 'kineticGrouping', false, 'zeroHandling',...
+    'replace','logTransform',false);
+groupNames=unique({PIIndiv_Clavijo.data(:).Group});
+
+%% Plot data based on group
+nrow=ceil(sqrt(length(groupNames)));
+ncol=ceil(length(groupNames)/nrow);
+figure
+for i=1:length(groupNames)
+    groupIndx=ismember({PIIndiv_Clavijo.data(:).Group},groupNames(i));
+    PIsubset=PIIndiv_Clavijo.data(groupIndx);
+    colors = table2cell(table(linspecer(length(PIsubset))));
+    [PIsubset(1:end).colors] = colors{:,:};
+
+    subplot(nrow,ncol,i)
+    hold on
+    arrayfun(@(x)plot(x.dataTime, x.dataValue(:,1),'Color',...
+            x.colors,'Marker','*'),PIsubset)
+    title(groupNames(i))
+    set(gca,'YScale','log')
+    ylabel('Volume [cm^3]')
+    xlabel('Time [days]')
+  
+end
+
+%% Selecting time points based on maximum common denominator
+for i=1:length(groupNames)
+    groupIndx=ismember({PIIndiv_Clavijo.data(:).Group},groupNames(i));
+    PIsubset=PIIndiv_Clavijo.data(groupIndx);
+   
+  lastT=arrayfun(@(x)max(x.dataTime),PIsubset);
+  timeVectors={PIsubset(:).dataTime}';
+  timeVectors=cell2mat(timeVectors);
+
+  uniqueTimePoints=sort(unique(timeVectors));
+  
+  minLastT=min(lastT);
+  mappedTimePoints=uniqueTimePoints(uniqueTimePoints<=minLastT);
+  timeIndx=arrayfun(@(x)ismember(x.dataTime,mappedTimePoints),PIsubset,'UniformOutput',false);
+  [PIsubset(1:end).timeIndx]=timeIndx{:,:};
+  
+  rightCensIndx=arrayfun(@(x)any(~x.timeIndx),PIsubset,'UniformOutput',false);
+  [PIsubset(1:end).rightCensIndx]=rightCensIndx{:,:};
+  
+  rightCensIndx=arrayfun(@(x)logical([zeros(sum(x.timeIndx)-1,1);x.rightCensIndx]),PIsubset,'UniformOutput',false);
+  dataTime=arrayfun(@(x)x.dataTime(x.timeIndx,:),PIsubset,'UniformOutput',false);
+  dataValue=arrayfun(@(x)x.dataValue(x.timeIndx,:),PIsubset,'UniformOutput',false);
+  SD=arrayfun(@(x)x.SD(x.timeIndx,:),PIsubset,'UniformOutput',false);
+  zeroIndx=arrayfun(@(x)x.zero_indx(x.timeIndx,:),PIsubset,'UniformOutput',false);
+
+  [PIIndiv_Clavijo.data(groupIndx).dataTime]=dataTime{:,:};
+  [PIIndiv_Clavijo.data(groupIndx).dataValue]=dataValue{:,:};
+  [PIIndiv_Clavijo.data(groupIndx).SD]=SD{:,:};
+  [PIIndiv_Clavijo.data(groupIndx).zeroIndx]=zeroIndx{:,:};
+  [PIIndiv_Clavijo.data(groupIndx).rightCensIndx]=rightCensIndx{:,:};
+
+  
+  % Group averages
+  groupIndx=ismember([PIClavijo.data(:).Group],groupNames(i));
+  PIsubset=PIClavijo.data(groupIndx);
+
+  timeVectors={PIsubset(:).dataTime}';
+  timeVectors=cell2mat(timeVectors);
+  
+  uniqueTimePoints=sort(unique(timeVectors));
+  
+  mappedTimePoints=uniqueTimePoints(uniqueTimePoints<=minLastT);
+  timeIndx=arrayfun(@(x)ismember(x.dataTime,mappedTimePoints),PIsubset,'UniformOutput',false);
+  [PIsubset(1:end).timeIndx]=timeIndx{:,:};
+  
+  rightCensIndx=arrayfun(@(x)any(~x.timeIndx),PIsubset,'UniformOutput',false);
+  [PIsubset(1:end).rightCensIndx]=rightCensIndx{:,:};
+  
+  rightCensIndx=arrayfun(@(x)logical([zeros(sum(x.timeIndx)-1,1);x.rightCensIndx]),PIsubset,'UniformOutput',false);
+  dataTime=arrayfun(@(x)x.dataTime(x.timeIndx,:),PIsubset,'UniformOutput',false);
+  dataValue=arrayfun(@(x)x.dataValue(x.timeIndx,:),PIsubset,'UniformOutput',false);
+  SD=arrayfun(@(x)x.SD(x.timeIndx,:),PIsubset,'UniformOutput',false);
+  zeroIndx=arrayfun(@(x)x.zero_indx(x.timeIndx,:),PIsubset,'UniformOutput',false);
+
+  [PIClavijo.data(groupIndx).dataTime]=dataTime{:,:};
+  [PIClavijo.data(groupIndx).dataValue]=dataValue{:,:};
+  [PIClavijo.data(groupIndx).SD]=SD{:,:};
+  [PIClavijo.data(groupIndx).zeroIndx]=zeroIndx{:,:};
+  [PIClavijo.data(groupIndx).rightCensIndx]=rightCensIndx{:,:};
+
+end
+
+
+%% Add vector of left-censored observation indexes
+LLQ=1e-3;
+censIndx=arrayfun(@(x)x.dataValue(:,1)<LLQ,PIIndiv_Clavijo.data,'UniformOutput',false);
+[PIIndiv_Clavijo.data(1:end).leftCensIndx]=censIndx{:,:};
+
+censIndx=arrayfun(@(x)x.dataValue(:,1)<LLQ,PIClavijo.data,'UniformOutput',false);
+[PIClavijo.data(1:end).leftCensIndx]=censIndx{:,:};
+
+%% Assemble PI structure
+Clavijo_Names =categorical({PIIndiv_Clavijo.data(:).Name}');
+clavijo_unique = {PIClavijo.data(:).Name}';
+
+clavijoData = PIIndiv_Clavijo.data(ismember(Clavijo_Names,clavijo_unique));
+structIndx=1;
+% For each unique group count how many mice are in it
+for i=1:length(clavijo_unique)
+    index = ismember(Clavijo_Names,clavijo_unique(i));
+    clavijoData(structIndx:structIndx+sum(index)-1)= PIIndiv_Clavijo.data(index);
+    clavijo_counts(i)=sum(index);
+    structIndx = structIndx+sum(index);
+end
+PIClavijo.n_data = sum(cellfun(@(x)sum(sum(~isnan(x))), {clavijoData(:).dataValue}));
+
+PI=[];
+PI.data=[PIClavijo.data;];
+PI.n_data=sum(cellfun(@(x)sum(sum(~isnan(x))), {PI.data(:).dataValue}));
+PI.tspan=unique(PIClavijo.tspan);
+% %Rename Response vector for control groups
+% ImmuneResp={'Control_Clavijo' 'Control_Clavijo' 'Control_Morisada' 'Control_Morisada'};
+% [PI.data([1:2 6:7]).Response] = ImmuneResp{:,:};
+% Add cell field
+Cell_Field = cellfun(@(x)x(1:find(x=='_',1)-1),[PI.data(:).Group],...
+    'UniformOutput',false);
+[PI.data(1:end).Cell] = Cell_Field{:,:};
+% Add counts of individual data corresponding to each group
+counts=clavijo_counts';
+counts=mat2cell(counts,ones(length(counts),1));
+[PI.data(1:end).Count] = counts{:,:};
+PI.IndivData=clavijoData;
+PI.indivN_data =sum(cellfun(@(x)sum(sum(~isnan(x))), {PI.IndivData(:).dataValue}));
+clearvars PIClavijo PIIndiv PIIndiv_Clavijo PIIndiv_Morisada PIMorisada Morisada_Names Clavijo_Names morisada_counts morisada_unique morisadaData clavijo_counts Clavijo_Names clavijo_unique clavijoData counts
+%%
+PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [%]' ...
+     'Percentage [%]'   'Percentage [%]'  ...
+    'Relative units []' 'Relative units []'};
+PI.observablesFields = {'TV'  'CD8'  'Treg' 'DCm'...
+    'MDSC' 'CD8_E' 'PDL1_T' 'PDL1_I'};
+PI.normIndx = 7:8;
+PI.model = 'CIM10_PKPD_MOC1_kill_CD8';
+PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
+    'MDSC' 'CD107a' 'PDL1_T' 'PDL1_I'};
+plotData(PI, PI.observablesPlot, 'responseGrouping', true, 'kineticGrouping', false)
+% Get initial values
+[PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
+    initialStruct);
+PI.varDist={'Normal' 'Normal' 'Normal' 'Normal' 'Normal' 'Normal' 'Normal' 'Normal'};
+
+%% Add initial values for anti-Ly6G depletion experiments
+antiLy6GIndx=cellfun(~isempty(strfind({PI.data(:).Name},'antiLy6G')

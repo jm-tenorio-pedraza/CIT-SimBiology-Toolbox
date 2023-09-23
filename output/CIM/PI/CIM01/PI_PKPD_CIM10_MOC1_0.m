@@ -11,7 +11,7 @@ else
 end
     addpath(genpath(strjoin({wd 'CIT-SimBiology-Toolbox'}, '')))
     cd(strjoin({wd 'CIT-SimBiology-Toolbox/output'},''))
-    out=sbioloadproject(strjoin({wd 'sbio-projects/CIM_10_1_PKPD.sbproj'},''));
+    out=sbioloadproject(strjoin({wd 'QSP-models/CIM_10_1_PKPD.sbproj'},''));
         data_ext = strjoin({ wd 'CIT-SimBiology-Toolbox\data\PI_Clavijo_2.mat'},'/');
     data_ext1 = strjoin({wd 'CIT-SimBiology-Toolbox\data\PI_Morisada_3.mat'},'/');
 
@@ -64,9 +64,9 @@ parameters = [parameters;'T_0'];
 groups_subset = {'MOC1_Control', 'MOC1_Control_Mean',  'MOC1_Control_Immune' ...
     'MOC1_antiCTLA4' 'MOC1_antiPDL1' 'MOC1_antiCTLA4_antiPDL1'};
 observables={'Tumor'  'CD8'  'Treg' 'DCm'...
-    'MDSC' 'CD8_E' 'PDL1_T' 'PDL1_I'};
+    'MDSC' 'CD107a' 'PDL1_T' 'PDL1_I'};
 stateVar={'Tumor'  'CD8' 'Treg' 'DC'...
-    'GMDSC' 'CD107a_Rel' 'Tumor_PDL1_Rel' 'Myeloid_PDL1_Rel'};
+    'GMDSC' 'CD107a' 'Tumor_PDL1_Rel' 'Myeloid_PDL1_Rel'};
 doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
 %% Obtain data, simulation function and dose table
 if ispc
@@ -85,7 +85,7 @@ PIMorisada=getPIData4(data_ext1, stateVar,groups_subset,'output', 'mean',...
 
 PIIndiv_Clavijo=getPIData4(data_ext, stateVar,groups_subset,'output', 'individual',...
     'responseGrouping', true, 'kineticGrouping', false, 'zeroHandling',...
-    'replace','logTransform',false);
+    'noAction','logTransform',false);
 PIIndiv_Morisada=getPIData4(data_ext1, stateVar,groups_subset,'output', 'individual',...
     'responseGrouping', true, 'kineticGrouping', false, 'zeroHandling',...
     'replace','logTransform',false);
@@ -143,11 +143,11 @@ PI.indivN_data =sum(cellfun(@(x)sum(sum(~isnan(x))), {PI.IndivData(:).dataValue}
 clearvars PIClavijo PIIndiv PIIndiv_Clavijo PIIndiv_Morisada PIMorisada Morisada_Names Clavijo_Names morisada_counts morisada_unique morisadaData clavijo_counts Clavijo_Names clavijo_unique clavijoData counts
 %%
 PI.variableUnits={'Volume [mL]' 'Percentage [%]' 'Percentage [%]'  'Percentage [%]' ...
-     'Percentage [%]'   'Relative units []' ...
+     'Percentage [%]'   'Percentage [%]'  ...
     'Relative units []' 'Relative units []'};
 PI.observablesFields = {'TV'  'CD8'  'Treg' 'DCm'...
     'MDSC' 'CD8_E' 'PDL1_T' 'PDL1_I'};
-PI.normIndx = 6:8;
+PI.normIndx = 7:8;
 PI.model = 'CIM10_PKPD_MOC1_kill_CD8';
 PI.observablesPlot={'TV' 'CD8' 'Treg' 'DCm'...
     'MDSC' 'CD107a' 'PDL1_T' 'PDL1_I'};
@@ -155,15 +155,15 @@ plotData(PI, PI.observablesPlot, 'responseGrouping', true, 'kineticGrouping', fa
 % Get initial values
 [PI.x_0, PI.variants] = getInitialValues([PI.data(:).Group],...
     initialStruct);
-
+PI.varDist={'Normal' 'Normal' 'Normal' 'Normal' 'Normal' 'Normal' 'Normal' 'Normal'};
 %% Get simulation function
-[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'PKPD_SA_MOC1_0','doseUnits', 'mole');
+[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'PKPD_Fit_MOC1','doseUnits', 'mole');
 clearvars   PI1 PI2 variants data_ext data_ext1 doses ans Cell_Field groups_subset groupsResp ImmuneResp index
 % close all
 %% Optimization setup
 % Hierarchical structure
 PI.H = getHierarchicalStruct3(parameters(1:end-1),PI,'n_sigma', length(observables),...
-    'rand_indx', [] , 'cell_indx',[], 'resp_indx', 6,'n_indiv', length(PI.u),...
+    'rand_indx', [] , 'cell_indx',[], 'resp_indx', [],'n_indiv', length(PI.u),...
     'CellField','Cell');
 SigmaNames = getVarNames(PI, stateVar);
 [beta, sigma_prior] = getVarValues2([.1 .1 .1 .1], ...
@@ -174,9 +174,13 @@ paramValues = sim.Parameters.Value(1:end-1);
 lb = paramValues.*[1e-6  1e-6    1e-6   1e-6    0.5     1e-6    1e-6    1e-6    1e-10  1e-6    1e-6    1e-6    1e-6]';
 ub = paramValues.*[1e6    1e6      1e6     1e6      2       1e6      1e6      1e6      1e6    1e6      1e6     1e6     1e6]';
 
+initialSigma=ones(length(PI.H.SigmaParams),1);
+initialSigmaVars=ones(length(PI.varDist),1);
+initialSigmaVars(ismember(PI.varDist,'Beta')) =.1;
+initialSigma(end-(length(PI.varDist)-1):end)=initialSigmaVars;
 PI.par = getParamStruct3(sim,PI.H,size(PI.data,1),beta,...
     SigmaNames,'Sigma', sigma_prior,'startSigma',...
-    ones(length(PI.H.SigmaParams), 1)*.6, 'ref', 'ones','LB', lb, 'UB', ub);
+    initialSigma, 'ref', 'ones','LB', lb, 'UB', ub);
 
 PI = assignPrior(PI,'sigmaDist', 'JP');
 % Log-ikelihood function

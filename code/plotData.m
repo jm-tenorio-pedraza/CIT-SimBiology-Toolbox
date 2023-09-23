@@ -39,6 +39,7 @@ switch case_i
             if i==length(stateVar)
         legend({PI.data(:).Name},'Interpreter', 'none')
             end
+            set(gca,'YScale','log')
         end
         
     case {2 3 4}
@@ -58,6 +59,8 @@ switch case_i
                 legend({PI.data(:).Name},'Interpreter', 'none')
             end
         title(stateVar(i))
+        set(gca,'YScale','log')
+
         end
         
 end

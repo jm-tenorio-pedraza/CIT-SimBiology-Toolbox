@@ -1,0 +1,142 @@
+%% General setup
+%% Search paths
+clear all
+warning off
+%opengl('save', 'software')
+%%
+if ispc
+    wd='\Users\jmten\OneDrive\Dokumente\GitHub\';
+else
+    wd='/Users/migueltenorio/Documents/GitHub/';
+end
+    addpath(genpath(strjoin({wd 'CIT-SimBiology-Toolbox'}, '')))
+    cd(strjoin({wd 'CIT-SimBiology-Toolbox/output'},''))
+    out=sbioloadproject(strjoin({wd 'QSP-models/CIM_10_2_PKPD.sbproj'},''));
+%% Load project 
+% Extract model
+model=out.m1;
+variants = getvariant(model);
+initialStruct = struct('name', {'MOC1';'MOC2';'MC38'}, 'initialValue', {5; 0.1; 0.1},...
+    'variant', {variants(1); variants(3); variants(4)});
+
+cs=model.getconfigset;
+set(cs.SolverOptions, 'AbsoluteTolerance', 1.0e-6);
+set(cs.SolverOptions, 'RelativeTolerance', 1.0e-4);
+set(cs, 'MaximumWallClock', .5)
+set(cs, 'Time','day')
+set(cs, 'StopTime',100)
+
+%% Reaction setup
+BloodoutSet = sbioselect(model.Reactions,'Where', 'Reaction', 'regexp', 'Blood');
+PeripheralSet = sbioselect(model.Reactions,'Where', 'Reaction', 'regexp', 'Peripheral');
+LNSet = sbioselect(model.Reactions,'Where', 'Reaction', 'regexp', 'LymphNode');
+CTLA4Set=sbioselect(model.Reactions, 'Where', 'Reaction', 'regexp', 'CTLA4');
+
+set(BloodoutSet, 'Active', true);
+set(PeripheralSet, 'Active', true);
+set(LNSet, 'Active', true);
+set(CTLA4Set, 'Active', true);
+
+%% Rule setup
+% Initial tumor volume
+InitialValSetup=sbioselect(model.Rules, 'Where', 'Rule', 'regexp', {'TumorInter.Cancer =' 'TumorInter.PDL1_Tumor =' ...
+    'TumorInter.PDL1_Immune =' 'TumorInter.CTLA4_CD8 =' 'TumorInter.CTLA4_Treg =' ...
+    'Peripheral.PDL1 =' 'Blood.PDL1' ...
+    });
+
+% Observers
+ObserverSetUp=sbioselect(model.Rules, 'Where', 'Rule', 'regexp', {'Tumor = Tumor_0' 'Cellularity =' ...
+    'CD8 =' 'CD107a =' 'DCm =' 'MDSC = TumorInter' 'Treg = TumorInter' 'PDL1_T =' 'PDL1_I ='});
+
+% Algebraic repeatedAssignment equations
+% RO_CTLA4
+repAssignEqSetUp=sbioselect(model.Rules, 'Where', 'Rule', 'regexp', {'kde_MDSC =' 'kde_Treg' 'IAR_proliferation =' ...
+    'IAR_differentiation =' 'IAR_killing =' 'IAR_infiltration =' 'CTLA4_RO =' 'PDL1_RO ='});
+
+% Anything else set to 0
+exclRule=sbioselect(model.Rules, 'Where', 'Rule', 'regexp', {'ID_ml' 'ID_g' ...
+     'TumorInter =' 'TumorInter.CD8_N = '  'TumorInter.GMDSC = '...
+    'TumorEndo = ' 'TumorVasc =' 'Vint = ' 'TumorSize' 'T_max = ' 'Impedance ='... 
+    'TumorInter.antiPDL1 = ' 'TumorInter.CD8_E = ' 'Cancer_dt =' 'IAR_memory'...
+    'Tumor = Cancer_dt'});
+set(InitialValSetup, 'Active', true);
+set(ObserverSetUp, 'Active', true);
+set(repAssignEqSetUp, 'Active', true);
+set(exclRule, 'Active', false);
+
+%% Event set up
+eventSetUp=sbioselect(model.Events, 'Where', 'Name', 'regexp', {'antiLy6G'});
+set(eventSetUp, 'Active', true);
+
+%% Parameter setup
+constParam=sbioselect(model.Parameters, 'Where', 'Constant', '==', 1);
+varParam=sbioselect(model.Parameters, 'Where', 'Constant', '==', 0);
+
+parameters = {'kin_CD8'; 'kill_CD8'; 'kpro_CD8'; 'kdif'; 'kin_Treg'; 'kin_DC';'kin_MDSC';...
+    'K_IFNg';'ks_PDL1_Tumor'; 'ks_PDL1_Immune' ;...
+    'KDE_MDSC'; 'IARpro_w_CD28'; 'IARpro_w_PDL1';'IARpro_w_MDSC';...
+    'IARinf_w_CD28'; 'IARinf_w_PDL1'; 'IARinf_w_MDSC'; 'IARkill_w_CD28'; 'IARkill_w_PDL1';...
+    'IARkill_w_MDSC'};
+parameters = [parameters;'T_0'; 'antiLy6G_on'; 'antiLy6G_off'];
+% Define outputs% Define outputs
+groups_subset = {'MOC1_Control', 'MOC1_Control_Mean',  'MOC1_Control_Immune' ...
+    'MOC1_antiCTLA4' 'MOC1_antiPDL1' 'MOC1_antiCTLA4_antiPDL1' 'MOC1_antiLy6G' ...
+    'MOC1_antiLy6G_antiPDL1' 'MOC1_antiCTLA4_antiLy6G'};
+observables={'Tumor'  'CD8'  'Treg' 'DCm'...
+    'MDSC' 'CD107a' 'PDL1_T' 'PDL1_I'};
+stateVar={'Tumor'  'CD8' 'Treg' 'DC'...
+    'GMDSC' 'CD107a' 'Tumor_PDL1_Rel' 'Myeloid_PDL1_Rel'};
+doses = {'Blood.Dose_antiPDL1' 'Blood.Dose_antiCTLA4'};
+
+%% load PI
+run('Clavijo_PostProcessing.m')
+PI.model='QSP_MOC1';
+clearvars -except   PI model parameters observables doses stateVar
+%% Get simulation function
+[sim,PI.u]=initializePI(model,parameters,observables,PI,doses, 'QSP_MOC1','doseUnits', 'mole');
+%% Optimization setup
+% Hierarchical structure
+PI.H = getHierarchicalStruct3(parameters(1:end-3),PI,'n_sigma', length(observables),...
+    'rand_indx', [] , 'cell_indx',[], 'resp_indx', [1 2 3 4],'n_indiv', length(PI.u),...
+    'CellField','Cell');
+SigmaNames = getVarNames(PI, stateVar);
+[beta, sigma_prior] = getVarValues2([.1 .1 .1 .1], ...
+    [.6 .6 .6 .6], [1 1 1 1], PI);
+% lb=([1e-2   1e-2    1e-2    1e-2    .01     1e-3    1e-3    1e-4  1e-4       1e-2   1e-3     1e-3    1e-2])';
+% ub=([1e4    1e2     1e2     1e5     1       100     1e4     1e6   1e6        1e5    1e3      1e3     1e4])';
+paramValues = sim.Parameters.Value(1:end-3);
+lb = paramValues.*[1e-2  0.5    1e-2   1e-2    1e-2     1e-2    1e-2    1e-3    1e-3  1e-2    1e-2   1e-2    1e-2  1e-2    1e-2    1e-2    1e-2    1e-2    0.5   0.5]';
+ub = paramValues.*[1e2   2      1e1    1e1     1e2      1e2     1e2     1e3     1e2   1e2     1e2    1e2     1e2   1e2     1e2     1e2     1e2     1e2     2     2]';
+
+initialSigma=ones(length(PI.H.SigmaParams),1);
+PI.par = getParamStruct3(sim,PI.H,size(PI.data,1),beta,...
+    SigmaNames,'Sigma', sigma_prior,'startSigma',...
+    initialSigma, 'ref', 'ones','LB', lb, 'UB', ub);
+
+PI = assignPrior(PI,'sigmaDist', 'JP');
+% Log-ikelihood function
+likelihood_fun=@(p)likelihood(exp(p),sim,PI,'censoring',true,...
+    'logTransform',true,'errorModel','additive','indivData',true);
+prior_fun=@(p)getPriorPDFMCMC2(exp(p),PI);
+
+
+paramNames = getParamNames(PI,sim, observables);
+PI.paramNames  =paramNames;
+clearvars beta lb ub sigma_prior SigmaNames 
+%% Objective function
+try
+    finalValues =log([PI.par(:).finalValue]);
+catch
+    finalValues =log([PI.par(:).startValue]);
+
+end
+% Obj function
+obj_fun=@(x)(postLogLikelihood(x, prior_fun, likelihood_fun)*(-1));
+tic
+obj_fun((finalValues))
+toc
+
+ %% Save results
+% save(strjoin({cd 'CIM/PI/CIM33/PI_CIM10_PKPD_MOC1_MCMC_kin_CD8_2.mat'},'/'), 'PI')
+% %% Load results
+% load(strjoin({cd 'CIM/PI/CIM33/PI_CIM10_PKPD_MOC1_MCMC_kin_CD8_2.mat'},'/'),'PI')
